@@ -6,12 +6,10 @@ import { agentRoutes } from "./routes/agents";
 import { contentRoutes } from "./routes/content";
 import { vaultRoutes } from "./routes/vault";
 import { dashboardRoutes } from "./routes/dashboard";
-
 import { workspaceRoutes } from "./routes/workspace";
 
 const app = new Elysia()
   .onRequest(({ request }) => {
-    // CORS headers
     const origin = request.headers.get("origin") ?? "";
     if (origin) {
       request.headers.set("access-control-allow-origin", origin);
@@ -19,11 +17,7 @@ const app = new Elysia()
       request.headers.set("access-control-allow-headers", "Content-Type");
     }
   })
-  .get("/", () => Bun.file("public/index.html"))
-  .get("/static/*", ({ path }) => {
-    const filePath = path.replace("/static/", "public/");
-    return Bun.file(filePath);
-  })
+  // API routes first
   .use(tasksRoutes)
   .use(goalsRoutes)
   .use(scheduledRoutes)
@@ -32,6 +26,17 @@ const app = new Elysia()
   .use(vaultRoutes)
   .use(dashboardRoutes)
   .use(workspaceRoutes)
+  // Serve React build
+  .get("/assets/*", ({ path }) => {
+    return Bun.file(`client/dist/${path}`);
+  })
+  .get("/static/*", ({ path }) => {
+    return Bun.file(`client/dist/${path}`);
+  })
+  // SPA fallback — serve index.html for any non-API route
+  .get("/*", () => {
+    return Bun.file("client/dist/index.html");
+  })
   .listen(3000);
 
 console.log(`🚀 Mission Control running at http://localhost:3000`);

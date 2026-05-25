@@ -1,0 +1,1 @@
+{"root":["./src/App.tsx","./src/main.tsx","./src/components/AgentSidebar.tsx","./src/lib/api.ts","./src/views/Agents.tsx","./src/views/ContentStudio.tsx","./src/views/Daily.tsx","./src/views/Dashboard.tsx","./src/views/Kanban.tsx","./src/views/Scheduled.tsx","./src/views/Vault.tsx","./src/views/Workspace.tsx"],"version":"5.8.3"}

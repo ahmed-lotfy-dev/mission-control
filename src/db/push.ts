@@ -42,13 +42,26 @@ db.exec(`
 
   CREATE TABLE IF NOT EXISTS agent_snapshots (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
+    name TEXT NOT NULL UNIQUE,
     model TEXT DEFAULT '',
     version TEXT DEFAULT '',
+    icon TEXT DEFAULT '',
     status TEXT NOT NULL DEFAULT 'idle',
     last_active TEXT DEFAULT '',
+    pid INTEGER DEFAULT NULL,
+    endpoint TEXT DEFAULT '',
     metadata TEXT DEFAULT '{}',
     created_at TEXT NOT NULL DEFAULT ''
+  );
+
+  CREATE TABLE IF NOT EXISTS agent_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    agent_id INTEGER NOT NULL,
+    event TEXT NOT NULL,
+    message TEXT DEFAULT '',
+    level TEXT NOT NULL DEFAULT 'info',
+    created_at TEXT NOT NULL DEFAULT '',
+    FOREIGN KEY (agent_id) REFERENCES agent_snapshots(id) ON DELETE CASCADE
   );
 
   CREATE TABLE IF NOT EXISTS content_assets (

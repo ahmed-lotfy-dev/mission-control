@@ -2,21 +2,70 @@ import { db } from "../db";
 
 const now = new Date().toISOString();
 
-db.run("INSERT INTO tasks (title, description, status, priority, project, tags, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-  ["Review SelfTracker food database PR", "Check the food DB import and API routes", "todo", "high", "SelfTracker", "code-review,food-db", now, now]);
-db.run("INSERT INTO tasks (title, description, status, priority, project, tags, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-  ["Set up Traefik for new service", "Configure reverse proxy", "backlog", "medium", "Infrastructure", "devops,traefik", now, now]);
-db.run("INSERT INTO tasks (title, description, status, priority, project, tags, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-  ["Write blog post about PG upgrade", "Document the zero-downtime upgrade process", "done", "low", "Drive Center", "blog,postgresql", now, now]);
-db.run("INSERT INTO tasks (title, description, status, priority, project, tags, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-  ["Build mission control dashboard", "Kanban, agents, content studio, vault integration", "in_progress", "urgent", "Mission Control", "dashboard,bun", now, now]);
+// Clear and re-seed
+db.run("DELETE FROM agent_logs");
+db.run("DELETE FROM agent_snapshots");
 
-db.run("INSERT INTO scheduled_tasks (name, description, schedule, type, payload, enabled, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 1, ?, ?)",
-  ["Daily vault index sync", "Sync Obsidian vault notes to local cache", "0 6 * * *", "command", "cd /mnt/hdd/projects/mission-control && bun run src/scripts/sync-vault.ts", now, now]);
-db.run("INSERT INTO scheduled_tasks (name, description, schedule, type, payload, enabled, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 1, ?, ?)",
-  ["Weekly backup reminder", "Remind to backup databases", "0 10 * * 0", "webhook", "http://localhost:3000/api/reminders/backup", now, now]);
+const agents = [
+  {
+    name: "Hermes",
+    model: "deepseek/deepseek-v4-flash:free",
+    version: "1.0",
+    icon: "🦊",
+    status: "idle",
+    endpoint: "",
+    metadata: { provider: "nous", contextWindow: "200k", type: "chat" },
+  },
+  {
+    name: "Antigravity",
+    model: "claude-sonnet-4",
+    version: "1.0",
+    icon: "🚀",
+    status: "idle",
+    endpoint: "",
+    metadata: { provider: "anthropic", contextWindow: "200k", type: "electron" },
+  },
+  {
+    name: "Antigravity 2",
+    model: "claude-sonnet-4",
+    version: "2.0",
+    icon: "🌟",
+    status: "idle",
+    endpoint: "",
+    metadata: { provider: "anthropic", contextWindow: "200k", type: "electron" },
+  },
+  {
+    name: "Claude Code",
+    model: "claude-sonnet-4",
+    version: "latest",
+    icon: "💻",
+    status: "idle",
+    endpoint: "",
+    metadata: { provider: "anthropic", contextWindow: "200k", type: "cli" },
+  },
+  {
+    name: "Codex",
+    model: "gpt-4o",
+    version: "latest",
+    icon: "📝",
+    status: "idle",
+    endpoint: "",
+    metadata: { provider: "openai", contextWindow: "128k", type: "cli" },
+  },
+];
 
-db.run("INSERT INTO agent_snapshots (name, model, version, status, last_active, metadata, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-  ["OWL (Hermes)", "openrouter/owl-alpha", "1.0", "running", now, JSON.stringify({ provider: "openrouter", contextWindow: "200k" }), now]);
+for (const a of agents) {
+  db.run(
+    "INSERT INTO agent_snapshots (name, model, version, icon, status, last_active, endpoint, metadata, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    [a.name, a.model, a.version, a.icon, a.status, now, a.endpoint, JSON.stringify(a.metadata), now]
+  );
 
-console.log("Seed data inserted.");
+  const row = db.query("SELECT id FROM agent_snapshots WHERE name = ?").get(a.name) as { id: number };
+  db.run(
+    "INSERT INTO agent_logs (agent_id, event, message, level, created_at) VALUES (?, ?, ?, ?, ?)",
+    [row.id, "registered", `Agent ${a.name} registered in mission control`, "info", now]
+  );
+}
+
+console.log(`Seeded ${agents.length} agents with initial activity logs.`);
+db.close();

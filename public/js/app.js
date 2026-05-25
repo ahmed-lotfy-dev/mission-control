@@ -136,12 +136,12 @@ async function renderDashboard(main) {
           <h3>🤖 Agent Status</h3>
           ${d.agents.length > 0 ? d.agents.map(a => `
             <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
-              <span class="status-dot ${a.status === 'running' ? 'online' : 'offline'}">●</span>
+              <span class="status-dot ${['working', 'online', 'idle'].includes(a.status) ? 'online' : 'offline'}">●</span>
               <div>
                 <div style="font-weight:600;font-size:13px">${esc(a.name)}</div>
                 <div style="font-size:11px;color:var(--text-dim)">${esc(a.model)} · ${timeAgo(a.lastActive)}</div>
               </div>
-              <span class="badge ${a.status === 'running' ? 'low' : 'medium'}" style="margin-left:auto">${a.status}</span>
+              <span class="badge ${a.status === 'online' || a.status === 'working' ? 'low' : a.status === 'error' ? 'urgent' : 'medium'}" style="margin-left:auto">${a.status}</span>
             </div>
           `).join("") : '<p style="color:var(--text-dim);font-size:13px">No agents registered.</p>'}
         </div>
