@@ -18,6 +18,7 @@
       <li data-view="vault">🧠 Vault</li>
       <li data-view="daily">📝 Daily</li>
       <li data-view="scheduled">⏰ Scheduled</li>
+      <li data-view="workspace">📁 Workspace</li>
     </ul>
     <div class="nav-footer">
       <span id="connection-status" class="status-dot online">● Connected</span>
@@ -27,6 +28,17 @@
   <main id="main">
     <!-- Views will be rendered here -->
   </main>
+
+  <!-- Agent Panel (right sidebar) -->
+  <aside id="agent-panel">
+    <div class="agent-header">
+      <h3>🤖 Agents</h3>
+      <button class="agent-toggle-btn" id="agent-toggle" onclick="toggleAgentPanel()">◀</button>
+    </div>
+    <div class="agent-list" id="agent-list">
+      <div class="loading" style="padding:20px;font-size:12px">Loading agents...</div>
+    </div>
+  </aside>
 </div>
 
 <script src="/static/js/app.js" type="module"></script>
