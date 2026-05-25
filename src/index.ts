@@ -7,6 +7,8 @@ import { contentRoutes } from "./routes/content";
 import { vaultRoutes } from "./routes/vault";
 import { dashboardRoutes } from "./routes/dashboard";
 
+import { workspaceRoutes } from "./routes/workspace";
+
 const app = new Elysia()
   .onRequest(({ request }) => {
     // CORS headers
@@ -29,6 +31,7 @@ const app = new Elysia()
   .use(contentRoutes)
   .use(vaultRoutes)
   .use(dashboardRoutes)
+  .use(workspaceRoutes)
   .listen(3000);
 
 console.log(`🚀 Mission Control running at http://localhost:3000`);
