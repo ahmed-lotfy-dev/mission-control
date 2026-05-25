@@ -85,6 +85,54 @@ db.exec(`
     last_modified TEXT DEFAULT '',
     indexed_at TEXT NOT NULL DEFAULT ''
   );
+
+  CREATE TABLE IF NOT EXISTS seo_keywords (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    keyword TEXT NOT NULL UNIQUE,
+    volume INTEGER DEFAULT 0,
+    difficulty REAL DEFAULT 0,
+    related TEXT DEFAULT '[]',
+    notes TEXT DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT '',
+    updated_at TEXT NOT NULL DEFAULT ''
+  );
+
+  CREATE TABLE IF NOT EXISTS seo_content (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    keyword TEXT NOT NULL,
+    target_url TEXT DEFAULT '',
+    title TEXT DEFAULT '',
+    meta_description TEXT DEFAULT '',
+    headings TEXT DEFAULT '[]',
+    body TEXT DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'draft',
+    created_at TEXT NOT NULL DEFAULT '',
+    updated_at TEXT NOT NULL DEFAULT ''
+  );
+
+  CREATE TABLE IF NOT EXISTS seo_ranks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    keyword TEXT NOT NULL,
+    position INTEGER DEFAULT 0,
+    url TEXT DEFAULT '',
+    check_date TEXT NOT NULL DEFAULT '',
+    notes TEXT DEFAULT ''
+  );
+
+  CREATE TABLE IF NOT EXISTS seo_audits (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    url TEXT NOT NULL,
+    score INTEGER DEFAULT 0,
+    title TEXT DEFAULT '',
+    meta_description TEXT DEFAULT '',
+    headings_count INTEGER DEFAULT 0,
+    links_count INTEGER DEFAULT 0,
+    has_meta INTEGER DEFAULT 0,
+    has_title INTEGER DEFAULT 0,
+    page_size INTEGER DEFAULT 0,
+    issues TEXT DEFAULT '[]',
+    created_at TEXT NOT NULL DEFAULT ''
+  );
 `);
 
 console.log("Database tables created/verified.");

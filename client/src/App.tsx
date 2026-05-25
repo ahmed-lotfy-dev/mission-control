@@ -9,6 +9,7 @@ import Daily from "./views/Daily";
 import Scheduled from "./views/Scheduled";
 import Workspace from "./views/Workspace";
 import Studio from "./views/Studio";
+import Seo from "./views/Seo";
 import AgentSidebar from "./components/AgentSidebar";
 
 const NAV_ITEMS: Array<{ view: ViewName; icon: string; label: string }> = [
@@ -21,6 +22,7 @@ const NAV_ITEMS: Array<{ view: ViewName; icon: string; label: string }> = [
   { view: "scheduled", icon: "⏰", label: "Scheduled" },
   { view: "workspace", icon: "📁", label: "Workspace" },
   { view: "studio", icon: "🎬", label: "Studio" },
+  { view: "seo", icon: "📈", label: "SEO" },
 ];
 
 const VIEW_COMPONENTS: Record<ViewName, React.FC> = {
@@ -33,6 +35,7 @@ const VIEW_COMPONENTS: Record<ViewName, React.FC> = {
   scheduled: Scheduled,
   workspace: Workspace,
   studio: Studio,
+  seo: Seo,
 };
 
 export default function App() {

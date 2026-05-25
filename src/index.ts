@@ -8,6 +8,7 @@ import { vaultRoutes } from "./routes/vault";
 import { dashboardRoutes } from "./routes/dashboard";
 import { workspaceRoutes } from "./routes/workspace";
 import { studioRoutes } from "./routes/studio";
+import { seoRoutes } from "./routes/seo";
 
 const app = new Elysia()
   .onRequest(({ request }) => {
@@ -28,6 +29,7 @@ const app = new Elysia()
   .use(dashboardRoutes)
   .use(workspaceRoutes)
   .use(studioRoutes)
+  .use(seoRoutes)
   // Serve React build
   .get("/assets/*", ({ path }) => {
     return Bun.file(`client/dist/${path}`);
