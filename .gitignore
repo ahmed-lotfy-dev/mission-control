@@ -1,0 +1,7 @@
+node_modules/
+mission-control.db
+mission-control.db-wal
+mission-control.db-shm
+*.sqlite
+*.sqlite3
+.DS_Store

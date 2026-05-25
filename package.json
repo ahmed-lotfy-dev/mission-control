@@ -1,0 +1,18 @@
+{
+  "name": "mission-control",
+  "version": "0.1.0",
+  "description": "Mission Control Dashboard — Kanban, Agent Status, Content Studio, Obsidian Integration",
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
+    "db:push": "bun run src/db/push.ts",
+    "db:seed": "bun run src/db/seed.ts"
+  },
+  "dependencies": {
+    "elysia": "^1.2.0"
+  },
+  "devDependencies": {
+    "bun-types": "latest"
+  }
+}
