@@ -30,8 +30,6 @@ type LogRow = {
 const PROCESS_MAP: Record<string, { pattern: string; detect: "pid" | "proc" | "pgrep" }> = {
   "Hermes":        { pattern: "hermes",        detect: "pgrep" },
   "Antigravity":   { pattern: "antigravity",   detect: "pgrep" },
-  "Antigravity 2": { pattern: "antigravity",   detect: "pgrep" },
-  "Claude Code":   { pattern: "claude",        detect: "pgrep" },
   "Codex":         { pattern: "codex",         detect: "pgrep" },
 };
 
