@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mission Control</title>
+<link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+<div id="app">
+  <nav id="sidebar">
+    <div class="logo">🚀 Mission Control</div>
+    <ul class="nav-links">
+      <li class="active" data-view="dashboard">📊 Dashboard</li>
+      <li data-view="kanban">📋 Kanban</li>
+      <li data-view="agents">🤖 Agents</li>
+      <li data-view="content">🎨 Content Studio</li>
+      <li data-view="vault">🧠 Vault</li>
+      <li data-view="daily">📝 Daily</li>
+      <li data-view="scheduled">⏰ Scheduled</li>
+    </ul>
+    <div class="nav-footer">
+      <span id="connection-status" class="status-dot online">● Connected</span>
+    </div>
+  </nav>
+
+  <main id="main">
+    <!-- Views will be rendered here -->
+  </main>
+</div>
+
+<script src="/static/js/app.js" type="module"></script>
+</body>
+</html>
