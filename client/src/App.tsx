@@ -3,7 +3,6 @@ import type { ViewName } from "./lib/api";
 import Dashboard from "./views/Dashboard";
 import Kanban from "./views/Kanban";
 import Agents from "./views/Agents";
-import ContentStudio from "./views/ContentStudio";
 import Vault from "./views/Vault";
 import Daily from "./views/Daily";
 import Scheduled from "./views/Scheduled";
@@ -16,7 +15,6 @@ const NAV_ITEMS: Array<{ view: ViewName; icon: string; label: string }> = [
   { view: "dashboard", icon: "📊", label: "Dashboard" },
   { view: "kanban", icon: "📋", label: "Kanban" },
   { view: "agents", icon: "🤖", label: "Agents" },
-  { view: "content", icon: "🎨", label: "Content" },
   { view: "vault", icon: "🧠", label: "Vault" },
   { view: "daily", icon: "📝", label: "Daily" },
   { view: "scheduled", icon: "⏰", label: "Scheduled" },
@@ -29,7 +27,6 @@ const VIEW_COMPONENTS: Record<ViewName, React.FC> = {
   dashboard: Dashboard,
   kanban: Kanban,
   agents: Agents,
-  content: ContentStudio,
   vault: Vault,
   daily: Daily,
   scheduled: Scheduled,

@@ -1,28 +1,20 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { api, formatDate, timeAgo } from "../lib/api";
 
-type StudioTab = "tts" | "image" | "video";
-type JobStatus = "queued" | "processing" | "done" | "error";
-
-interface StudioJob {
-  id: string;
-  type: "tts" | "image" | "video";
-  status: JobStatus;
-  prompt: string;
-  voice?: string;
-  filePath?: string;
-  error?: string;
-  progress: number;
-  createdAt: string;
-  completedAt?: string;
-  metadata?: Record<string, any>;
-}
-
+type StudioTab = "tts" | "image";
 const TABS: Array<{ key: StudioTab; label: string; icon: string }> = [
   { key: "tts", label: "Text-to-Speech", icon: "🔊" },
   { key: "image", label: "Image Generation", icon: "🎨" },
-  { key: "video", label: "Video Generation", icon: "🎬" },
 ];
+
+interface AssetItem {
+  name: string;
+  path: string;
+  type: string;
+  sizeFormatted: string;
+  createdAt: string;
+  mime: string;
+}
 
 const DEFAULT_VOICES = [
   { name: "en-US-GuyNeural", gender: "Male", locale: "en-US" },
@@ -35,91 +27,61 @@ const DEFAULT_VOICES = [
 
 export default function Studio() {
   const [tab, setTab] = useState<StudioTab>("tts");
-  const [history, setHistory] = useState<StudioJob[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  // Real recent assets from agent-outputs
+  const [recentAudio, setRecentAudio] = useState<AssetItem[]>([]);
+  const [recentImages, setRecentImages] = useState<AssetItem[]>([]);
 
   // TTS state
   const [ttsText, setTtsText] = useState("");
   const [ttsVoice, setTtsVoice] = useState("en-US-GuyNeural");
   const [ttsGenerating, setTtsGenerating] = useState(false);
-  const [ttsResult, setTtsResult] = useState<StudioJob | null>(null);
+  const [ttsResult, setTtsResult] = useState<string | null>(null);
+  const [ttsError, setTtsError] = useState("");
 
   // Image state
   const [imgPrompt, setImgPrompt] = useState("");
   const [imgModel, setImgModel] = useState("default");
   const [imgGenerating, setImgGenerating] = useState(false);
-  const [imgResult, setImgResult] = useState<StudioJob | null>(null);
+  const [imgResult, setImgResult] = useState<string | null>(null);
+  const [imgMethod, setImgMethod] = useState("");
+  const [imgError, setImgError] = useState("");
 
-  // Video state
-  const [vidPrompt, setVidPrompt] = useState("");
-  const [vidGenerating, setVidGenerating] = useState(false);
-  const [vidResult, setVidResult] = useState<StudioJob | null>(null);
-
-  // Job polling
-  const [polling, setPolling] = useState<Set<string>>(new Set());
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const loadHistory = useCallback(async () => {
+  // Load recent assets
+  const loadRecent = async () => {
     try {
-      const h = await api<StudioJob[]>("/studio/history");
-      setHistory(h);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+      const data = await api<{ audio: AssetItem[]; image: AssetItem[] }>("/studio/recent");
+      setRecentAudio(data.audio);
+      setRecentImages(data.image);
+    } catch {}
+  };
 
-  useEffect(() => { loadHistory(); }, [loadHistory]);
+  useEffect(() => { loadRecent(); }, []);
 
-  // Poll active jobs
-  useEffect(() => {
-    if (polling.size === 0) {
-      if (pollRef.current) clearInterval(pollRef.current);
-      pollRef.current = null;
-      return;
-    }
-
-    pollRef.current = setInterval(async () => {
-      const ids = Array.from(polling);
-      const updated = new Set(polling);
-
-      for (const id of ids) {
-        try {
-          const job = await api<StudioJob>(`/studio/job/${id}`);
-          // Update in-place results
-          if (job.type === "tts") setTtsResult(job);
-          else if (job.type === "image") setImgResult(job);
-          else if (job.type === "video") setVidResult(job);
-
-          if (job.status === "done" || job.status === "error") {
-            updated.delete(id);
-            loadHistory();
-          }
-        } catch {}
-      }
-
-      setPolling(updated);
-    }, 2000);
-
-    return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
-    };
-  }, [polling, loadHistory]);
+  // Refresh after generation
+  const refresh = () => {
+    loadRecent();
+  };
 
   // ── TTS ──
   const generateTTS = async () => {
     if (!ttsText.trim()) return;
     setTtsGenerating(true);
     setTtsResult(null);
+    setTtsError("");
     try {
-      const result = await api<{ id: string }>("/studio/tts", {
+      const result = await api<{ ok: boolean; filePath?: string; error?: string }>("/studio/tts", {
         method: "POST",
         body: JSON.stringify({ text: ttsText, voice: ttsVoice }),
       });
-      setPolling((prev) => new Set(prev).add(result.id));
-      // Also add to history immediately
-      loadHistory();
+      if (result.ok && result.filePath) {
+        setTtsResult(result.filePath);
+        refresh();
+      } else {
+        setTtsError(result.error || "Generation failed");
+      }
     } catch (e: any) {
-      setTtsResult({ id: "error", type: "tts", status: "error", prompt: ttsText, progress: 0, error: e.message, createdAt: new Date().toISOString() });
+      setTtsError(e.message);
     } finally {
       setTtsGenerating(false);
     }
@@ -130,75 +92,59 @@ export default function Studio() {
     if (!imgPrompt.trim()) return;
     setImgGenerating(true);
     setImgResult(null);
+    setImgMethod("");
+    setImgError("");
     try {
-      const result = await api<{ id: string }>("/studio/image", {
+      const result = await api<{ ok: boolean; filePath?: string; method?: string; error?: string }>("/studio/image", {
         method: "POST",
         body: JSON.stringify({ prompt: imgPrompt, model: imgModel }),
       });
-      setPolling((prev) => new Set(prev).add(result.id));
-      loadHistory();
+      if (result.ok && result.filePath) {
+        setImgResult(result.filePath);
+        setImgMethod(result.method || "");
+        refresh();
+      } else {
+        setImgError(result.error || "Generation failed");
+      }
     } catch (e: any) {
-      setImgResult({ id: "error", type: "image", status: "error", prompt: imgPrompt, progress: 0, error: e.message, createdAt: new Date().toISOString() });
+      setImgError(e.message);
     } finally {
       setImgGenerating(false);
     }
   };
 
-  // ── Video ──
-  const generateVideo = async () => {
-    if (!vidPrompt.trim()) return;
-    setVidGenerating(true);
-    setVidResult(null);
-    try {
-      const result = await api<{ id: string }>("/studio/video", {
-        method: "POST",
-        body: JSON.stringify({ prompt: vidPrompt }),
-      });
-      setPolling((prev) => new Set(prev).add(result.id));
-      loadHistory();
-    } catch (e: any) {
-      setVidResult({ id: "error", type: "video", status: "error", prompt: vidPrompt, progress: 0, error: e.message, createdAt: new Date().toISOString() });
-    } finally {
-      setVidGenerating(false);
-    }
-  };
-
-  if (loading) return <div className="loading-state"><div className="loading-spinner" />Loading...</div>;
+  const isAudioFile = (path: string) => path.match(/\.(mp3|wav|ogg|flac|m4a)$/i);
+  const isImageFile = (path: string) => path.match(/\.(png|jpg|jpeg|gif|webp|svg)$/i);
 
   return (
     <div>
       <div className="page-header">
         <div>
           <h1>🎬 Studio</h1>
-          <div className="subtitle">Generate audio, images, and video — saved to ~/agent-outputs/</div>
+          <div className="subtitle">Real TTS via edge-tts · Real images via ImageMagick · All saved to ~/agent-outputs/</div>
         </div>
-        <button className="btn btn-ghost btn-sm" onClick={loadHistory}>Refresh</button>
+        <button className="btn btn-sm btn-ghost" onClick={refresh}>Refresh</button>
       </div>
 
-      {/* Tab Bar */}
       <div className="card filter-bar mb-24">
         {TABS.map((t) => (
-          <button
-            key={t.key}
-            className={`filter-pill${tab === t.key ? " active" : ""}`}
-            onClick={() => setTab(t.key)}
-          >
+          <button key={t.key} className={`filter-pill${tab === t.key ? " active" : ""}`} onClick={() => setTab(t.key)}>
             {t.icon} {t.label}
           </button>
         ))}
       </div>
 
-      {/* TTS Tab */}
+      {/* ══════ TTS TAB ══════ */}
       {tab === "tts" && (
         <div className="grid-2">
           <div className="card">
-            <h3>Text Input</h3>
+            <h3>Generate Speech</h3>
             <textarea
               className="mt-12"
               value={ttsText}
               onChange={(e) => setTtsText(e.target.value)}
               placeholder="Enter text to convert to speech..."
-              style={{ minHeight: 160 }}
+              style={{ minHeight: 140 }}
             />
             <div className="form-row mt-16">
               <div className="form-group">
@@ -221,66 +167,60 @@ export default function Studio() {
               </div>
             </div>
 
+            {ttsError && (
+              <div className="card-raise mt-16" style={{ color: "var(--red)", fontSize: 13 }}>
+                Error: {ttsError}
+              </div>
+            )}
+
             {ttsResult && (
-              <div className="mt-16" style={{ animation: "statEnter 0.3s var(--ease-out)" }}>
-                <div className={`card-raise ${ttsResult.status === "error" ? "" : ""}`}>
-                  {ttsResult.status === "processing" && (
-                    <div className="loading-state" style={{ padding: 20 }}>
-                      <div className="loading-spinner" />
-                      <span>Generating audio...</span>
-                    </div>
-                  )}
-                  {ttsResult.status === "done" && ttsResult.filePath?.match(/\.(mp3|wav|ogg|flac)$/i) && (
-                    <div>
-                      <div style={{ fontWeight: 600, marginBottom: 8, fontSize: 13 }}>Generated Audio</div>
-                      <audio src={`/api/workspace/file?path=${encodeURIComponent(ttsResult.filePath)}`} controls style={{ width: "100%" }} />
-                    </div>
-                  )}
-                  {ttsResult.status === "done" && !ttsResult.filePath?.match(/\.(mp3|wav|ogg|flac)$/i) && (
-                    <div style={{ fontSize: 13, color: "var(--text-dim)" }}>
-                      File saved: <code>{ttsResult.filePath}</code>
-                    </div>
-                  )}
-                  {ttsResult.status === "error" && (
-                    <div style={{ color: "var(--red)", fontSize: 13 }}>Error: {ttsResult.error}</div>
-                  )}
+              <div className="card-raise mt-16" style={{ animation: "statEnter 0.3s var(--ease-out)" }}>
+                <div style={{ fontWeight: 600, marginBottom: 8, fontSize: 13, color: "var(--green)" }}>
+                  ✅ Generated — {ttsResult.split("/").pop()}
                 </div>
+                {isAudioFile(ttsResult) ? (
+                  <audio src={`/api/workspace/file?path=${encodeURIComponent(ttsResult)}`} controls style={{ width: "100%" }} />
+                ) : (
+                  <div style={{ fontSize: 12, color: "var(--text-dim)" }}>
+                    Saved: <code>{ttsResult}</code>
+                  </div>
+                )}
               </div>
             )}
           </div>
 
-          <div>
-            <div className="card">
-              <h3>Recent TTS</h3>
-              {history.filter((j) => j.type === "tts").slice(0, 5).length > 0
-                ? history.filter((j) => j.type === "tts").slice(0, 5).map((j) => (
-                    <div key={j.id} className="vault-note">
-                      <span className="note-icon">🔊</span>
-                      <div style={{ flex: 1, overflow: "hidden" }}>
-                        <div className="note-title" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {j.prompt.slice(0, 60)}
-                        </div>
-                        <div className="note-path">
-                          {j.voice ? `${j.voice} · ` : ""}{formatDate(j.createdAt)}
-                        </div>
-                      </div>
-                      <span className={`badge badge-${j.status === "done" ? "low" : j.status === "error" ? "urgent" : "medium"}`}>
-                        {j.status}
-                      </span>
-                    </div>
-                  ))
-                : <div style={{ fontSize: 13, color: "var(--text-dim)", padding: "12px 0" }}>No TTS generations yet.</div>
-              }
-            </div>
+          {/* Recent TTS assets */}
+          <div className="card" style={{ maxHeight: "calc(100vh - 200px)", overflowY: "auto" }}>
+            <h3>Recent Audio Files</h3>
+            {recentAudio.length > 0 ? recentAudio.map((a, i) => (
+              <div key={i} style={{ display: "flex", gap: 12, padding: "10px 0", borderBottom: "1px solid var(--border)", alignItems: "center" }}>
+                <span style={{ fontSize: 20 }}>🔊</span>
+                <div style={{ flex: 1, overflow: "hidden" }}>
+                  <div style={{ fontWeight: 600, fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {a.name}
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
+                    {a.sizeFormatted} · {timeAgo(a.createdAt)}
+                  </div>
+                </div>
+                {isAudioFile(a.path) && (
+                  <audio src={`/api/workspace/file?path=${encodeURIComponent(a.path)}`} controls style={{ height: 32, width: 160 }} />
+                )}
+              </div>
+            )) : (
+              <div style={{ fontSize: 13, color: "var(--text-dim)", padding: "12px 0", textAlign: "center" }}>
+                No audio files yet. Generate speech above.
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* Image Tab */}
+      {/* ══════ IMAGE TAB ══════ */}
       {tab === "image" && (
         <div className="grid-2">
           <div className="card">
-            <h3>Prompt</h3>
+            <h3>Generate Image</h3>
             <textarea
               className="mt-12"
               value={imgPrompt}
@@ -290,11 +230,10 @@ export default function Studio() {
             />
             <div className="form-row mt-16">
               <div className="form-group">
-                <label>Model</label>
+                <label>Method</label>
                 <select value={imgModel} onChange={(e) => setImgModel(e.target.value)}>
-                  <option value="default">Default (placeholder)</option>
-                  <option value="comfyui">ComfyUI (if configured)</option>
-                  <option value="dall-e">DALL-E (API key needed)</option>
+                  <option value="default">ImageMagick (built-in)</option>
+                  <option value="comfyui">ComfyUI (if running)</option>
                 </select>
               </div>
               <div className="form-group" style={{ justifyContent: "flex-end", display: "flex", flexDirection: "column" }}>
@@ -309,147 +248,63 @@ export default function Studio() {
               </div>
             </div>
 
-            {imgResult && (
-              <div className="mt-16" style={{ animation: "statEnter 0.3s var(--ease-out)" }}>
-                {imgResult.status === "processing" && (
-                  <div className="loading-state" style={{ padding: 20 }}>
-                    <div className="loading-spinner" />
-                    <span>Generating image...</span>
-                  </div>
-                )}
-                {imgResult.status === "done" && imgResult.filePath?.match(/\.(png|jpg|jpeg|gif|webp|svg)$/i) && (
-                  <div className="card-raise" style={{ padding: 8 }}>
-                    <div style={{ fontWeight: 600, marginBottom: 8, fontSize: 13 }}>Result</div>
-                    <img
-                      src={`/api/workspace/file?path=${encodeURIComponent(imgResult.filePath)}`}
-                      alt={imgResult.prompt}
-                      style={{ width: "100%", borderRadius: 8, background: "var(--bg-deep)" }}
-                    />
-                    <div style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 8 }}>
-                      {imgResult.filePath.split("/").pop()} · {imgResult.metadata?.model || "default"}
-                    </div>
-                  </div>
-                )}
-                {imgResult.status === "error" && (
-                  <div className="card-raise" style={{ color: "var(--red)", fontSize: 13 }}>Error: {imgResult.error}</div>
-                )}
+            {imgError && (
+              <div className="card-raise mt-16" style={{ color: "var(--red)", fontSize: 13 }}>Error: {imgError}</div>
+            )}
+
+            {imgResult && isImageFile(imgResult) && (
+              <div className="card-raise mt-16" style={{ animation: "statEnter 0.3s var(--ease-out)" }}>
+                <div className="flex-between mb-8">
+                  <span style={{ fontWeight: 600, fontSize: 13, color: "var(--green)" }}>
+                    ✅ Generated via {imgMethod}
+                  </span>
+                  <span style={{ fontSize: 11, color: "var(--text-dim)" }}>
+                    {imgResult.split("/").pop()}
+                  </span>
+                </div>
+                <img
+                  src={`/api/workspace/file?path=${encodeURIComponent(imgResult)}`}
+                  alt={imgPrompt}
+                  style={{ width: "100%", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg-deep)" }}
+                />
               </div>
             )}
           </div>
 
+          {/* Recent image assets */}
           <div className="card" style={{ maxHeight: "calc(100vh - 200px)", overflowY: "auto" }}>
             <h3>Recent Images</h3>
-            {history.filter((j) => j.type === "image").slice(0, 10).length > 0
-              ? history.filter((j) => j.type === "image").slice(0, 10).map((j) => (
-                  <div key={j.id} style={{ display: "flex", gap: 12, padding: "10px 0", borderBottom: "1px solid var(--border)", alignItems: "center" }}>
-                    <div style={{ width: 48, height: 48, borderRadius: 6, background: "var(--bg-deep)", overflow: "hidden", flexShrink: 0 }}>
-                      {j.filePath?.match(/\.(png|jpg|jpeg|gif|webp|svg)$/i)
-                        ? <img src={`/api/workspace/file?path=${encodeURIComponent(j.filePath)}`} alt="" style={{ width: 48, height: 48, objectFit: "cover" }} />
-                        : <div style={{ width: 48, height: 48, display: "flex", alignItems: "center", justifyContent: "center" }}>🎨</div>
-                      }
-                    </div>
-                    <div style={{ flex: 1, overflow: "hidden" }}>
-                      <div style={{ fontWeight: 600, fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {j.prompt.slice(0, 50)}
-                      </div>
-                      <div style={{ fontSize: 11, color: "var(--text-dim)" }}>{formatDate(j.createdAt)}</div>
-                    </div>
-                    <span className={`badge badge-${j.status === "done" ? "low" : j.status === "error" ? "urgent" : "medium"}`}>{j.status}</span>
-                  </div>
-                ))
-              : <div style={{ fontSize: 13, color: "var(--text-dim)", padding: "12px 0" }}>No images generated yet.</div>
-            }
-          </div>
-        </div>
-      )}
-
-      {/* Video Tab */}
-      {tab === "video" && (
-        <div className="grid-2">
-          <div className="card">
-            <h3>Prompt</h3>
-            <textarea
-              className="mt-12"
-              value={vidPrompt}
-              onChange={(e) => setVidPrompt(e.target.value)}
-              placeholder="Describe the video you want to generate..."
-              style={{ minHeight: 120 }}
-            />
-            <button
-              className="btn btn-primary mt-16"
-              onClick={generateVideo}
-              disabled={vidGenerating || !vidPrompt.trim()}
-            >
-              {vidGenerating ? "⏳ Generating..." : "🎬 Generate Video"}
-            </button>
-
-            {vidResult && (
-              <div className="mt-16">
-                {(vidResult.status === "queued" || vidResult.status === "processing") && (
-                  <div className="card-raise">
-                    <div className="flex-between mb-8">
-                      <span style={{ fontWeight: 600, fontSize: 13 }}>Video Generation</span>
-                      <span className={`badge badge-${vidResult.status === "processing" ? "medium" : "medium"}`}>
-                        {vidResult.status}
-                      </span>
-                    </div>
-                    <div style={{ background: "var(--bg-deep)", borderRadius: 10, height: 8, overflow: "hidden" }}>
-                      <div
-                        style={{
-                          width: `${vidResult.progress}%`,
-                          height: "100%",
-                          background: "var(--accent)",
-                          borderRadius: 10,
-                          transition: "width 0.5s ease",
-                        }}
+            {recentImages.length > 0 ? (
+              <div className="grid-auto" style={{ gap: 8, marginTop: 8 }}>
+                {recentImages.map((a, i) => (
+                  <div key={i} style={{ borderRadius: 6, overflow: "hidden", border: "1px solid var(--border)", background: "var(--bg)" }}>
+                    {isImageFile(a.path) ? (
+                      <img
+                        src={`/api/workspace/file?path=${encodeURIComponent(a.path)}`}
+                        alt={a.name}
+                        style={{ width: "100%", height: 100, objectFit: "cover", display: "block" }}
                       />
-                    </div>
-                    <div style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 4, textAlign: "right" }}>
-                      {vidResult.progress}%
-                    </div>
-                  </div>
-                )}
-                {vidResult.status === "done" && (
-                  <div className="card-raise">
-                    <div style={{ fontWeight: 600, marginBottom: 8, fontSize: 13, color: "var(--green)" }}>✅ Complete</div>
-                    {vidResult.filePath && (
-                      <div style={{ fontSize: 12, color: "var(--text-dim)" }}>
-                        Saved: <code>{vidResult.filePath}</code>
+                    ) : (
+                      <div style={{ width: "100%", height: 100, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>
+                        🎨
                       </div>
                     )}
+                    <div style={{ padding: "6px 8px" }}>
+                      <div style={{ fontSize: 10, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 600, color: "var(--text-bright)" }}>
+                        {a.name}
+                      </div>
+                      <div style={{ fontSize: 10, color: "var(--text-dim)" }}>
+                        {a.sizeFormatted}
+                      </div>
+                    </div>
                   </div>
-                )}
-                {vidResult.status === "error" && (
-                  <div className="card-raise" style={{ color: "var(--red)", fontSize: 13 }}>Error: {vidResult.error}</div>
-                )}
+                ))}
+              </div>
+            ) : (
+              <div style={{ fontSize: 13, color: "var(--text-dim)", padding: "12px 0", textAlign: "center" }}>
+                No images yet. Generate one above.
               </div>
             )}
-          </div>
-
-          <div className="card" style={{ maxHeight: "calc(100vh - 200px)", overflowY: "auto" }}>
-            <h3>Recent Videos</h3>
-            {history.filter((j) => j.type === "video").slice(0, 10).length > 0
-              ? history.filter((j) => j.type === "video").slice(0, 10).map((j) => (
-                  <div key={j.id} className="vault-note">
-                    <span className="note-icon">🎬</span>
-                    <div style={{ flex: 1, overflow: "hidden" }}>
-                      <div className="note-title" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {j.prompt.slice(0, 60)}
-                      </div>
-                      <div className="note-path">
-                        {formatDate(j.createdAt)} · {j.progress}%
-                      </div>
-                    </div>
-                    <div className="flex gap-xs" style={{ alignItems: "center" }}>
-                      {j.status === "processing" && <div className="loading-spinner" style={{ width: 12, height: 12, margin: 0 }} />}
-                      <span className={`badge badge-${j.status === "done" ? "low" : j.status === "error" ? "urgent" : "medium"}`}>
-                        {j.status}
-                      </span>
-                    </div>
-                  </div>
-                ))
-              : <div style={{ fontSize: 13, color: "var(--text-dim)", padding: "12px 0" }}>No videos generated yet.</div>
-            }
           </div>
         </div>
       )}

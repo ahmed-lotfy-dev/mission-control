@@ -2,368 +2,242 @@ import { Elysia, t } from "elysia";
 import { mkdir, writeFile, readdir, stat } from "node:fs/promises";
 import { join, extname } from "node:path";
 import { homedir } from "node:os";
-import { spawn } from "node:child_process";
+import { spawn, execSync } from "node:child_process";
 import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 
 const OUTPUT_DIR = join(homedir(), "agent-outputs");
-const STUDIO_DB_PATH = join(OUTPUT_DIR, ".studio-jobs.json");
 
-// ── In-memory job store (persisted to JSON) ──
-
-interface StudioJob {
-  id: string;
-  type: "tts" | "image" | "video";
-  status: "queued" | "processing" | "done" | "error";
-  prompt: string;
-  voice?: string;
-  filePath?: string;
-  error?: string;
-  progress: number; // 0-100
-  createdAt: string;
-  completedAt?: string;
-  metadata?: Record<string, unknown>;
-}
-
-let jobs: StudioJob[] = [];
-
-async function loadJobs() {
+// ── Read NVIDIA API Key ──
+function getNvidiaKey(): string | null {
   try {
-    const data = await Bun.file(STUDIO_DB_PATH).text();
-    jobs = JSON.parse(data);
+    const envPath = join(homedir(), ".hermes", ".env");
+    const content = readFileSync(envPath, "utf-8");
+    const match = content.match(/^NVIDIA_API_KEY=(.+)$/m);
+    return match ? match[1].trim() : null;
   } catch {
-    jobs = [];
+    return null;
   }
 }
 
-async function saveJobs() {
-  await writeFile(STUDIO_DB_PATH, JSON.stringify(jobs, null, 2));
-}
+const NVIDIA_KEY = getNvidiaKey();
 
-function generateId(): string {
-  return Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
-}
-
-// ── TTS Implementation using edge-tts ──
-
-async function runTTS(text: string, voice: string, jobId: string): Promise<string> {
-  const sanitized = text.replace(/[^a-zA-Z0-9_\-\u0600-\u06FF ]/g, "").slice(0, 60);
-  const hash = createHash("md5").update(text).digest("hex").slice(0, 8);
-  const filename = `tts-${sanitized.slice(0, 30)}-${hash}.mp3`;
-  const outputPath = join(OUTPUT_DIR, "audio", filename);
-
-  // Update job to processing
-  const job = jobs.find((j) => j.id === jobId);
-  if (job) {
-    job.status = "processing";
-    job.progress = 30;
-    await saveJobs();
+// ── Ensure subdirectories ──
+async function ensureDirs() {
+  for (const dir of ["audio", "images", "videos", "documents"]) {
+    await mkdir(join(OUTPUT_DIR, dir), { recursive: true });
   }
+}
 
-  // Try edge-tts first, then fall back to a basic approach
+// ── Helpers ──
+function formatSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function getMime(ext: string): string {
+  const map: Record<string, string> = {
+    ".mp3": "audio/mpeg", ".wav": "audio/wav", ".ogg": "audio/ogg",
+    ".flac": "audio/flac", ".m4a": "audio/mp4",
+    ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+    ".gif": "image/gif", ".webp": "image/webp", ".svg": "image/svg+xml",
+    ".mp4": "video/mp4", ".webm": "video/webm",
+  };
+  return map[ext] ?? "application/octet-stream";
+}
+
+async function listRecentAssets(type: string, limit = 30) {
+  const dirMap: Record<string, string> = { audio: "audio", image: "images", video: "videos" };
+  const subdir = dirMap[type] || type;
+  const dirPath = join(OUTPUT_DIR, subdir);
+  const results: Array<{ name: string; path: string; type: string; sizeFormatted: string; createdAt: string; mime: string }> = [];
   try {
-    const result = await new Promise<string>((resolve, reject) => {
-      const proc = spawn("edge-tts", [
-        "--text", text,
-        "--voice", voice,
-        "--write-media", outputPath,
-      ]);
-
-      let stderr = "";
-      proc.stderr?.on("data", (data: Buffer) => (stderr += data.toString()));
-
-      proc.on("close", (code) => {
-        if (code === 0) {
-          resolve(outputPath);
-        } else {
-          reject(new Error(`edge-tts exited with code ${code}: ${stderr.slice(0, 200)}`));
-        }
+    const entries = await readdir(dirPath);
+    for (const entry of entries.slice().reverse().slice(0, limit)) {
+      const fullPath = join(dirPath, entry);
+      const stats = await stat(fullPath);
+      if (!stats.isFile()) continue;
+      const ext = extname(entry).toLowerCase();
+      results.push({
+        name: entry, path: fullPath, type: subdir,
+        sizeFormatted: formatSize(stats.size),
+        createdAt: stats.birthtime?.toISOString() ?? stats.mtime.toISOString(),
+        mime: getMime(ext),
       });
-
-      proc.on("error", reject);
-    });
-
-    if (job) {
-      job.status = "done";
-      job.progress = 100;
-      job.filePath = result;
-      job.completedAt = new Date().toISOString();
-      await saveJobs();
     }
-
-    return result;
-  } catch (e: any) {
-    // Fallback: create a placeholder with info
-    const fallbackPath = join(OUTPUT_DIR, "audio", `${sanitized.slice(0, 20)}-${hash}.txt`);
-    await writeFile(
-      fallbackPath,
-      `TTS Generation Placeholder\n\nVoice: ${voice}\nText: ${text}\n\nInstall edge-tts to enable audio generation:\n  pip install edge-tts\n\nerror: ${e.message}`
-    );
-
-    if (job) {
-      job.status = job ? "done" : "error";
-      job.progress = 100;
-      job.filePath = fallbackPath;
-      job.completedAt = new Date().toISOString();
-      await saveJobs();
-    }
-
-    return fallbackPath;
-  }
+  } catch {}
+  return results.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
-// ── Image Generation (placeholder — integrates with ComfyUI or API) ──
+// ── TTS via edge-tts ──
+async function generateTTS(text: string, voice: string): Promise<string> {
+  const hash = createHash("md5").update(text + voice).digest("hex").slice(0, 8);
+  const slug = text.replace(/[^a-zA-Z0-9_\u0600-\u06FF ]/g, "").trim().slice(0, 40).replace(/\s+/g, "-");
+  const filename = `tts-${slug || "speech"}-${hash}.mp3`;
+  const outputPath = join(OUTPUT_DIR, "audio", filename);
+  await ensureDirs();
 
-async function runImageGen(prompt: string, model: string, jobId: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const proc = spawn("edge-tts", ["--voice", voice, "--text", text, "--write-media", outputPath], { stdio: ["ignore", "pipe", "pipe"] });
+    let stderr = "";
+    proc.stderr?.on("data", (d: Buffer) => { stderr += d.toString(); });
+    proc.on("close", (code) => code === 0 ? resolve(outputPath) : reject(new Error(`edge-tts exited ${code}: ${stderr.slice(0, 300)}`)));
+    proc.on("error", reject);
+  });
+}
+
+// ── Image via NVIDIA API ──
+async function generateImageNvidia(prompt: string): Promise<string> {
   const hash = createHash("md5").update(prompt).digest("hex").slice(0, 8);
-  const sanitized = prompt.replace(/[^a-zA-Z0-9_\-\u0600-\u06FF ]/g, "").slice(0, 40);
-  const filename = `img-${sanitized.slice(0, 25)}-${hash}.png`;
+  const slug = prompt.replace(/[^a-zA-Z0-9_ ]/g, "").trim().slice(0, 40).replace(/\s+/g, "-");
+  const filename = `img-${slug || "image"}-${hash}.png`;
   const outputPath = join(OUTPUT_DIR, "images", filename);
+  await ensureDirs();
 
-  const job = jobs.find((j) => j.id === jobId);
-  if (job) {
-    job.status = "processing";
-    job.progress = 20;
-    await saveJobs();
+  if (!NVIDIA_KEY) throw new Error("NVIDIA_API_KEY not found in ~/.hermes/.env");
+
+  const resp = await fetch("https://integrate.api.nvidia.com/v1/images/generations", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${NVIDIA_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      prompt,
+      model: "stabilityai/stable-diffusion-xl-base-1.0",
+      num_images: 1,
+    }),
+  });
+
+  if (!resp.ok) {
+    const errText = await resp.text().catch(() => "");
+    throw new Error(`NVIDIA API error ${resp.status}: ${errText.slice(0, 200)}`);
   }
 
-  try {
-    // Check if comfyui-related tools exist
-    const hasComfy = Bun.spawnSync(["which", "comfy"], { stdio: "pipe" }).exitCode === 0;
+  const data = await resp.json() as any;
+  const imageData = data?.data?.[0]?.b64_json || data?.data?.[0]?.url;
 
-    if (hasComfy) {
-      // TODO: Integrate with ComfyUI CLI
-      throw new Error("ComfyUI CLI detected but not yet integrated");
-    }
-
-    // Generate a simple placeholder PNG with prompt info
-    const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="768" viewBox="0 0 1024 768">
-      <defs>
-        <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style="stop-color:#1a1a2e"/>
-          <stop offset="100%" style="stop-color:#16213e"/>
-        </linearGradient>
-      </defs>
-      <rect width="1024" height="768" fill="url(#bg)"/>
-      <text x="512" y="340" font-family="system-ui, sans-serif" font-size="28" fill="#58a6ff" text-anchor="middle" dominant-baseline="middle">🎨</text>
-      <text x="512" y="400" font-family="system-ui, sans-serif" font-size="18" fill="#c9d1d9" text-anchor="middle" dominant-baseline="middle">${escXml(prompt.slice(0, 80))}</text>
-      <text x="512" y="440" font-family="system-ui, sans-serif" font-size="13" fill="#8b949e" text-anchor="middle" dominant-baseline="middle">Model: ${escXml(model)}</text>
-    </svg>`;
-
-    // Write as SVG first (we can convert later)
-    const svgPath = outputPath.replace(".png", ".svg");
-    await writeFile(svgPath, svgContent);
-
-    if (job) {
-      job.status = "done";
-      job.progress = 100;
-      job.filePath = svgPath;
-      job.metadata = { model, resolution: "1024x768", format: "svg" };
-      job.completedAt = new Date().toISOString();
-      await saveJobs();
-    }
-
-    return svgPath;
-  } catch (e: any) {
-    const fallbackPath = join(OUTPUT_DIR, "images", `${hash}.txt`);
-    await writeFile(fallbackPath, `Image Generation Request\n\nPrompt: ${prompt}\nModel: ${model}\n\n${e.message}`);
-
-    if (job) {
-      job.status = "done";
-      job.progress = 100;
-      job.filePath = fallbackPath;
-      job.completedAt = new Date().toISOString();
-      await saveJobs();
-    }
-
-    return fallbackPath;
+  if (imageData?.startsWith("http")) {
+    // Download from URL
+    const imgResp = await fetch(imageData);
+    const buffer = await imgResp.arrayBuffer();
+    await writeFile(outputPath, Buffer.from(buffer));
+  } else if (imageData) {
+    // Base64
+    const buffer = Buffer.from(imageData, "base64");
+    await writeFile(outputPath, buffer);
+  } else {
+    throw new Error("No image data in NVIDIA response");
   }
+
+  return outputPath;
 }
 
-// ── Video Generation (simulated job) ──
+async function generateImageFallback(prompt: string): Promise<string> {
+  const hash = createHash("md5").update(prompt).digest("hex").slice(0, 8);
+  const slug = prompt.replace(/[^a-zA-Z0-9_ ]/g, "").trim().slice(0, 40).replace(/\s+/g, "-");
+  const filename = `img-${slug || "image"}-${hash}.png`;
+  const outputPath = join(OUTPUT_DIR, "images", filename);
+  await ensureDirs();
 
-async function runVideoGen(prompt: string, jobId: string): Promise<void> {
-  const job = jobs.find((j) => j.id === jobId);
-  if (!job) return;
-
-  // Simulate progress over time
-  const stages = [
-    { progress: 10, delay: 2000 },
-    { progress: 25, delay: 4000 },
-    { progress: 45, delay: 3000 },
-    { progress: 65, delay: 5000 },
-    { progress: 85, delay: 3000 },
-    { progress: 100, delay: 1000 },
-  ];
-
-  for (const stage of stages) {
-    await new Promise((r) => setTimeout(r, stage.delay));
-    const currentJob = jobs.find((j) => j.id === jobId);
-    if (!currentJob || currentJob.status === "error") break;
-    currentJob.progress = stage.progress;
-    currentJob.status = stage.progress < 100 ? "processing" : "done";
-    if (stage.progress === 100) {
-      currentJob.completedAt = new Date().toISOString();
-      // Create a placeholder
-      const hash = createHash("md5").update(prompt).digest("hex").slice(0, 8);
-      const sanitized = prompt.replace(/[^a-zA-Z0-9_\-\u0600-\u06FF ]/g, "").slice(0, 40);
-      const filename = `vid-${sanitized.slice(0, 25)}-${hash}.mp4`;
-      const outputPath = join(OUTPUT_DIR, "videos", filename);
-      currentJob.filePath = outputPath;
-
-      // Create placeholder text file
-      await writeFile(
-        outputPath.replace(".mp4", ".txt"),
-        `Video Generation Placeholder\n\nPrompt: ${prompt}\n\nVideo generation requires a backend integration (ComfyUI, Runway, etc.)`
-      );
-    }
-    await saveJobs();
-  }
-}
-
-function escXml(s: string): string {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const label = prompt.replace(/'/g, "'\\''").slice(0, 60);
+  execSync(
+    `convert -size 1024x768 xc:"#1a1a2e" \
+      -font Helvetica -pointsize 28 -fill "#c9a84c" -gravity north -annotate +0+40 "⚡ ImageMagick" \
+      -font Helvetica -pointsize 20 -fill "#e8dcc8" -gravity center -annotate +0+0 "${label}" \
+      -font Helvetica -pointsize 14 -fill "#8b8b7a" -gravity south -annotate +0+40 "Generated by Mission Control Studio" \
+      "${outputPath}"`,
+    { timeout: 15000 }
+  );
+  return outputPath;
 }
 
 // ── Routes ──
 
 export const studioRoutes = new Elysia({ prefix: "/api/studio" })
 
-  // TTS Generation
+  // ── TTS ──
   .post("/tts", async ({ body }) => {
-    await loadJobs();
-    const id = generateId();
-    const job: StudioJob = {
-      id,
-      type: "tts",
-      status: "queued",
-      prompt: body.text,
-      voice: body.voice ?? "en-US-GuyNeural",
-      progress: 0,
-      createdAt: new Date().toISOString(),
-      metadata: { voice: body.voice ?? "en-US-GuyNeural" },
-    };
-    jobs.push(job);
-    await saveJobs();
+    try {
+      const audioPath = await generateTTS(body.text, body.voice ?? "en-US-GuyNeural");
+      const rel = audioPath.replace(OUTPUT_DIR, "").replace(/^\//, "");
+      return { status: "done", file: audioPath, filename: audioPath.split("/").pop(), serveUrl: `/api/serve/${rel}` };
+    } catch (e: any) {
+      return { status: "error", error: e.message };
+    }
+  }, { body: t.Object({ text: t.String({ minLength: 1, maxLength: 5000 }), voice: t.Optional(t.String()) }) })
 
-    // Run TTS asynchronously
-    runTTS(body.text, body.voice ?? "en-US-GuyNeural", id).then(() => saveJobs()).catch(() => {});
-
-    return { id, status: "queued", message: "TTS generation started" };
-  }, {
-    body: t.Object({
-      text: t.String({ minLength: 1, maxLength: 5000 }),
-      voice: t.Optional(t.String()),
-    }),
-  })
-
-  // Image Generation
+  // ── Image ──
   .post("/image", async ({ body }) => {
-    await loadJobs();
-    const id = generateId();
-    const job: StudioJob = {
-      id,
-      type: "image",
-      status: "queued",
-      prompt: body.prompt,
-      progress: 0,
-      createdAt: new Date().toISOString(),
-      metadata: { model: body.model ?? "default" },
-    };
-    jobs.push(job);
-    await saveJobs();
+    try {
+      let outputPath: string;
+      try {
+        outputPath = await generateImageNvidia(body.prompt);
+      } catch (e: any) {
+        outputPath = await generateImageFallback(body.prompt);
+      }
+      const rel = outputPath.replace(OUTPUT_DIR, "").replace(/^\//, "");
+      return { status: "done", file: outputPath, filename: outputPath.split("/").pop(), serveUrl: `/api/serve/${rel}`, method: NVIDIA_KEY ? "nvidia" : "imagemagick" };
+    } catch (e: any) {
+      return { status: "error", error: e.message };
+    }
+  }, { body: t.Object({ prompt: t.String({ minLength: 1, maxLength: 4000 }), model: t.Optional(t.String()) }) })
 
-    // Run image gen asynchronously
-    runImageGen(body.prompt, body.model ?? "default", id).then(() => saveJobs()).catch(() => {});
-
-    return { id, status: "queued", message: "Image generation started" };
-  }, {
-    body: t.Object({
-      prompt: t.String({ minLength: 1, maxLength: 4000 }),
-      model: t.Optional(t.String()),
-    }),
-  })
-
-  // Video Generation
+  // ── Video (placeholder with status) ──
   .post("/video", async ({ body }) => {
-    await loadJobs();
-    const id = generateId();
-    const job: StudioJob = {
-      id,
-      type: "video",
-      status: "queued",
-      prompt: body.prompt,
-      progress: 0,
-      createdAt: new Date().toISOString(),
-    };
-    jobs.push(job);
-    await saveJobs();
+    const hash = createHash("md5").update(body.prompt).digest("hex").slice(0, 8);
+    const filename = `vid-${hash}.mp4`;
+    const outputPath = join(OUTPUT_DIR, "videos", filename);
+    await ensureDirs();
+    await writeFile(outputPath.replace(".mp4", ".txt"), `Video generation placeholder for: ${body.prompt}\n\nNVIDIA video API not yet integrated.`);
+    return { status: "queued", file: outputPath, filename, message: "Video generation queued — status tracking coming soon" };
+  }, { body: t.Object({ prompt: t.String({ minLength: 1, maxLength: 4000 }) }) })
 
-    // Run video gen asynchronously
-    runVideoGen(body.prompt, id);
-
-    return { id, status: "queued", message: "Video generation started — tracking via GET /api/studio/job/:id" };
-  }, {
-    body: t.Object({
-      prompt: t.String({ minLength: 1, maxLength: 4000 }),
-    }),
-  })
-
-  // Get job status
-  .get("/job/:id", ({ params }) => {
-    const job = jobs.find((j) => j.id === params.id);
-    if (!job) return { error: "Job not found" };
-    return job;
-  }, {
-    params: t.Object({ id: t.String() }),
-  })
-
-  // Get all studio history
-  .get("/history", async () => {
-    await loadJobs();
-    return jobs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  })
-
-  // Clear history
-  .delete("/history", async () => {
-    jobs = [];
-    await saveJobs();
-    return { cleared: true, message: "Studio history cleared" };
-  })
-
-  // Get available TTS voices
+  // ── Voices ──
   .get("/voices", async () => {
     try {
-      const result = Bun.spawnSync(["edge-tts", "--list-voices"], { stdout: "pipe", stderr: "pipe" });
-      if (result.exitCode === 0) {
-        const lines = result.stdout.toString().trim().split("\n");
-        // Parse edge-tts voice list — skip header line
-        const voices = lines.slice(1).map((line) => {
-          const parts = line.trim().split(/\s+/);
-          return {
-            name: parts[0] || "",
-            gender: parts[1] || "",
-            locale: parts[0]?.split("-").slice(0, 2).join("-") || "",
-          };
-        }).filter((v) => v.name);
-        return { voices, source: "edge-tts" };
-      }
-    } catch {}
-
-    // Fallback voice list
-    return {
-      voices: [
+      const result = execSync("edge-tts --list-voices", { timeout: 10000, encoding: "utf-8" });
+      const lines = result.trim().split("\n");
+      const voices = lines.slice(1).map((line) => {
+        const parts = line.trim().split(/\s+/);
+        return { name: parts[0] || "", gender: parts[1] || "", locale: parts[0]?.split("-").slice(0, 2).join("-") || "" };
+      }).filter((v) => v.name);
+      return { voices, source: "edge-tts" };
+    } catch {
+      return { voices: [
         { name: "en-US-GuyNeural", gender: "Male", locale: "en-US" },
         { name: "en-US-JennyNeural", gender: "Female", locale: "en-US" },
         { name: "en-GB-RyanNeural", gender: "Male", locale: "en-GB" },
         { name: "en-GB-SoniaNeural", gender: "Female", locale: "en-GB" },
-        { name: "ar-EG-ShakirNeural", gender: "Male", locale: "ar-EG" },
-        { name: "ar-SA-HamedNeural", gender: "Male", locale: "ar-SA" },
-        { name: "de-DE-KatjaNeural", gender: "Female", locale: "de-DE" },
-        { name: "fr-FR-DeniseNeural", gender: "Female", locale: "fr-FR" },
-        { name: "ja-JP-NanamiNeural", gender: "Female", locale: "ja-JP" },
-        { name: "zh-CN-XiaoxiaoNeural", gender: "Female", locale: "zh-CN" },
-      ],
-      source: "built-in",
-      hint: "Install edge-tts for the full voice list: pip install edge-tts",
-    };
+      ], source: "built-in" };
+    }
+  })
+
+  // ── Recent assets ──
+  .get("/recent/:type", async ({ params }) => {
+    const assets = await listRecentAssets(params.type);
+    return { assets, count: assets.length };
+  }, { params: t.Object({ type: t.String() }) })
+
+  .get("/recent", async () => {
+    const [audio, image] = await Promise.all([listRecentAssets("audio"), listRecentAssets("image")]);
+    return { audio, image };
   });
+
+// ── Static file serving from agent-outputs ──
+
+export const serveRoutes = new Elysia()
+  .get("/api/serve/:type/:filename", async ({ params }) => {
+    const safeType = params.type.replace(/[^a-z]/g, "");
+    const safeFile = params.filename.replace(/[^a-zA-Z0-9._-]/g, "");
+    if (!safeFile) return new Response("Invalid filename", { status: 400 });
+    const filePath = join(OUTPUT_DIR, safeType, safeFile);
+    if (!filePath.startsWith(OUTPUT_DIR)) return new Response("Forbidden", { status: 403 });
+    try {
+      const file = Bun.file(filePath);
+      const exists = await file.exists();
+      if (!exists) return new Response("Not found", { status: 404 });
+      const ext = extname(safeFile).toLowerCase();
+      return new Response(file, { headers: { "Content-Type": getMime(ext), "Cache-Control": "public, max-age=3600" } });
+    } catch {
+      return new Response("Error", { status: 500 });
+    }
+  }, { params: t.Object({ type: t.String(), filename: t.String() }) });
