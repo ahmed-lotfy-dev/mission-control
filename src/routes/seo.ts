@@ -242,9 +242,19 @@ export const seoRoutes = new Elysia({ prefix: "/api/seo" })
 
     db.run("INSERT INTO seo_audits (url, score, title, meta_description, headings_count, links_count, has_meta, has_title, page_size, issues, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [audit.url, audit.score, audit.title, audit.metaDescription, audit.headingsCount, audit.linksCount, audit.hasMeta, audit.hasTitle, audit.pageSize, JSON.stringify(audit.issues), now]);
-    const id = db.query("SELECT last_insert_rowid() as id").get() as { id: number };
-
-    return { id: id.id, ...audit };
+    const row = db.query("SELECT * FROM seo_audits WHERE id = last_insert_rowid()").get() as any;
+    return row;
   }, { body: t.Object({ url: t.String({ minLength: 1 }) }) })
 
-  .get("/audits", () => db.query("SELECT * FROM seo_audits ORDER BY created_at DESC").all());
+  .get("/audits", () => db.query("SELECT * FROM seo_audits ORDER BY created_at DESC").all())
+
+  .get("/audits/:id", ({ params }) => {
+    const row = db.query("SELECT * FROM seo_audits WHERE id = ?").get(Number(params.id));
+    if (!row) throw new Error("Audit not found");
+    return row;
+  }, { params: t.Object({ id: t.String() }) })
+
+  .delete("/audits/:id", ({ params }) => {
+    db.run("DELETE FROM seo_audits WHERE id = ?", [Number(params.id)]);
+    return { deleted: true };
+  }, { params: t.Object({ id: t.String() }) });

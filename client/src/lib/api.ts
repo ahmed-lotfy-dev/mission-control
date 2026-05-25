@@ -174,4 +174,4 @@ export interface DashboardData {
   vault: { total: number };
 }
 
-export type ViewName = "dashboard" | "kanban" | "agents" | "vault" | "daily" | "scheduled" | "workspace" | "studio" | "seo";
+export type ViewName = "dashboard" | "kanban" | "agents" | "vault" | "daily" | "scheduled" | "workspace" | "studio" | "seo" | "seo-report";
