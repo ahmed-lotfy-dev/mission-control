@@ -37,6 +37,14 @@ async function callNvidiaLLM(system: string, user: string): Promise<string> {
 
 // ── Helpers ──
 
+function timeAgoStr(iso: string): string {
+  const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (s < 60) return `${s}s ago`;
+  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+  return `${Math.floor(s / 86400)}d ago`;
+}
+
 function simulateRankHistory(keyword: string): Array<{ date: string; position: number }> {
   const history: Array<{ date: string; position: number }> = [];
   let pos = Math.floor(Math.random() * 30) + 5;
@@ -235,23 +243,45 @@ export const seoRoutes = new Elysia({ prefix: "/api/seo" })
     return { keyword: body.keyword, position, date: now, history: simulateRankHistory(body.keyword) };
   }, { body: t.Object({ keyword: t.String({ minLength: 1 }), url: t.Optional(t.String()), currentPosition: t.Optional(t.Number()), notes: t.Optional(t.String()) }) })
 
-  // ── Audit (Real URL crawl) ──
-  .post("/audit", async ({ body }) => {
+  // ── Audit (Real URL crawl — idempotent with force flag) ──
+  .post("/audit", async ({ body, request }) => {
     const now = new Date().toISOString();
+    const url = new URL(request.url);
+    const force = url.searchParams.get("force") === "true";
+
+    // Idempotency: check if this URL was audited in the last 24 hours
+    if (!force) {
+      const existing = db.query(
+        "SELECT * FROM seo_audits WHERE url = ? AND created_at >= datetime('now', '-1 day') ORDER BY created_at DESC LIMIT 1"
+      ).get(body.url) as any;
+      if (existing) {
+        return {
+          ...existing,
+          issues: JSON.parse(existing.issues || "[]"),
+          cached: true,
+          message: `URL already audited ${timeAgoStr(existing.created_at)}. Use ?force=true to run a fresh audit.`,
+          freshAudit: false,
+        };
+      }
+    }
+
     const audit = await crawlUrl(body.url);
 
     db.run("INSERT INTO seo_audits (url, score, title, meta_description, headings_count, links_count, has_meta, has_title, page_size, issues, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [audit.url, audit.score, audit.title, audit.metaDescription, audit.headingsCount, audit.linksCount, audit.hasMeta, audit.hasTitle, audit.pageSize, JSON.stringify(audit.issues), now]);
     const row = db.query("SELECT * FROM seo_audits WHERE id = last_insert_rowid()").get() as any;
-    return row;
+    return { ...row, issues: JSON.parse(row.issues || "[]"), cached: false, freshAudit: true };
   }, { body: t.Object({ url: t.String({ minLength: 1 }) }) })
 
-  .get("/audits", () => db.query("SELECT * FROM seo_audits ORDER BY created_at DESC").all())
+  .get("/audits", () => {
+    const rows = db.query("SELECT * FROM seo_audits ORDER BY created_at DESC").all() as any[];
+    return rows.map((r: any) => ({ ...r, issues: JSON.parse(r.issues || "[]") }));
+  })
 
   .get("/audits/:id", ({ params }) => {
-    const row = db.query("SELECT * FROM seo_audits WHERE id = ?").get(Number(params.id));
-    if (!row) throw new Error("Audit not found");
-    return row;
+    const row = db.query("SELECT * FROM seo_audits WHERE id = ?").get(Number(params.id)) as any;
+    if (!row) return { error: "Audit not found" };
+    return { ...row, issues: JSON.parse(row.issues || "[]") };
   }, { params: t.Object({ id: t.String() }) })
 
   .delete("/audits/:id", ({ params }) => {
