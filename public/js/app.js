@@ -50,6 +50,10 @@ document.querySelectorAll(".nav-links li").forEach(li => {
 
 function navigate(view) {
   currentView = view;
+
+  // Stop workspace auto-refresh when leaving
+  if (view !== "workspace") stopWorkspaceRefresh();
+
   const main = document.getElementById("main");
   main.innerHTML = '<div class="loading">Loading...</div>';
 
@@ -61,6 +65,7 @@ function navigate(view) {
     case "vault": renderVault(main); break;
     case "daily": renderDaily(main); break;
     case "scheduled": renderScheduled(main); break;
+    case "workspace": renderWorkspace(main); break;
   }
 }
 
@@ -337,7 +342,7 @@ async function deleteTask(id) {
 }
 
 // ═══════════════════════════════════════════
-// AGENTS
+// AGENTS (enhanced page view)
 // ═══════════════════════════════════════════
 async function renderAgents(main) {
   try {
@@ -346,32 +351,12 @@ async function renderAgents(main) {
       <div class="flex-between mb-24">
         <div>
           <h1>🤖 Agent Status</h1>
-          <p class="subtitle">${agents.length} agents registered</p>
+          <p class="subtitle">${agents.length} agents · ${agents.filter(a => a.status === "working" || a.status === "online").length} active</p>
         </div>
         <button class="btn primary" onclick="openAgentModal()">+ Register Agent</button>
       </div>
-      <div class="grid-3">
-        ${agents.length > 0 ? agents.map(a => `
-          <div class="card">
-            <div class="flex-between mb-16">
-              <div style="display:flex;align-items:center;gap:10px">
-                <span class="status-dot ${a.status === 'running' ? 'online' : 'offline'}" style="font-size:16px">●</span>
-                <div>
-                  <div style="font-weight:600;font-size:15px;color:var(--text-bright)">${esc(a.name)}</div>
-                  <div style="font-size:12px;color:var(--text-dim)">${esc(a.model)}</div>
-                </div>
-              </div>
-              <span class="badge ${a.status === 'running' ? 'low' : a.status === 'error' ? 'urgent' : 'medium'}">${a.status}</span>
-            </div>
-            <div style="font-size:12px;color:var(--text-dim);margin-bottom:12px">
-              Version: ${esc(a.version || "N/A")} · Last active: ${timeAgo(a.lastActive)}
-            </div>
-            <div style="display:flex;gap:4px">
-              <button class="btn sm" onclick="openAgentModal(${a.id})">Edit</button>
-              <button class="btn sm danger" onclick="deleteAgent(${a.id})">Remove</button>
-            </div>
-          </div>
-        `).join("") : '<div class="card" style="grid-column:1/-1;text-align:center;color:var(--text-dim)">No agents registered yet.</div>'}
+      <div id="agents-page-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px">
+        ${agents.length > 0 ? agents.map(a => renderAgentFullCard(a)).join("") : '<div class="card" style="grid-column:1/-1;text-align:center;color:var(--text-dim)">No agents registered yet.</div>'}
       </div>
     `;
   } catch (e) {
@@ -379,8 +364,119 @@ async function renderAgents(main) {
   }
 }
 
+function renderAgentFullCard(a) {
+  const statusClass = a.status;
+  const badgeColor = a.status === "working" ? "low" : a.status === "online" ? "low" : a.status === "error" ? "urgent" : "medium";
+  const icon = a.icon || getAgentDefaultIcon(a.name);
+  const meta = a.metadata || {};
+  return `
+    <div class="card" id="agent-card-${a.id}" style="cursor:default">
+      <div class="flex-between mb-16">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="agent-icon" style="font-size:22px;width:40px;height:40px">${icon}</div>
+          <div>
+            <div style="font-weight:600;font-size:15px;color:var(--text-bright)">${esc(a.name)}</div>
+            <div style="font-size:12px;color:var(--text-dim)">${esc(a.model)}</div>
+          </div>
+        </div>
+        <span class="agent-status-badge ${statusClass}">${statusClass}</span>
+      </div>
+
+      <div class="agent-detail-row"><span class="label">Version</span><span class="value">${esc(a.version || "N/A")}</span></div>
+      <div class="agent-detail-row"><span class="label">Last Active</span><span class="value">${timeAgo(a.lastActive)}</span></div>
+      ${a.pid ? `<div class="agent-detail-row"><span class="label">PID</span><span class="value">${a.pid}</span></div>` : ""}
+      ${meta.provider ? `<div class="agent-detail-row"><span class="label">Provider</span><span class="value">${esc(meta.provider)}</span></div>` : ""}
+      ${meta.contextWindow ? `<div class="agent-detail-row"><span class="label">Context</span><span class="value">${esc(meta.contextWindow)}</span></div>` : ""}
+
+      <div class="agent-actions" style="margin-top:12px">
+        <button class="btn sm" onclick="pingAgent(${a.id}, this)">📡 Ping</button>
+        <button class="btn sm" onclick="openAgentDetail(${a.id})">📋 Logs</button>
+        <button class="btn sm" onclick="openAgentModal(${a.id})">Edit</button>
+      </div>
+
+      <div id="agent-detail-${a.id}" style="display:none;margin-top:12px;border-top:1px solid var(--border);padding-top:8px">
+        <div class="agent-detail-section">
+          <h4>Activity Log</h4>
+          <div id="agent-logs-${a.id}"><div class="agent-no-logs">Loading...</div></div>
+        </div>
+      </div>
+
+      <div id="agent-ping-result-${a.id}" style="margin-top:8px"></div>
+    </div>
+  `;
+}
+
+async function openAgentDetail(id) {
+  const detail = document.getElementById(`agent-detail-${id}`);
+  const logContainer = document.getElementById(`agent-logs-${id}`);
+  if (detail.style.display !== "none") {
+    detail.style.display = "none";
+    return;
+  }
+  detail.style.display = "block";
+  logContainer.innerHTML = '<div class="agent-no-logs">Loading...</div>';
+  try {
+    const agent = await api(`/agents/${id}`);
+    const logs = agent.logs || [];
+    if (logs.length === 0) {
+      logContainer.innerHTML = '<div class="agent-no-logs">No activity recorded yet.</div>';
+      return;
+    }
+    logContainer.innerHTML = logs.slice(0, 30).map(log => `
+      <div class="agent-log-entry">
+        <span class="agent-log-time">${formatTime(log.createdAt)}</span>
+        <span class="agent-log-level ${log.level}">${log.level}</span>
+        <span class="agent-log-msg">${esc(log.event)}${log.message ? ": " + esc(log.message) : ""}</span>
+      </div>
+    `).join("");
+  } catch (e) {
+    logContainer.innerHTML = `<div class="agent-no-logs">Error: ${e.message}</div>`;
+  }
+}
+
+async function pingAgent(id, btn) {
+  btn.textContent = "⏳ Pinging...";
+  btn.disabled = true;
+  const resultDiv = document.getElementById(`agent-ping-result-${id}`);
+  resultDiv.innerHTML = "";
+  try {
+    const result = await api(`/agents/${id}/ping`, { method: "POST" });
+    const statusColor = result.responsive ? "var(--accent2)" : "var(--urgent)";
+    resultDiv.innerHTML = `
+      <div style="font-size:11px;padding:6px 10px;border-radius:6px;background:var(--bg);border:1px solid ${statusColor}">
+        <span style="color:${statusColor};font-weight:600">${result.responsive ? "✓ ONLINE" : "✗ OFFLINE"}</span>
+        <span style="color:var(--text-dim)"> · ${result.details || "No response"}</span>
+        ${result.responseTimeMs ? `<span style="color:var(--text-dim)"> · ${result.responseTimeMs}ms</span>` : ""}
+      </div>
+    `;
+    // Refresh sidebar agent list
+    loadAgentSidebar();
+  } catch (e) {
+    resultDiv.innerHTML = `<div style="font-size:11px;padding:6px 10px;border-radius:6px;background:var(--bg);border:1px solid var(--urgent);color:var(--urgent)">✗ Error: ${e.message}</div>`;
+  }
+  btn.textContent = "📡 Ping";
+  btn.disabled = false;
+}
+
+function formatTime(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+
+function getAgentDefaultIcon(name) {
+  const map = {
+    "Hermes": "🦊",
+    "Antigravity": "🚀",
+    "Antigravity 2": "🌟",
+    "Claude Code": "💻",
+    "Codex": "📝",
+  };
+  return map[name] || "🤖";
+}
+
 async function openAgentModal(id = null) {
-  let agent = { name: "", model: "", version: "", status: "idle", metadata: {} };
+  let agent = { name: "", model: "", version: "", icon: "", status: "idle", endpoint: "", metadata: {} };
   if (id) {
     try { agent = await api(`/agents/${id}`); agent.metadata = JSON.parse(agent.metadata || "{}"); } catch {}
   }
@@ -389,16 +485,20 @@ async function openAgentModal(id = null) {
   modal.innerHTML = `
     <div class="modal">
       <h2>${id ? "Edit Agent" : "Register Agent"}</h2>
-      <div class="form-group"><label>Name</label><input id="agent-name" value="${esc(agent.name)}" placeholder="e.g. OWL (Hermes)"></div>
-      <div class="form-group"><label>Model</label><input id="agent-model" value="${esc(agent.model)}" placeholder="e.g. openrouter/owl-alpha"></div>
+      <div class="form-group"><label>Name</label><input id="agent-name" value="${esc(agent.name)}" placeholder="e.g. Hermes" oninput="updateAgentModalIcon()"></div>
+      <div class="grid-2">
+        <div class="form-group"><label>Icon</label><input id="agent-icon" value="${esc(agent.icon)}" placeholder="e.g. 🦊"></div>
+        <div class="form-group"><label>Model</label><input id="agent-model" value="${esc(agent.model)}" placeholder="e.g. claude-sonnet-4"></div>
+      </div>
       <div class="grid-2">
         <div class="form-group"><label>Version</label><input id="agent-version" value="${esc(agent.version)}" placeholder="1.0"></div>
         <div class="form-group"><label>Status</label>
           <select id="agent-status">
-            ${["idle", "running", "error"].map(s => `<option value="${s}" ${agent.status === s ? "selected" : ""}>${s}</option>`).join("")}
+            ${["idle", "working", "online", "offline", "error"].map(s => `<option value="${s}" ${agent.status === s ? "selected" : ""}>${s}</option>`).join("")}
           </select>
         </div>
       </div>
+      <div class="form-group"><label>Endpoint (optional)</label><input id="agent-endpoint" value="${esc(agent.endpoint)}" placeholder="http://localhost:8080/health"></div>
       <div class="form-actions">
         <button class="btn" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
         <button class="btn primary" onclick="saveAgent(${id})">${id ? "Update" : "Register"}</button>
@@ -414,7 +514,9 @@ async function saveAgent(id) {
     name: document.getElementById("agent-name").value,
     model: document.getElementById("agent-model").value,
     version: document.getElementById("agent-version").value,
+    icon: document.getElementById("agent-icon").value,
     status: document.getElementById("agent-status").value,
+    endpoint: document.getElementById("agent-endpoint").value,
   };
   if (!body.name.trim()) return alert("Name is required");
   if (id) {
@@ -423,12 +525,14 @@ async function saveAgent(id) {
     await api("/agents", { method: "POST", body: JSON.stringify(body) });
   }
   document.querySelector(".modal-overlay")?.remove();
+  loadAgentSidebar();
   navigate("agents");
 }
 
 async function deleteAgent(id) {
   if (!confirm("Remove this agent?")) return;
   await api(`/agents/${id}`, { method: "DELETE" });
+  loadAgentSidebar();
   navigate("agents");
 }
 
@@ -879,6 +983,331 @@ async function deleteScheduled(id) {
 }
 
 // ═══════════════════════════════════════════
+// AGENT SIDEBAR PANEL (right sidebar)
+// ═══════════════════════════════════════════
+
+let agentPanelExpanded = {};
+let agentPanelRefreshId = null;
+
+async function loadAgentSidebar() {
+  const list = document.getElementById("agent-list");
+  if (!list) return;
+  try {
+    const agents = await api("/agents");
+    if (agents.length === 0) {
+      list.innerHTML = '<div style="padding:10px;text-align:center;font-size:11px;color:var(--text-dim)">No agents</div>';
+      return;
+    }
+    list.innerHTML = agents.map(a => renderSidebarAgentCard(a)).join("");
+
+    // Re-apply expansion states
+    Object.keys(agentPanelExpanded).forEach(id => {
+      if (agentPanelExpanded[id]) {
+        const detail = document.getElementById(`agent-panel-detail-${id}`);
+        if (detail) {
+          detail.style.display = "block";
+          loadAgentPanelLogs(id);
+        }
+      }
+    });
+  } catch (e) {
+    list.innerHTML = `<div style="padding:10px;text-align:center;font-size:11px;color:var(--urgent)">Error: ${e.message}</div>`;
+  }
+}
+
+function renderSidebarAgentCard(a) {
+  const statusClass = a.status;
+  const icon = a.icon || getAgentDefaultIcon(a.name);
+  const isExpanded = agentPanelExpanded[a.id] || false;
+  const meta = a.metadata || {};
+  return `
+    <div class="agent-card status-${statusClass} ${isExpanded ? 'expanded' : ''}" data-agent-id="${a.id}">
+      <div class="agent-card-header" onclick="toggleAgentPanelCard(${a.id})">
+        <div class="agent-icon">${icon}</div>
+        <div class="agent-info">
+          <div class="agent-name">${esc(a.name)}</div>
+          <div class="agent-meta">${esc(a.model)} · ${timeAgo(a.lastActive)}</div>
+        </div>
+        <span class="agent-status-badge ${statusClass}">${statusClass}</span>
+      </div>
+      <div id="agent-panel-detail-${a.id}" class="agent-detail" style="display:${isExpanded ? 'block' : 'none'}">
+        <div class="agent-detail-row"><span class="label">Version</span><span class="value">${esc(a.version || "N/A")}</span></div>
+        <div class="agent-detail-row"><span class="label">Status</span><span class="value" style="color:${statusClass === 'working' || statusClass === 'online' ? 'var(--accent2)' : statusClass === 'idle' ? 'var(--accent5)' : 'var(--text-dim)'}">${statusClass}</span></div>
+        ${meta.provider ? `<div class="agent-detail-row"><span class="label">Provider</span><span class="value">${esc(meta.provider)}</span></div>` : ""}
+        ${a.pid ? `<div class="agent-detail-row"><span class="label">PID</span><span class="value">${a.pid}</span></div>` : ""}
+        <div class="agent-detail-row"><span class="label">Last Active</span><span class="value">${timeAgo(a.lastActive)}</span></div>
+
+        <div class="agent-actions">
+          <button class="btn sm" onclick="event.stopPropagation(); pingAgentSidebar(${a.id}, this)">📡 Ping</button>
+          <button class="btn sm" onclick="event.stopPropagation(); loadAgentPanelLogs(${a.id})">🔄 Refresh</button>
+        </div>
+
+        <div class="agent-detail-section" style="margin-top:6px">
+          <h4>Recent Activity</h4>
+          <div id="agent-panel-logs-${a.id}">
+            <div class="agent-no-logs" id="agent-panel-logs-loading-${a.id}">Loading...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function toggleAgentPanelCard(id) {
+  const detail = document.getElementById(`agent-panel-detail-${id}`);
+  const card = document.querySelector(`.agent-card[data-agent-id="${id}"]`);
+  if (!detail) return;
+
+  const nowExpanded = detail.style.display !== "block";
+  agentPanelExpanded[id] = nowExpanded;
+
+  if (nowExpanded) {
+    detail.style.display = "block";
+    card?.classList.add("expanded");
+    loadAgentPanelLogs(id);
+  } else {
+    detail.style.display = "none";
+    card?.classList.remove("expanded");
+  }
+}
+
+async function loadAgentPanelLogs(id) {
+  const container = document.getElementById(`agent-panel-logs-${id}`);
+  if (!container) return;
+  container.innerHTML = '<div class="agent-no-logs">Loading...</div>';
+  try {
+    const agent = await api(`/agents/${id}`);
+    const logs = agent.logs || [];
+    if (logs.length === 0) {
+      container.innerHTML = '<div class="agent-no-logs">No activity yet.</div>';
+      return;
+    }
+    container.innerHTML = logs.slice(0, 15).map(log => `
+      <div class="agent-log-entry">
+        <span class="agent-log-time">${formatTime(log.createdAt)}</span>
+        <span class="agent-log-level ${log.level}">${log.level}</span>
+        <span class="agent-log-msg">${esc(log.event)}${log.message ? ": " + esc(log.message.substring(0, 80)) : ""}</span>
+      </div>
+    `).join("");
+  } catch (e) {
+    container.innerHTML = `<div class="agent-no-logs">Error: ${e.message}</div>`;
+  }
+}
+
+async function pingAgentSidebar(id, btn) {
+  btn.textContent = "...";
+  btn.disabled = true;
+  try {
+    const result = await api(`/agents/${id}/ping`, { method: "POST" });
+    // Refresh the sidebar to show updated status
+    await loadAgentSidebar();
+  } catch (e) {
+    console.error("Ping error:", e);
+  }
+  // Re-enable is handled by loadAgentSidebar re-rendering
+}
+
+function toggleAgentPanel() {
+  const panel = document.getElementById("agent-panel");
+  const btn = document.getElementById("agent-toggle");
+  if (!panel) return;
+  panel.classList.toggle("collapsed");
+  btn.textContent = panel.classList.contains("collapsed") ? "▶" : "◀";
+}
+
+function updateAgentModalIcon(id) {
+  // Update icon field based on name input
+  const name = document.getElementById("agent-name").value;
+  const iconInput = document.getElementById("agent-icon");
+  if (iconInput && !iconInput.value) {
+    iconInput.value = getAgentDefaultIcon(name);
+  }
+}
+
+// ═══════════════════════════════════════════
+// WORKSPACE — Output Gallery
+// ═══════════════════════════════════════════
+
+let workspaceFilter = "all";
+let workspaceFiles = [];
+let workspaceRefreshId = null;
+
+async function renderWorkspace(main) {
+  try {
+    const data = await api("/workspace/files");
+    workspaceFiles = data.files;
+    const counts = data.counts;
+    const filteredFiles = workspaceFilter === "all" ? workspaceFiles : workspaceFiles.filter(f => f.type === workspaceFilter);
+
+    main.innerHTML = `
+      <div class="flex-between mb-24">
+        <div>
+          <h1>📁 Workspace</h1>
+          <p class="subtitle">${data.workspacePath} · ${counts.total} files · <span class="workspace-refresh-indicator" id="ws-refresh-indicator"><span class="refresh-icon">🔄</span> auto-refresh 30s</span></p>
+        </div>
+        <button class="btn" onclick="refreshWorkspace()">🔄 Refresh Now</button>
+      </div>
+
+      <div class="card workspace-filter-bar">
+        <button class="filter-btn ${workspaceFilter === "all" ? "active" : ""}" onclick="setWorkspaceFilter('all')">
+          📁 All <span class="badge medium">${counts.total}</span>
+        </button>
+        <button class="filter-btn ${workspaceFilter === "image" ? "active" : ""}" onclick="setWorkspaceFilter('image')">
+          🖼️ Images <span class="badge medium">${counts.image}</span>
+        </button>
+        <button class="filter-btn ${workspaceFilter === "video" ? "active" : ""}" onclick="setWorkspaceFilter('video')">
+          🎬 Videos <span class="badge medium">${counts.video}</span>
+        </button>
+        <button class="filter-btn ${workspaceFilter === "audio" ? "active" : ""}" onclick="setWorkspaceFilter('audio')">
+          🔊 Audio <span class="badge medium">${counts.audio}</span>
+        </button>
+        <button class="filter-btn ${workspaceFilter === "document" ? "active" : ""}" onclick="setWorkspaceFilter('document')">
+          📄 Documents <span class="badge medium">${counts.document}</span>
+        </button>
+        <span style="margin-left:auto;font-size:11px;color:var(--text-dim)">${filteredFiles.length} files shown</span>
+      </div>
+
+      <div class="workspace-grid" id="ws-grid">
+        ${filteredFiles.length > 0
+          ? filteredFiles.map((f, i) => renderWorkspaceItem(f, workspaceFiles.indexOf(f))).join("")
+          : `
+            <div class="workspace-empty">
+              <div class="icon">${workspaceFilter === "all" ? "📁" : workspaceFilter === "image" ? "🖼️" : workspaceFilter === "video" ? "🎬" : workspaceFilter === "audio" ? "🔊" : "📄"}</div>
+              <p>No ${workspaceFilter === "all" ? "" : workspaceFilter + " "}files found</p>
+              <p class="hint">Drop files into ~/agent-outputs/${workspaceFilter === "all" ? "{images,videos,audio,documents}/" : workspaceFilter + "/"}</p>
+            </div>
+          `
+        }
+      </div>
+    `;
+
+    // Start auto-refresh
+    startWorkspaceRefresh();
+  } catch (e) {
+    main.innerHTML = `<div class="loading">Error: ${e.message}</div>`;
+  }
+}
+
+function renderWorkspaceItem(f, index) {
+  const icons = { image: "🖼️", video: "🎬", audio: "🔊", document: "📄" };
+  const isImage = f.type === "image" && [".png", ".jpg", ".jpeg", ".gif", ".webp"].some(ext => f.name.toLowerCase().endsWith(ext));
+  const isVideo = f.type === "video";
+
+  return `
+    <div class="workspace-item" onclick="openWorkspacePreview(${index})">
+      <div class="workspace-thumb ${f.type}">
+        ${isImage
+          ? `<img src="/api/workspace/file?path=${encodeURIComponent(f.path)}" alt="${esc(f.name)}" style="width:100%;height:100%;object-fit:cover;background:var(--bg3)">`
+          : isVideo
+            ? `<video src="/api/workspace/file?path=${encodeURIComponent(f.path)}" style="width:100%;height:100%;object-fit:cover;background:#000" muted preload="metadata"></video>`
+            : `<span>${icons[f.type] || "📄"}</span>`
+        }
+      </div>
+      <div class="workspace-info">
+        <div class="name" title="${esc(f.name)}">${esc(f.name)}</div>
+        <div class="meta">
+          <span>${f.sizeFormatted}</span>
+          <span>${formatDate(f.createdAt)}</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// Preview modal with lightbox
+function openWorkspacePreview(index) {
+  const f = workspaceFiles[index];
+  if (!f) return;
+
+  const total = workspaceFiles.length;
+  const modal = document.createElement("div");
+  modal.className = "preview-overlay";
+  modal.style.cursor = "pointer";
+
+  let content = "";
+  const isImage = f.type === "image";
+  const isVideo = f.type === "video";
+  const isAudio = f.type === "audio";
+
+  if (isImage) {
+    content = `<div class="preview-content"><img src="/api/workspace/file?path=${encodeURIComponent(f.path)}" alt="${esc(f.name)}"></div>`;
+  } else if (isVideo) {
+    content = `<div class="preview-content"><video src="/api/workspace/file?path=${encodeURIComponent(f.path)}" controls autoplay style="max-width:90vw;max-height:75vh;border-radius:8px"></video></div>`;
+  } else if (isAudio) {
+    content = `
+      <div class="preview-audio-player" style="cursor:default">
+        <div class="big-icon">🔊</div>
+        <div class="title">${esc(f.name)}</div>
+        <div class="meta">${f.sizeFormatted} · ${esc(f.type)}</div>
+        <audio src="/api/workspace/file?path=${encodeURIComponent(f.path)}" controls autoplay></audio>
+      </div>
+    `;
+  } else {
+    content = `
+      <div class="preview-doc-viewer" style="cursor:default">
+        <div class="big-icon">📄</div>
+        <div class="title">${esc(f.name)}</div>
+        <div class="meta">${f.sizeFormatted} · ${esc(f.mime)}</div>
+        <div class="meta" style="margin-top:8px">Created: ${new Date(f.createdAt).toLocaleString()}</div>
+        <div class="meta">Modified: ${new Date(f.modifiedAt).toLocaleString()}</div>
+        <div style="margin-top:16px">
+          <a href="/api/workspace/file?path=${encodeURIComponent(f.path)}" download="${esc(f.name)}" class="btn primary" style="text-decoration:none">⬇ Download</a>
+        </div>
+      </div>
+    `;
+  }
+
+  modal.innerHTML = `
+    <button class="preview-close" onclick="this.closest('.preview-overlay').remove()">✕</button>
+    ${index > 0 ? `<button class="preview-nav prev" onclick="this.closest('.preview-overlay').remove();openWorkspacePreview(${index - 1})">←</button>` : ""}
+    ${index < total - 1 ? `<button class="preview-nav next" onclick="this.closest('.preview-overlay').remove();openWorkspacePreview(${index + 1})">→</button>` : ""}
+    <div style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);color:var(--text-dim);font-size:12px;z-index:300">
+      ${esc(f.name)} · ${f.sizeFormatted} · ${index + 1}/${total}
+    </div>
+    ${content}
+  `;
+
+  // Close on click outside content
+  modal.addEventListener("click", e => {
+    if (e.target === modal || e.target.classList.contains("preview-content")) modal.remove();
+  });
+
+  document.body.appendChild(modal);
+}
+
+function setWorkspaceFilter(type) {
+  workspaceFilter = type;
+  stopWorkspaceRefresh();
+  navigate("workspace");
+}
+
+async function refreshWorkspace() {
+  const indicator = document.getElementById("ws-refresh-indicator");
+  if (indicator) indicator.classList.add("spinning");
+  await renderWorkspace(document.getElementById("main"));
+}
+
+function startWorkspaceRefresh() {
+  stopWorkspaceRefresh();
+  workspaceRefreshId = setInterval(() => {
+    refreshWorkspace();
+  }, 30_000);
+}
+
+function stopWorkspaceRefresh() {
+  if (workspaceRefreshId) {
+    clearInterval(workspaceRefreshId);
+    workspaceRefreshId = null;
+  }
+}
+
+// ═══════════════════════════════════════════
 // BOOT
 // ═══════════════════════════════════════════
 navigate("dashboard");
+
+// Load agent sidebar
+setTimeout(loadAgentSidebar, 100);
+
+// Auto-refresh agent sidebar every 15 seconds
+agentPanelRefreshId = setInterval(loadAgentSidebar, 15_000);
