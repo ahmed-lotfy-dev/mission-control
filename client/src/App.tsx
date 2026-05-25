@@ -41,6 +41,7 @@ export default function App() {
 
   return (
     <div className="app-layout">
+      <div className="ambient-glow" />
       <aside className="sidebar">
         <div className="sidebar-header">
           <div className="sidebar-logo">
