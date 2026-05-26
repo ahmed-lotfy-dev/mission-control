@@ -58,76 +58,211 @@ function simulateRankHistory(keyword: string): Array<{ date: string; position: n
 
 async function crawlUrl(url: string) {
   const issues: string[] = [];
-  let score = 60;
+  // Realistic SEO score: 0–100, where 50 is average, 80+ is excellent, <30 is poor
+  let score = 50;
   let title = "(missing)";
   let metaDescription = "(missing)";
   let h1Count = 0;
   let linkCount = 0;
   let pageSize = 0;
+  let findings: string[] = [];
 
   try {
-    const resp = await fetch(url, { signal: AbortSignal.timeout(10000) });
+    const resp = await fetch(url, { signal: AbortSignal.timeout(15000) });
     const html = await resp.text();
     pageSize = Math.round(html.length / 1024);
 
-    // Extract title
+    // ── Title checks ──
     const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
     if (titleMatch) {
-      title = titleMatch[1].trim().slice(0, 200);
-      score += 15;
+      title = titleMatch[1].trim();
+      const titleLen = title.length;
+      if (titleLen === 0) {
+        score -= 12; issues.push("Empty <title> tag");
+      } else if (titleLen < 30) {
+        score -= 6; issues.push(`Title too short (${titleLen} chars — aim for 50-60)`);
+      } else if (titleLen > 70) {
+        score -= 4; issues.push(`Title too long (${titleLen} chars — will be truncated in SERPs)`);
+      } else {
+        score += 5; findings.push(`Title length optimal (${titleLen} chars)`);
+      }
     } else {
-      score -= 15;
-      issues.push("Missing <title> tag");
+      score -= 15; issues.push("Missing <title> tag — critical SEO issue");
     }
 
-    // Extract meta description
+    // ── Meta description checks ──
     const metaMatch = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([\s\S]*?)["']/i);
     if (metaMatch) {
-      metaDescription = metaMatch[1].trim().slice(0, 300);
-      score += 10;
+      metaDescription = metaMatch[1].trim();
+      const metaLen = metaDescription.length;
+      if (metaLen === 0) {
+        score -= 8; issues.push("Empty meta description");
+      } else if (metaLen < 80) {
+        score -= 4; issues.push(`Meta description too short (${metaLen} chars — aim for 150-160)`);
+      } else if (metaLen > 170) {
+        score -= 3; issues.push(`Meta description too long (${metaLen} chars — will be truncated)`);
+      } else {
+        score += 4; findings.push(`Meta description length optimal (${metaLen} chars)`);
+      }
     } else {
-      score -= 10;
-      issues.push("Missing meta description");
+      score -= 10; issues.push("Missing meta description tag");
     }
 
-    // Count H1
+    // ── H1 heading checks ──
     const h1Matches = html.match(/<h1[\s>]/gi);
     h1Count = h1Matches ? h1Matches.length : 0;
-    if (h1Count === 0) { score -= 10; issues.push("No H1 heading found"); }
-    else if (h1Count > 1) { score -= 5; issues.push("Multiple H1 headings (" + h1Count + " found)"); }
-    else score += 10;
-
-    // Count links
-    const linkMatches = html.match(/<a[\s>]/gi);
-    linkCount = linkMatches ? linkMatches.length : 0;
-    if (linkCount < 3) { score -= 5; issues.push("Very few links (" + linkCount + " found)"); }
-    else score += 5;
-
-    // Page size check
-    if (pageSize > 500) { score -= 5; issues.push("Page size " + pageSize + "KB — consider optimization"); }
-    else if (pageSize < 10) { score -= 5; issues.push("Very small page (" + pageSize + "KB — may be thin content)"); }
-
-    // Check viewport meta
-    if (!html.match(/<meta[^>]+name=["']viewport["']/i)) {
-      score -= 5;
-      issues.push("Missing viewport meta tag");
+    if (h1Count === 0) {
+      score -= 10; issues.push("No H1 heading found — essential for SEO");
+    } else if (h1Count === 1) {
+      const h1Content = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+      const h1Text = h1Content ? h1Content[1].replace(/<[^>]+>/g, "").trim() : "";
+      if (h1Text.length < 10) {
+        score -= 4; issues.push("H1 heading has very little content");
+      } else if (h1Text.length > 150) {
+        score -= 3; issues.push("H1 heading too long for a heading");
+      } else {
+        score += 6; findings.push("Single H1 heading with good content");
+      }
+    } else {
+      score -= 8; issues.push(`Multiple H1 headings (${h1Count} found) — use only one`);
     }
 
-    // Check favicon
-    if (!html.match(/<link[^>]+rel=["'](?:shortcut )?icon["']/i)) {
-      score -= 3;
-      issues.push("No favicon detected");
+    // ── Heading hierarchy check ──
+    const h2Matches = html.match(/<h2[\s>]/gi);
+    const h3Matches = html.match(/<h3[\s>]/gi);
+    const h2Count = h2Matches ? h2Matches.length : 0;
+    const h3Count = h3Matches ? h3Matches.length : 0;
+    if (h1Count > 0 && h2Count === 0) {
+      score -= 5; issues.push("No H2 headings — poor content structure");
+    }
+    if (h2Count > 0 && h3Count === 0 && pageSize > 50) {
+      score -= 3; issues.push("No H3 headings for a page this size — shallow content structure");
+    }
+
+    // ── Link quality checks ──
+    const linkMatches = html.match(/<a[\s>]/gi);
+    linkCount = linkMatches ? linkMatches.length : 0;
+    if (linkCount < 5) {
+      score -= 8; issues.push(`Very few links (${linkCount}) — consider adding internal/external links`);
+    } else if (linkCount < 15) {
+      score -= 3; issues.push(`Limited links (${linkCount}) — consider more internal linking`);
+    } else {
+      score += 3; findings.push(`Good link count (${linkCount})`);
+    }
+
+    // Check for broken anchor tags (no href)
+    const noHrefLinks = html.match(/<a[^>]*>(?![\s\S]*?href=)/gi);
+    if (noHrefLinks && noHrefLinks.length > 3) {
+      score -= 4; issues.push(`${noHrefLinks.length} links missing href attribute`);
+    }
+
+    // ── Image alt text ──
+    const imgTags = html.match(/<img[\s>]/gi);
+    if (imgTags && imgTags.length > 3) {
+      const withAlt = html.match(/<img[^>]+alt\s*=\s*["']/gi)?.length || 0;
+      const altRatio = withAlt / imgTags.length;
+      if (altRatio < 0.3) {
+        score -= 8; issues.push(`Only ${Math.round(altRatio * 100)}% of images have alt text — accessibility & SEO issue`);
+      } else if (altRatio < 0.7) {
+        score -= 4; issues.push(`${Math.round((1 - altRatio) * 100)}% of images missing alt text`);
+      }
+    }
+
+    // ── Open Graph tags ──
+    const ogTitle = html.match(/<meta[^>]+property=["']og:title["']/i);
+    const ogDesc = html.match(/<meta[^>]+property=["']og:description["']/i);
+    const ogImage = html.match(/<meta[^>]+property=["']og:image["']/i);
+    const ogCount = [ogTitle, ogDesc, ogImage].filter(Boolean).length;
+    if (ogCount === 0) {
+      score -= 6; issues.push("Missing Open Graph tags — poor social sharing");
+    } else if (ogCount < 3) {
+      score -= 3; issues.push(`Incomplete Open Graph tags (${ogCount}/3)`);
+    } else {
+      score += 3; findings.push("Complete Open Graph tags present");
+    }
+
+    // ── Twitter Card tags ──
+    const twitterCard = html.match(/<meta[^>]+name=["']twitter:card["']/i);
+    if (!twitterCard) {
+      score -= 3; issues.push("Missing Twitter Card meta tag");
+    }
+
+    // ── Canonical URL ──
+    const canonical = html.match(/<link[^>]+rel=["']canonical["']/i);
+    if (!canonical) {
+      score -= 5; issues.push("Missing canonical URL tag — duplicate content risk");
+    } else {
+      score += 2; findings.push("Canonical URL set");
+    }
+
+    // ── Viewport ──
+    const viewport = html.match(/<meta[^>]+name=["']viewport["']/i);
+    if (!viewport) {
+      score -= 6; issues.push("Missing viewport meta tag — not mobile-friendly");
+    }
+
+    // ── Favicon ──
+    const favicon = html.match(/<link[^>]+rel=["'](?:shortcut )?icon["']/i);
+    if (!favicon) {
+      score -= 3; issues.push("No favicon detected");
+    }
+
+    // ── Robots meta ──
+    const robotsMeta = html.match(/<meta[^>]+name=["']robots["']/i);
+    if (robotsMeta) {
+      const robotsContent = html.match(/<meta[^>]+name=["']robots["'][^>]+content=["']([\s\S]*?)["']/i);
+      const robotsVal = robotsContent ? robotsContent[1].toLowerCase() : "";
+      if (robotsVal.includes("noindex")) {
+        score -= 15; issues.push("Page has 'noindex' directive — won't appear in search results");
+      }
+      if (robotsVal.includes("nofollow")) {
+        score -= 5; issues.push("Page has 'nofollow' — link equity not passed");
+      }
+    }
+
+    // ── Lang attribute ──
+    const htmlLang = html.match(/<html[^>]+lang\s*=\s*["'][\w-]+["']/i);
+    if (!htmlLang) {
+      score -= 3; issues.push("Missing lang attribute on <html> tag");
+    }
+
+    // ── GZIP/Compression check ──
+    const contentEncoding = resp.headers.get("content-encoding");
+    if (!contentEncoding || !contentEncoding.includes("gzip")) {
+      score -= 4; issues.push("Page not served with GZIP compression — slower load times");
+    }
+
+    // ── Page size ──
+    if (pageSize > 500) {
+      score -= 6; issues.push(`Large page size (${pageSize}KB) — aim for under 200KB`);
+    } else if (pageSize > 200) {
+      score -= 3; issues.push(`Page size ${pageSize}KB — could be optimized`);
+    } else if (pageSize < 10) {
+      score -= 4; issues.push(`Very small page (${pageSize}KB) — possible thin content`);
+    }
+
+    // ── SSL/HTTPS check ──
+    if (!url.startsWith("https://")) {
+      // We can't check from the server side easily for redirects
     }
 
   } catch (e: any) {
-    score = 10;
-    issues.push("Failed to fetch URL: " + (e.message || "unknown error"));
+    if (e.message?.includes("Timed out") || e.message?.includes("timeout")) {
+      score = 5; issues.push("Connection timed out — server may be slow or unreachable");
+    } else {
+      score = 15; issues.push("Failed to fetch URL: " + (e.message?.slice(0, 100) || "unknown error"));
+    }
   }
 
+  // Clamp score
   score = Math.max(0, Math.min(100, score));
-  if (issues.length === 0) issues.push("All basic checks passed");
 
-  return { url, score, title, metaDescription, headingsCount: h1Count, linksCount: linkCount, hasMeta: metaDescription !== "(missing)" ? 1 : 0, hasTitle: title !== "(missing)" ? 1 : 0, pageSize, issues };
+  // If no real issues found
+  if (issues.length === 0) {
+    findings.forEach((f) => issues.push(f));
+  }
+
+  return { url, score, title: title.slice(0, 200), metaDescription: metaDescription.slice(0, 300), headingsCount: h1Count, linksCount: linkCount, hasMeta: metaDescription !== "(missing)" ? 1 : 0, hasTitle: title !== "(missing)" ? 1 : 0, pageSize, issues };
 }
 
 // ── Routes ──
@@ -224,6 +359,12 @@ export const seoRoutes = new Elysia({ prefix: "/api/seo" })
 
     return { id: id.id, keyword: body.keyword, targetUrl: body.targetUrl, title, metaDescription, headings, body: bodyText, wordCount };
   }, { body: t.Object({ keyword: t.String({ minLength: 1 }), targetUrl: t.Optional(t.String()) }) })
+
+  .get("/content/:id", ({ params }) => {
+    const row = db.query("SELECT * FROM seo_content WHERE id = ?").get(Number(params.id)) as any;
+    if (!row) return { error: "Content not found" };
+    return { ...row, headings: JSON.parse(row.headings || "[]") };
+  }, { params: t.Object({ id: t.String() }) })
 
   .delete("/content/:id", ({ params }) => { db.run("DELETE FROM seo_content WHERE id = ?", [Number(params.id)]); return { deleted: true }; }, { params: t.Object({ id: t.String() }) })
 
