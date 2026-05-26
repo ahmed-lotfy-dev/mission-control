@@ -306,15 +306,21 @@ export default function Seo() {
               <div className="table-wrap mt-12"><table>
                 <thead><tr><th>URL</th><th>Score</th><th>Issues</th><th>Date</th><th>Actions</th></tr></thead>
                 <tbody>{auditHistory.map((a) => (
-                  <tr key={a.id}>
+                  <tr
+                    key={a.id}
+                    onClick={() => navigate({ to: "/seo/report/$auditId", params: { auditId: String(a.id) } })}
+                    style={{ cursor: "pointer", transition: "background 0.15s" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "var(--accent-surface)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "")}
+                  >
                     <td style={{ fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 250 }}>{a.url}</td>
                     <td><span className={`badge badge-${a.score >= 70 ? "low" : a.score >= 40 ? "medium" : "urgent"}`}>{a.score}/100</span></td>
                     <td style={{ fontSize: 12, color: "var(--text-dim)" }}>{(a.issues || []).length} issues</td>
                     <td style={{ fontSize: 12, color: "var(--text-dim)" }}>{formatDate(a.created_at)}</td>
                     <td>
-                      <div style={{ display: "flex", gap: 6 }}>
+                      <div style={{ display: "flex", gap: 6 }} onClick={(e) => e.stopPropagation()}>
                         <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/seo/report/$auditId", params: { auditId: String(a.id) } })}>View</Button>
-                        <Button variant="destructive" size="sm" onClick={(e) => { e.stopPropagation(); delAuditMut.mutate(a.id); }}>×</Button>
+                        <Button variant="destructive" size="sm" onClick={() => delAuditMut.mutate(a.id)}>×</Button>
                       </div>
                     </td>
                   </tr>
