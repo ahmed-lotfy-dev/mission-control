@@ -45,6 +45,15 @@ function timeAgoStr(iso: string): string {
   return `${Math.floor(s / 86400)}d ago`;
 }
 
+function normalizeIssues(issues: any): Array<{text: string; severity: string}> {
+  if (!Array.isArray(issues)) return [];
+  if (issues.length === 0) return [];
+  if (typeof issues[0] === "string") {
+    return issues.map((i: string) => ({ text: i, severity: "notice" }));
+  }
+  return issues;
+}
+
 function simulateRankHistory(keyword: string): Array<{ date: string; position: number }> {
   const history: Array<{ date: string; position: number }> = [];
   let pos = Math.floor(Math.random() * 30) + 5;
@@ -58,7 +67,6 @@ function simulateRankHistory(keyword: string): Array<{ date: string; position: n
 
 async function crawlUrl(url: string) {
   const issues: string[] = [];
-  // Realistic SEO score: 0–100, where 50 is average, 80+ is excellent, <30 is poor
   let score = 50;
   let title = "(missing)";
   let metaDescription = "(missing)";
@@ -66,9 +74,11 @@ async function crawlUrl(url: string) {
   let linkCount = 0;
   let pageSize = 0;
   let findings: string[] = [];
+  let httpStatus = 0;
 
   try {
     const resp = await fetch(url, { signal: AbortSignal.timeout(15000) });
+    httpStatus = resp.status;
     const html = await resp.text();
     pageSize = Math.round(html.length / 1024);
 
@@ -262,7 +272,37 @@ async function crawlUrl(url: string) {
     findings.forEach((f) => issues.push(f));
   }
 
-  return { url, score, title: title.slice(0, 200), metaDescription: metaDescription.slice(0, 300), headingsCount: h1Count, linksCount: linkCount, hasMeta: metaDescription !== "(missing)" ? 1 : 0, hasTitle: title !== "(missing)" ? 1 : 0, pageSize, issues };
+  // Categorize issues into errors/warnings/notices
+  function categorizeIssue(issue: string): "error" | "warning" | "notice" {
+    const errors = ["missing <title>", "empty <title>", "missing meta description", "empty meta description",
+      "noindex", "connection timed out", "failed to fetch", "critical"];
+    const warnings = ["too short", "too long", "no h1", "multiple h1", "no h2", "missing canonical",
+      "missing viewport", "no gzip", "nofollow", "large page", "very few links", "limited links",
+      "no h3", "no outgoing links", "5xx", "4xx", "3xx", "redirect"];
+    const lower = issue.toLowerCase();
+    if (errors.some((e) => lower.includes(e))) return "error";
+    if (warnings.some((w) => lower.includes(w))) return "warning";
+    return "notice";
+  }
+
+  const categorizedIssues = issues.map((text) => ({
+    text,
+    severity: categorizeIssue(text),
+  }));
+
+  return {
+    url,
+    score,
+    title: title.slice(0, 200),
+    metaDescription: metaDescription.slice(0, 300),
+    headingsCount: h1Count,
+    linksCount: linkCount,
+    hasMeta: metaDescription !== "(missing)" ? 1 : 0,
+    hasTitle: title !== "(missing)" ? 1 : 0,
+    pageSize,
+    httpStatus: httpStatus,
+    issues: categorizedIssues,
+  };
 }
 
 // ── Routes ──
@@ -398,7 +438,7 @@ export const seoRoutes = new Elysia({ prefix: "/api/seo" })
       if (existing) {
         return {
           ...existing,
-          issues: JSON.parse(existing.issues || "[]"),
+          issues: normalizeIssues(JSON.parse(existing.issues || "[]")),
           cached: true,
           message: `URL already audited ${timeAgoStr(existing.created_at)}. Use ?force=true to run a fresh audit.`,
           freshAudit: false,
@@ -411,18 +451,18 @@ export const seoRoutes = new Elysia({ prefix: "/api/seo" })
     db.run("INSERT INTO seo_audits (url, score, title, meta_description, headings_count, links_count, has_meta, has_title, page_size, issues, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [audit.url, audit.score, audit.title, audit.metaDescription, audit.headingsCount, audit.linksCount, audit.hasMeta, audit.hasTitle, audit.pageSize, JSON.stringify(audit.issues), now]);
     const row = db.query("SELECT * FROM seo_audits WHERE id = last_insert_rowid()").get() as any;
-    return { ...row, issues: JSON.parse(row.issues || "[]"), cached: false, freshAudit: true };
+    return { ...row, issues: normalizeIssues(JSON.parse(row.issues || "[]")), cached: false, freshAudit: true };
   }, { body: t.Object({ url: t.String({ minLength: 1 }) }) })
 
   .get("/audits", () => {
     const rows = db.query("SELECT * FROM seo_audits ORDER BY created_at DESC").all() as any[];
-    return rows.map((r: any) => ({ ...r, issues: JSON.parse(r.issues || "[]") }));
+    return rows.map((r: any) => ({ ...r, issues: normalizeIssues(JSON.parse(r.issues || "[]")) }));
   })
 
   .get("/audits/:id", ({ params }) => {
     const row = db.query("SELECT * FROM seo_audits WHERE id = ?").get(Number(params.id)) as any;
     if (!row) return { error: "Audit not found" };
-    return { ...row, issues: JSON.parse(row.issues || "[]") };
+    return { ...row, issues: normalizeIssues(JSON.parse(row.issues || "[]")) };
   }, { params: t.Object({ id: t.String() }) })
 
   .delete("/audits/:id", ({ params }) => {
