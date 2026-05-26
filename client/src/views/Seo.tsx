@@ -268,7 +268,7 @@ export default function Seo() {
                   <tr key={a.id}>
                     <td style={{ fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 250 }}>{a.url}</td>
                     <td><span className={`badge badge-${a.score >= 70 ? "low" : a.score >= 40 ? "medium" : "urgent"}`}>{a.score}/100</span></td>
-                    <td style={{ fontSize: 12, color: "var(--text-dim)" }}>{(JSON.parse(a.issues || "[]") as string[]).length} issues</td>
+                    <td style={{ fontSize: 12, color: "var(--text-dim)" }}>{((a.issues || []) as string[]).length} issues</td>
                     <td style={{ fontSize: 12, color: "var(--text-dim)" }}>{formatDate(a.created_at)}</td>
                     <td>
                       <div style={{ display: "flex", gap: 6 }}>

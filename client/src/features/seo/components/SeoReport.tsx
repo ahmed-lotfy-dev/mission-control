@@ -1,100 +1,114 @@
-import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "@tanstack/react-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, formatDate } from "../../../lib/api";
 
 export default function SeoReport() {
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const { auditId } = useParams({ from: "/seo/report/$auditId" });
-  const [audit, setAudit] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!auditId) {
-      setError("No audit specified");
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    api(`/seo/audits/${auditId}`)
-      .then((data) => setAudit(data))
-      .catch((err) => setError(err.message || "Failed to load audit"))
-      .finally(() => setLoading(false));
-  }, [auditId]);
+  const { data: audit, isLoading, error } = useQuery({
+    queryKey: ["seo", "audits", auditId],
+    queryFn: () => api(`/seo/audits/${auditId}`),
+    enabled: !!auditId,
+    staleTime: 0,
+  });
 
-  const handleBack = () => {
-    navigate({ to: "/seo" });
-  };
+  const delMutation = useMutation({
+    mutationFn: () => api(`/seo/audits/${auditId}`, { method: "DELETE" }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["seo", "audits"] });
+      navigate({ to: "/seo" });
+    },
+  });
 
-  if (loading) {
+  const handleBack = () => navigate({ to: "/seo" });
+  const handleDelete = () => { if (confirm("Delete this audit report?")) delMutation.mutate(); };
+
+  if (isLoading) {
     return (
       <div className="loading-state">
         <div className="loading-spinner" />
-        Loading Report...
+        Loading report...
       </div>
     );
   }
 
   if (error || !audit) {
     return (
-      <div className="card text-center" style={{ padding: 40 }}>
-        <h2 style={{ color: "var(--red)" }}>Error Loading Report</h2>
-        <p className="subtitle mt-8">{error || "Audit data is missing."}</p>
-        <button className="btn btn-primary mt-24" onClick={handleBack}>
+      <div className="card" style={{ padding: 40, textAlign: "center" }}>
+        <h2 style={{ color: "var(--red)" }}>Report Not Found</h2>
+        <p className="subtitle" style={{ marginTop: 8 }}>
+          {(error as any)?.message || "This audit may have been deleted."}
+        </p>
+        <button className="btn btn-primary" style={{ marginTop: 24 }} onClick={handleBack}>
           Back to SEO Toolkit
         </button>
       </div>
     );
   }
 
-  const issuesList = JSON.parse(audit.issues || "[]") as string[];
+  const issuesList = (audit.issues || []) as string[];
   const scoreColor = audit.score >= 70 ? "var(--green)" : audit.score >= 40 ? "var(--yellow)" : "var(--red)";
+  const scoreLabel = audit.score >= 70 ? "Good" : audit.score >= 40 ? "Fair" : "Poor";
 
   return (
     <div className="stagger">
       <div className="page-header">
         <div>
-          <button className="btn btn-sm btn-ghost mb-8" onClick={handleBack}>
-            ← Back
+          <button className="btn btn-sm btn-ghost" style={{ marginBottom: 12 }} onClick={handleBack}>
+            ← Back to SEO
           </button>
           <h1>🔍 SEO Audit Report</h1>
-          <div className="subtitle" style={{ fontSize: 14, color: "var(--accent)" }}>
+          <div className="subtitle" style={{ fontSize: 14, color: "var(--accent)", marginTop: 6 }}>
             {audit.url}
           </div>
         </div>
-        <div style={{ fontSize: 12, color: "var(--text-dim)" }}>
-          Audited on {formatDate(audit.created_at)}
+        <div style={{ display: "flex", gap: 8, alignItems: "flex-start", paddingTop: 4 }}>
+          <span style={{ fontSize: 11, color: "var(--text-dim)", alignSelf: "center" }}>
+            Audited {formatDate(audit.created_at)}
+          </span>
+          <button className="btn btn-sm btn-danger" onClick={handleDelete} disabled={delMutation.isPending}>
+            {delMutation.isPending ? "Deleting..." : "Delete"}
+          </button>
         </div>
       </div>
 
       <div className="grid-2 mb-24">
-        <div className="card flex-between" style={{ alignItems: "center" }}>
+        <div className="card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <h2>SEO Score</h2>
-            <div className="subtitle" style={{ maxWidth: 220 }}>
-              Overall optimization health score based on key on-page elements.
+            <h2>Overall Score</h2>
+            <div className="subtitle" style={{ marginTop: 6, maxWidth: 200 }}>
+              Based on title, meta, headings, links, and page size.
+            </div>
+            <div style={{ display: "flex", gap: 16, marginTop: 16, fontSize: 12 }}>
+              <span style={{ color: "var(--text-dim)" }}>
+                H1s: <strong style={{ color: "var(--text-bright)" }}>{audit.headings_count}</strong>
+              </span>
+              <span style={{ color: "var(--text-dim)" }}>
+                Links: <strong style={{ color: "var(--text-bright)" }}>{audit.links_count}</strong>
+              </span>
+              <span style={{ color: "var(--text-dim)" }}>
+                Size: <strong style={{ color: "var(--text-bright)" }}>{audit.page_size} KB</strong>
+              </span>
             </div>
           </div>
-          <div
-            style={{
-              width: 100,
-              height: 100,
-              borderRadius: "50%",
-              border: `5px solid ${scoreColor}`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 32,
-              fontWeight: 700,
-              color: "var(--text-bright)",
-              boxShadow: `0 0 20px ${scoreColor}40`,
-            }}
-          >
-            {audit.score}
+          <div style={{
+            width: 110, height: 110, borderRadius: "50%",
+            border: `5px solid ${scoreColor}`,
+            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+            boxShadow: `0 0 28px ${scoreColor}40`, flexShrink: 0,
+          }}>
+            <span style={{ fontSize: 32, fontWeight: 700, color: "var(--text-bright)", lineHeight: 1 }}>
+              {audit.score}
+            </span>
+            <span style={{ fontSize: 10, color: scoreColor, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginTop: 2 }}>
+              {scoreLabel}
+            </span>
           </div>
         </div>
 
-        <div className="card grid-2" style={{ gap: 16 }}>
+        <div className="card" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <div className="stat-card">
             <div className="value">{audit.headings_count}</div>
             <div className="label">H1 Headings</div>
@@ -108,54 +122,46 @@ export default function SeoReport() {
             <div className="label">Page Size</div>
           </div>
           <div className="stat-card">
-            <div className="value">{audit.score >= 70 ? "Good" : audit.score >= 40 ? "Fair" : "Poor"}</div>
+            <div className="value" style={{ color: scoreColor, fontSize: 20 }}>{scoreLabel}</div>
             <div className="label">Rating</div>
           </div>
         </div>
       </div>
 
       <div className="card-raise">
-        <h2>Detailed Audit Findings</h2>
+        <h2>Audit Findings</h2>
         <div className="section-divider">On-Page Elements</div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <div style={{ borderBottom: "1px solid var(--border)", paddingBottom: 16 }}>
-            <div style={{ fontWeight: 600, fontSize: 13, color: "var(--text-bright)", marginBottom: 6 }}>
-              Page Title {audit.has_title ? "✅" : "❌"}
-            </div>
-            <div style={{ fontSize: 13, color: "var(--text-dim)", fontFamily: "monospace", wordBreak: "break-all" }}>
-              {audit.title || "(no title tag detected)"}
-            </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 0, marginBottom: 24 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "12px 0", borderBottom: "1px solid var(--border)" }}>
+            <span style={{ color: "var(--text-dim)", fontSize: 12, minWidth: 140 }}>Page Title</span>
+            <span style={{ color: audit.has_title ? "var(--green)" : "var(--red)", fontSize: 12, textAlign: "right", maxWidth: "65%", wordBreak: "break-all" }}>
+              {audit.has_title ? "✅" : "❌"} {audit.title || "(not detected)"}
+            </span>
           </div>
-
-          <div style={{ borderBottom: "1px solid var(--border)", paddingBottom: 16 }}>
-            <div style={{ fontWeight: 600, fontSize: 13, color: "var(--text-bright)", marginBottom: 6 }}>
-              Meta Description {audit.has_meta ? "✅" : "❌"}
-            </div>
-            <div style={{ fontSize: 13, color: "var(--text-dim)", fontFamily: "monospace", wordBreak: "break-all" }}>
-              {audit.meta_description || "(no meta description tag detected)"}
-            </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "12px 0" }}>
+            <span style={{ color: "var(--text-dim)", fontSize: 12, minWidth: 140 }}>Meta Description</span>
+            <span style={{ color: audit.has_meta ? "var(--green)" : "var(--red)", fontSize: 12, textAlign: "right", maxWidth: "65%", wordBreak: "break-all" }}>
+              {audit.has_meta ? "✅" : "❌"} {audit.meta_description || "(not detected)"}
+            </span>
           </div>
         </div>
 
-        <div className="section-divider">Action Items & Issues</div>
+        <div className="section-divider">Checks & Issues</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {issuesList.map((issue, index) => {
-            const isPass = issue.includes("passed");
+          {issuesList.map((issue, i) => {
+            const isPass = issue.toLowerCase().includes("passed");
             return (
               <div
-                key={index}
-                className="flex gap-sm"
+                key={i}
                 style={{
-                  padding: "10px 12px",
-                  borderRadius: 6,
-                  background: isPass ? "oklch(0.55 0.09 155 / 0.05)" : "oklch(0.50 0.11 25 / 0.05)",
-                  border: `1px solid ${isPass ? "oklch(0.55 0.09 155 / 0.15)" : "oklch(0.50 0.11 25 / 0.15)"}`,
-                  fontSize: 12.5,
+                  display: "flex", gap: 10, alignItems: "flex-start",
+                  padding: "10px 14px", borderRadius: 6, fontSize: 13,
+                  background: isPass ? "oklch(0.55 0.09 155 / 0.06)" : "oklch(0.50 0.11 25 / 0.06)",
+                  border: `1px solid ${isPass ? "oklch(0.55 0.09 155 / 0.18)" : "oklch(0.50 0.11 25 / 0.18)"}`,
                   color: isPass ? "var(--green)" : "var(--text)",
                 }}
               >
-                <span style={{ fontWeight: "bold" }}>{isPass ? "✓" : "✗"}</span>
+                <span style={{ fontWeight: 700, flexShrink: 0 }}>{isPass ? "✓" : "✗"}</span>
                 <span>{issue}</span>
               </div>
             );
