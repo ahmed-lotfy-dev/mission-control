@@ -1,7 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* ═══════════════════════════════════════════
    Mission Control — Emile Kwalski Design System
    Atmospheric dark command aesthetic
    ═══════════════════════════════════════════ */
+
+@layer base {
+  :root {
+    --background: 30 8% 9%;
+    --foreground: 45 15% 78%;
+    --card: 28 8% 12%;
+    --card-foreground: 45 15% 78%;
+    --popover: 28 8% 12%;
+    --popover-foreground: 45 15% 78%;
+    --primary: 70 10% 60%;
+    --primary-foreground: 30 8% 9%;
+    --secondary: 28 8% 16%;
+    --secondary-foreground: 45 15% 78%;
+    --muted: 30 5% 18%;
+    --muted-foreground: 35 8% 50%;
+    --accent: 70 10% 60%;
+    --accent-foreground: 30 8% 9%;
+    --destructive: 25 11% 50%;
+    --destructive-foreground: 45 15% 78%;
+    --border: 35 8% 22%;
+    --input: 35 8% 22%;
+    --ring: 70 10% 60%;
+    --radius: 0.5rem;
+  }
+}
 
 :root {
   /* Surface — warm charcoal, aged obsidian */
