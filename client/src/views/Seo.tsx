@@ -255,7 +255,18 @@ export default function Seo() {
             <div className="flex gap-sm mt-12">
               <input value={auditUrl} onChange={handleAuditUrlChange} onKeyDown={handleAuditKeyDown} placeholder="https://example.com" />
               <button className="btn btn-primary" onClick={handleRunAudit} disabled={busy}>{auditMutation.isPending ? "⏳ Scanning..." : "🔍 Run Audit"}</button>
+              <label className="flex gap-xs" style={{ alignItems: "center", cursor: "pointer", fontSize: 11, color: "var(--text-dim)", whiteSpace: "nowrap" }}>
+                <input type="checkbox" checked={auditForce} onChange={handleAuditForceToggle} />
+                ⚡ Force
+              </label>
             </div>
+            {auditCachedMsg && (
+              <div className="mt-12" style={{ padding: "10px 14px", borderRadius: 6, background: "oklch(0.60 0.10 80 / 0.08)", border: "1px solid oklch(0.60 0.10 80 / 0.2)", fontSize: 12, color: "var(--yellow)", display: "flex", alignItems: "center", gap: 10 }}>
+                <span>⚠️</span>
+                <span style={{ flex: 1 }}>{auditCachedMsg}</span>
+                <button className="btn btn-sm" onClick={() => { setAuditForce(true); setAuditCachedMsg(""); auditMutation.mutate({ url: auditUrl, force: true }); }}>Force re-audit</button>
+              </div>
+            )}
           </div>
           <div className="card">
             <h3>Audit History</h3>
