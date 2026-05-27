@@ -1,19 +1,9 @@
 services:
-  client:
-    build:
-      context: .
-      dockerfile: client/Dockerfile
-    restart: unless-stopped
-    expose:
-      - "80"
-
   server:
     build:
       context: .
       dockerfile: server/Dockerfile
     restart: unless-stopped
-    depends_on:
-      - client
     environment:
       NVIDIA_API_KEY: ${NVIDIA_API_KEY}
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
