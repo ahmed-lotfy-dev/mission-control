@@ -10,6 +10,7 @@ import Workspace from "./views/Workspace";
 import Studio from "./views/Studio";
 import Seo from "./views/Seo";
 import SeoReport from "./features/seo/components/SeoReport";
+import SeoContentPreview from "./features/seo/components/SeoContentPreview";
 
 const rootRoute = createRootRoute({
   component: Layout,
@@ -25,6 +26,7 @@ const workspaceRoute = createRoute({ getParentRoute: () => rootRoute, path: "/wo
 const studioRoute = createRoute({ getParentRoute: () => rootRoute, path: "/studio", component: Studio });
 const seoRoute = createRoute({ getParentRoute: () => rootRoute, path: "/seo", component: Seo });
 const seoReportRoute = createRoute({ getParentRoute: () => rootRoute, path: "/seo/report/$auditId", component: SeoReport });
+const seoContentPreviewRoute = createRoute({ getParentRoute: () => rootRoute, path: "/seo/content/$contentId", component: SeoContentPreview });
 
 const routeTree = rootRoute.addChildren([
   dashboardRoute,
@@ -37,6 +39,7 @@ const routeTree = rootRoute.addChildren([
   studioRoute,
   seoRoute,
   seoReportRoute,
+  seoContentPreviewRoute,
 ]);
 
 export const router = createRouter({ routeTree });

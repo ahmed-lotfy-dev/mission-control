@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from "@tanstack/react-router";
 import { Outlet } from "@tanstack/react-router";
 import AgentSidebar from "./components/AgentSidebar";
+import CommandPalette from "./components/CommandPalette";
 import { Toaster } from "./components/ui/sonner";
 
 const NAV_ITEMS: Array<{ path: string; icon: string; label: string }> = [
@@ -51,6 +52,7 @@ export default function Layout() {
         <Outlet />
       </main>
       <AgentSidebar />
+      <CommandPalette />
       <Toaster />
     </div>
   );

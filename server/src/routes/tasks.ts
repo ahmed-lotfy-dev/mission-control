@@ -1,5 +1,6 @@
 import { Elysia, t } from "elysia";
 import { db } from "../db";
+import { notifyTaskChange } from "./ws";
 
 export const tasksRoutes = new Elysia({ prefix: "/api/tasks" })
   .get("/", () => {
@@ -12,6 +13,8 @@ export const tasksRoutes = new Elysia({ prefix: "/api/tasks" })
       [body.title, body.description ?? "", body.status ?? "backlog", body.priority ?? "medium", body.project ?? "", body.tags ?? "", body.dueDate ?? "", now, now]
     );
     const id = db.query("SELECT last_insert_rowid() as id").get() as { id: number };
+    const newTask = { id: id.id, ...body };
+    notifyTaskChange("created", newTask);
     return { id: id.id, ...body };
   }, {
     body: t.Object({
@@ -38,6 +41,7 @@ export const tasksRoutes = new Elysia({ prefix: "/api/tasks" })
     sets.push("updated_at = ?");
     vals.push(now, Number(params.id));
     db.run(`UPDATE tasks SET ${sets.join(", ")} WHERE id = ?`, vals);
+    notifyTaskChange("updated", { id: Number(params.id), ...body, status: body.status });
     return { id: Number(params.id), updatedAt: now };
   }, {
     params: t.Object({ id: t.String() }),
@@ -53,6 +57,7 @@ export const tasksRoutes = new Elysia({ prefix: "/api/tasks" })
   })
   .delete("/:id", ({ params }) => {
     db.run("DELETE FROM tasks WHERE id = ?", [Number(params.id)]);
+    notifyTaskChange("deleted", { id: Number(params.id) });
     return { deleted: true };
   }, {
     params: t.Object({ id: t.String() }),

@@ -9,9 +9,15 @@ import { dashboardRoutes } from "./routes/dashboard";
 import { workspaceRoutes } from "./routes/workspace";
 import { studioRoutes, serveRoutes } from "./routes/studio";
 import { seoRoutes } from "./routes/seo";
+import { handleWsUpgrade } from "./routes/ws";
 
 const app = new Elysia()
   .onRequest(({ request }) => {
+    // WebSocket upgrade — intercept before Elysia routing
+    const wsResp = handleWsUpgrade(request);
+    if (wsResp) return wsResp;
+
+    // CORS headers
     const origin = request.headers.get("origin") ?? "";
     if (origin) {
       request.headers.set("access-control-allow-origin", origin);

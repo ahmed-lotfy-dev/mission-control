@@ -1,20 +1,7 @@
 import { Elysia, t } from "elysia";
 import { db } from "../db";
 import { spawn } from "child_process";
-
-type AgentRow = {
-  id: number;
-  name: string;
-  model: string;
-  version: string;
-  icon: string;
-  status: string;
-  last_active: string;
-  pid: number | null;
-  endpoint: string;
-  metadata: string;
-  created_at: string;
-};
+import { detectProcessRunning, computeAgentStatus, logActivity, safeJson, type AgentRow } from "../lib/helpers";
 
 type LogRow = {
   id: number;
@@ -24,61 +11,6 @@ type LogRow = {
   level: string;
   created_at: string;
 };
-
-// ── Process-based status detection ──
-
-const PROCESS_MAP: Record<string, { pattern: string; detect: "pid" | "proc" | "pgrep" }> = {
-  "Hermes":        { pattern: "hermes",        detect: "pgrep" },
-  "Antigravity":   { pattern: "antigravity",   detect: "pgrep" },
-  "Codex":         { pattern: "codex",         detect: "pgrep" },
-};
-
-function detectProcessRunning(name: string): { running: boolean; pid: number | null } {
-  const cfg = PROCESS_MAP[name];
-  if (!cfg) return { running: false, pid: null };
-  try {
-    const result = Bun.spawnSync(["pgrep", "-f", "-n", cfg.pattern], {});
-    if (result.exitCode === 0) {
-      const pid = parseInt(result.stdout.toString().trim(), 10);
-      return { running: !isNaN(pid), pid: isNaN(pid) ? null : pid };
-    }
-  } catch {}
-  return { running: false, pid: null };
-}
-
-function computeAgentStatus(agent: AgentRow): { status: string; pid: number | null } {
-  // 1) Check if a matching process is running
-  const proc = detectProcessRunning(agent.name);
-  if (proc.running) return { status: "working", pid: proc.pid };
-
-  // 2) Check if it was active in the last 5 minutes
-  if (agent.last_active) {
-    const ago = Date.now() - new Date(agent.last_active).getTime();
-    if (ago < 300_000) return { status: "online", pid: null };
-  }
-
-  // 3) Check stored PID
-  if (agent.pid) {
-    try {
-      const result = Bun.spawnSync(["kill", "-0", String(agent.pid)], {});
-      if (result.exitCode === 0) return { status: "working", pid: agent.pid };
-    } catch {}
-  }
-
-  return { status: "offline", pid: null };
-}
-
-function logActivity(agentId: number, event: string, message: string, level = "info") {
-  const now = new Date().toISOString();
-  db.run(
-    "INSERT INTO agent_logs (agent_id, event, message, level, created_at) VALUES (?, ?, ?, ?, ?)",
-    [agentId, event, message, level, now]
-  );
-  db.run(
-    "UPDATE agent_snapshots SET last_active = ?, status = ? WHERE id = ?",
-    [now, level === "error" ? "error" : "working", agentId]
-  );
-}
 
 export const agentRoutes = new Elysia({ prefix: "/api/agents" })
   // List all agents with live status
@@ -291,9 +223,3 @@ export const agentRoutes = new Elysia({ prefix: "/api/agents" })
   }, {
     params: t.Object({ id: t.String() }),
   });
-
-// ── Helpers ──
-
-function safeJson(str: string): any {
-  try { return JSON.parse(str); } catch { return {}; }
-}

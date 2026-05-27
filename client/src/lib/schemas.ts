@@ -17,7 +17,7 @@ export const contentGenSchema = z.object({
 
 export const rankCheckSchema = z.object({
   keyword: z.string().min(1, "Keyword is required"),
-  url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  url: z.string().optional(),
   currentPosition: z.number().optional(),
 });
 

@@ -1,45 +1,6 @@
 import { Elysia } from "elysia";
 import { db } from "../db";
-
-type AgentRow = {
-  id: number;
-  name: string;
-  model: string;
-  version: string;
-  icon: string;
-  status: string;
-  last_active: string;
-  pid: number | null;
-  endpoint: string;
-  metadata: string;
-  created_at: string;
-};
-
-function computeAgentStatus(agent: AgentRow): { status: string; pid: number | null } {
-  // Check if a matching process is running
-  const proc = (() => {
-    try {
-      const result = Bun.spawnSync(["pgrep", "-f", "-n", agent.name], {});
-      if (result.exitCode === 0) {
-        const pid = parseInt(result.stdout.toString().trim(), 10);
-        return { running: !isNaN(pid), pid: isNaN(pid) ? null : pid };
-      }
-    } catch {}
-    return { running: false, pid: null };
-  })();
-  if (proc.running) return { status: "working", pid: proc.pid };
-  if (agent.last_active) {
-    const ago = Date.now() - new Date(agent.last_active).getTime();
-    if (ago < 300_000) return { status: "online", pid: null };
-  }
-  if (agent.pid) {
-    try {
-      const result = Bun.spawnSync(["kill", "-0", String(agent.pid)], {});
-      if (result.exitCode === 0) return { status: "working", pid: agent.pid };
-    } catch {}
-  }
-  return { status: "offline", pid: null };
-}
+import { safeJson, computeAgentStatus, type AgentRow } from "../lib/helpers";
 
 export const dashboardRoutes = new Elysia({ prefix: "/api/dashboard" })
   .get("/", () => {
@@ -83,7 +44,3 @@ export const dashboardRoutes = new Elysia({ prefix: "/api/dashboard" })
       vault: { total: vaultTotal?.c ?? 0 },
     };
   });
-
-function safeJson(str: string): any {
-  try { return JSON.parse(str); } catch { return {}; }
-}

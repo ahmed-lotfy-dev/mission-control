@@ -3,15 +3,8 @@ import { db } from "../db";
 import { readFileSync } from "node:fs";
 import { join, extname } from "node:path";
 import { homedir } from "node:os";
+import { getNvidiaKey, timeAgoStr } from "../lib/helpers";
 
-// ── Read NVIDIA API Key ──
-function getNvidiaKey(): string | null {
-  try {
-    const content = readFileSync(join(homedir(), ".hermes", ".env"), "utf-8");
-    const match = content.match(/^NVIDIA_API_KEY=(.+)$/m);
-    return match ? match[1].trim() : null;
-  } catch { return null; }
-}
 const NVIDIA_KEY = getNvidiaKey();
 
 // ── NVIDIA LLM call ──
@@ -33,16 +26,6 @@ async function callNvidiaLLM(system: string, user: string): Promise<string> {
   if (!resp.ok) throw new Error(`NVIDIA LLM error ${resp.status}`);
   const data = await resp.json() as any;
   return data?.choices?.[0]?.message?.content || "";
-}
-
-// ── Helpers ──
-
-function timeAgoStr(iso: string): string {
-  const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  if (s < 60) return `${s}s ago`;
-  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
-  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
-  return `${Math.floor(s / 86400)}d ago`;
 }
 
 function normalizeIssues(issues: any): Array<{text: string; severity: string}> {
