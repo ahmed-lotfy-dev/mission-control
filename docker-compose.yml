@@ -1,0 +1,16 @@
+services:
+  mission-control:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      NVIDIA_API_KEY: ${NVIDIA_API_KEY}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+    expose:
+      - "3000"
+    volumes:
+      - mission-control-data:/app
+
+volumes:
+  mission-control-data:
