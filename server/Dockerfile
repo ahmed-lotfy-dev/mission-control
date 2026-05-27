@@ -3,26 +3,25 @@ FROM oven/bun:1 AS build-client
 
 WORKDIR /app
 
-# Install client deps
-COPY client/ ./
-WORKDIR /app/client
+# Copy client deps + install
+COPY client/package.json client/bun.lock ./
 RUN bun install --frozen-lockfile
 
-# Build client (vite outputs to /app/client/dist relative to client/)
+# Copy client source and build
+COPY client/ ./
+WORKDIR /app/client
 RUN bun run build
 
 # ── Stage 2: Runtime server ─────────────────────────────────────
 FROM oven/bun:1
 WORKDIR /app
 
-# Copy pre-built client dist into expected location
-COPY --from=build-client /app/client/dist ./client/dist
+# vite.config.ts is at /app/vite.config.ts, so vite outputs to /app/dist
+COPY --from=build-client /app/dist ./client/dist
 
-# Install server dependencies
 COPY server/package.json server/bun.lock ./
 RUN bun install --frozen-lockfile
 
-# Copy server source
 COPY server/src ./src
 
 EXPOSE 3000
