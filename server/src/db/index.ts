@@ -4,7 +4,8 @@ let _db: Database | null = null;
 
 function initDB(): Database {
   if (!_db) {
-    _db = new Database("mission-control.db", { create: true });
+    const dbPath = process.env.DB_PATH || "mission-control.db";
+    _db = new Database(dbPath, { create: true });
     _db.exec("PRAGMA journal_mode = WAL");
     _db.exec("PRAGMA foreign_keys = ON");
   }

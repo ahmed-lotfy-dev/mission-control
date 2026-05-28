@@ -7,10 +7,11 @@ services:
     environment:
       NVIDIA_API_KEY: ${NVIDIA_API_KEY}
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      DB_PATH: /app/data/mission-control.db
     expose:
       - "3000"
     volumes:
-      - mission-control-data:/app
+      - mission-control-data:/app/data
 
 volumes:
   mission-control-data:
