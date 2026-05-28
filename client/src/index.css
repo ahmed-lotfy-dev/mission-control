@@ -255,54 +255,74 @@ body {
   font-size: 14px;
 }
 
-.hamburger-btn {
+/* ══════ Mobile Header ══════ */
+.mobile-header {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background: oklch(0.07 0.014 30);
+  border-bottom: 1px solid var(--border);
+  z-index: 50;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-lg);
+  gap: var(--space-md);
+}
+
+.mobile-header-logo {
+  font-family: "Unbounded", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-bright);
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-header-logo .logo-icon {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, var(--accent-dim), var(--accent));
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+/* Hamburger button (legacy — kept for compatibility) */
+.hamburger-btn {
+  display: none;
+}
+
+/* Mobile menu trigger button */
+.mobile-menu-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 8px;
   background: transparent;
   border: 1px solid var(--border);
   border-radius: 6px;
+  color: var(--text);
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease-out);
 }
 
-.hamburger-btn:hover {
+.mobile-menu-trigger:hover {
   background: var(--accent-surface);
   border-color: var(--border-gold);
 }
 
-.hamburger-btn span {
-  display: block;
-  width: 18px;
-  height: 2px;
-  background: var(--text);
-  border-radius: 2px;
-  transition: all var(--duration-normal) var(--ease-out);
-  transform-origin: center;
+.mobile-agent-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
 }
-
-.hamburger-btn.open span:nth-child(1) {
-  transform: translateY(6px) rotate(45deg);
-}
-.hamburger-btn.open span:nth-child(2) {
-  opacity: 0;
-  transform: scaleX(0);
-}
-.hamburger-btn.open span:nth-child(3) {
-  transform: translateY(-6px) rotate(-45deg);
-}
-
-/* Mobile backdrop */
-.mobile-backdrop {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: oklch(0 0 0 / 0.6);
-  z-index: 59;
-  backdrop-filter: blur(2px);
-}
-
 /* ══════ Sidebar — gilded panel ══════ */
 .sidebar {
   width: var(--sidebar-w);
@@ -469,11 +489,6 @@ body {
   opacity: 0.3;
 }
 
-/* ── Mobile sidebar state ── */
-.sidebar {
-  transition: transform var(--duration-slow) var(--ease-out), opacity var(--duration-normal) var(--ease-out);
-}
-
 /* ── Tablet: compact icon rail ── */
 @media (max-width: 1024px) and (min-width: 769px) {
   .sidebar {
@@ -527,36 +542,156 @@ body {
   }
 }
 
-/* ── Mobile: sidebar hidden, slide-in ── */
+/* ── Mobile: sidebar hidden, replaced by Sheet ── */
 @media (max-width: 768px) {
   .mobile-header {
     display: flex;
   }
 
-  .mobile-backdrop {
-    display: block;
-  }
-
+  /* Hide desktop sidebar on mobile — Sheet replaces it */
   .sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: var(--sidebar-w);
-    z-index: 60;
-    transform: translateX(-100%);
-    opacity: 0;
-    box-shadow: 4px 0 40px oklch(0 0 0 / 0.6);
+    display: none !important;
   }
 
-  .sidebar.open {
-    transform: translateX(0);
-    opacity: 1;
+  /* Hide agent panel on mobile — Sheet replaces it */
+  .agent-panel {
+    display: none;
   }
 
   .main-content {
-    padding-top: 56px !important;
+    padding: 56px var(--space-md) var(--space-2xl) !important;
   }
+}
+
+/* ══════ Shadcn Sheet — Mobile Navigation ══════ */
+.mobile-sheet {
+  background: oklch(0.06 0.013 30) !important;
+  border-right: 1px solid var(--border) !important;
+  width: 280px !important;
+  max-width: 80vw !important;
+  padding: 0 !important;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.mobile-sheet-header {
+  padding: var(--space-xl) var(--space-lg);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+}
+
+.mobile-sheet-header .sidebar-logo {
+  font-family: "Unbounded", sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-bright);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mobile-sheet-header .logo-icon {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, var(--accent-dim), var(--accent));
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.mobile-sheet-nav {
+  flex: 1;
+  padding: var(--space-md) var(--space-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mobile-sheet-nav .nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px var(--space-md);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.mobile-sheet-nav .nav-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-bright);
+}
+
+.mobile-sheet-nav .nav-item.active {
+  background: var(--accent-surface);
+  color: var(--accent-bright);
+}
+
+.mobile-sheet-nav .nav-icon {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.mobile-sheet-footer {
+  padding: var(--space-lg);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+/* ══════ Shadcn Sheet — Mobile Agent Drawer ══════ */
+.mobile-agent-sheet {
+  background: oklch(0.06 0.013 30) !important;
+  border-left: 1px solid var(--border) !important;
+  width: 340px !important;
+  max-width: 90vw !important;
+  padding: 0 !important;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.mobile-agent-sheet .agent-drawer-header {
+  padding: var(--space-lg) var(--space-lg);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: oklch(0.06 0.013 30);
+  z-index: 5;
+}
+
+.mobile-agent-sheet .agent-drawer-header h3 {
+  font-family: "Unbounded", sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-bright);
+  margin: 0;
+}
+
+.mobile-agent-sheet .agent-panel-list {
+  padding: var(--space-md);
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Sheet overlay override for dark theme */
+[data-state="open"] ~ .fixed {
+  background: oklch(0 0 0 / 0.6);
 }
 
 .status-dot {
@@ -901,6 +1036,46 @@ select { cursor: pointer; }
   @keyframes modalSlideUp {
     from { transform: translateY(100%); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
+  }
+
+  /* Form rows — stack on mobile */
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: var(--space-sm);
+  }
+
+  /* Filter bar — horizontal scroll on mobile */
+  .filter-bar {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: var(--space-sm);
+  }
+
+  .filter-bar .filter-pill {
+    flex-shrink: 0;
+  }
+
+  /* Workspace grid — 2 cols on mobile */
+  .workspace-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-sm);
+  }
+
+  .workspace-grid .workspace-thumb {
+    height: 80px;
+  }
+
+  /* Mood buttons — smaller on mobile */
+  .mood-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  /* Page header action buttons — wrap on mobile */
+  .page-header .flex {
+    flex-wrap: wrap;
   }
 }
 
