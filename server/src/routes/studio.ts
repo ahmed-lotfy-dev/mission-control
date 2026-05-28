@@ -12,15 +12,11 @@ const OUTPUT_DIR = join(homedir(), "agent-outputs");
 const NVIDIA_KEY = getNvidiaKey();
 const OPENROUTER_KEY = getOpenRouterKey();
 
-// ── Model Status ──
-// NVIDIA's hosted images/generations API endpoint has been deprecated (404).
-// Only chat completions work on the integrate.api.nvidia.com/v1/ path.
-// Image generation falls back to ImageMagick (`magick`) which is installed locally.
-// For future real AI image gen, options: ComfyUI (local), OpenRouter API, or local GGUF models.
 // ── Image Models ──
 // Local: ImageMagick (always available, no API key)
-// AI: OpenRouter /v1/images/generations (SDXL, Flux, Playground v2.5, etc.)
+// AI: OpenRouter /v1/chat-completions with image-output models
 // Set OPENROUTER_API_KEY in .env to enable AI image generation.
+// Available AI models: Gemini 2.5 Flash Image, Gemini 3.1 Flash Image, GPT-5 Image Mini
 
 export interface ImageModel {
   id: string;
@@ -43,31 +39,31 @@ export const IMAGE_MODELS: ImageModel[] = [
     recommendedFor: "Always available, quick mockups",
   },
   {
-    id: "stabilityai/stable-diffusion-xl-base-1.0",
-    name: "Stable Diffusion XL",
+    id: "google/gemini-2.5-flash-image",
+    name: "Gemini 2.5 Flash Image",
     provider: "OpenRouter",
-    description: "High-quality text-to-image by Stability AI. 1024x1024. Great detail and composition.",
-    speed: "medium",
+    description: "Google's fast image generation model. Great quality, very low cost (~$0.0000003/token). Text + image input, text + image output.",
+    speed: "fast",
     status: "available",
-    recommendedFor: "General purpose, high quality",
+    recommendedFor: "Best value, fast generation",
   },
   {
-    id: "black-forest-labs/flux-dev",
-    name: "Flux.1 Dev",
+    id: "google/gemini-3.1-flash-image-preview",
+    name: "Gemini 3.1 Flash Image (Nano Banana 2)",
     provider: "OpenRouter",
-    description: "Black Forest Labs' flagship model. Excellent photorealism and prompt adherence.",
-    speed: "slow",
+    description: "Google's latest image model. Pro-level quality at Flash speed. Image generation + editing.",
+    speed: "fast",
     status: "available",
-    recommendedFor: "Photorealism, complex scenes",
+    recommendedFor: "Latest quality, image editing",
   },
   {
-    id: "playgroundai/playground-v2.5-1024px-aesthetic",
-    name: "Playground v2.5",
+    id: "openai/gpt-5-image-mini",
+    name: "GPT-5 Image Mini",
     provider: "OpenRouter",
-    description: "Aesthetic-focused model from Playground AI. Vibrant colors, artistic compositions.",
+    description: "OpenAI's compact image model. High quality text-to-image with fast turnaround.",
     speed: "medium",
     status: "available",
-    recommendedFor: "Artistic, vibrant imagery",
+    recommendedFor: "OpenAI ecosystem, reliable output",
   },
 ];
 
@@ -203,9 +199,21 @@ async function generateImageOpenRouter(
     }
 
     const data = (await resp.json()) as any;
-    const imageUrl = data?.choices?.[0]?.message?.content;
 
-    if (!imageUrl || typeof imageUrl !== "string") {
+    // Extract image URL from response — handle both string and array content formats
+    let imageUrl: string | undefined;
+    const content = data?.choices?.[0]?.message?.content;
+    if (typeof content === "string") {
+      imageUrl = content;
+    } else if (Array.isArray(content)) {
+      // Multi-part content: find image_url or text part
+      const imagePart = content.find((p: any) => p?.type === "image_url" || p?.image_url);
+      if (imagePart) {
+        imageUrl = imagePart.image_url?.url || imagePart.image_url;
+      }
+    }
+
+    if (!imageUrl) {
       throw new Error(`OpenRouter returned no image URL. Response: ${JSON.stringify(data).slice(0, 300)}`);
     }
 
