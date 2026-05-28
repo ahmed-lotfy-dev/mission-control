@@ -1174,6 +1174,18 @@ select { cursor: pointer; }
   gap: var(--space-md);
 }
 
+@media (max-width: 768px) {
+  .workspace-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .workspace-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .workspace-item {
   background: var(--bg);
   border: 1px solid var(--border);
@@ -1347,6 +1359,20 @@ tbody td {
 tbody tr:hover td { background: var(--accent-surface); }
 tbody tr:last-child td { border-bottom: none; }
 
+/* Responsive tables — horizontal scroll on mobile */
+@media (max-width: 768px) {
+  .table-wrap {
+    margin: 0 calc(-1 * var(--space-md));
+    padding: 0 var(--space-md);
+    overflow-x: scroll;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table {
+    min-width: 500px;
+  }
+}
+
 /* ══════ Modal — gilded chamber ══════ */
 .modal-overlay {
   position: fixed;
@@ -1410,6 +1436,12 @@ tbody tr:last-child td { border-bottom: none; }
 .form-group label { display: block; font-size: 10px; color: var(--accent); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.08em; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
 .form-actions { display: flex; gap: var(--space-sm); justify-content: flex-end; margin-top: var(--space-lg); }
+
+@media (max-width: 480px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
 
 /* ══════ Vault ══════ */
 .vault-note {
