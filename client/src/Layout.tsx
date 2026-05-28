@@ -140,7 +140,11 @@ export default function Layout() {
       </aside>
 
       {/* ── Main Content ── */}
-      <main className="main-content" key={currentPath}>
+      <main className="main-content" key={currentPath} ref={(el) => {
+        if (el) {
+          gsap.fromTo(el, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" });
+        }
+      }}>
         <Outlet />
       </main>
 

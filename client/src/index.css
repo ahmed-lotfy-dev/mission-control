@@ -860,6 +860,48 @@ select { cursor: pointer; }
   .card-raise {
     padding: var(--space-md);
   }
+
+  /* ── Kanban — vertical stack, single column ── */
+  .kanban-board {
+    flex-direction: column;
+    overflow-x: visible;
+    overflow-y: auto;
+    height: auto;
+    min-height: 0;
+    padding-bottom: var(--space-2xl);
+  }
+
+  .kanban-col {
+    min-width: 100%;
+    max-height: none;
+  }
+
+  .kanban-col-tasks {
+    min-height: 100px;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  /* Modal — full screen on mobile */
+  .modal-overlay {
+    align-items: flex-end;
+    justify-content: stretch;
+    padding: 0;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 100%;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalSlideUp 0.35s var(--ease-out);
+  }
+
+  @keyframes modalSlideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
 }
 
 /* Tablet: adjust main content padding */

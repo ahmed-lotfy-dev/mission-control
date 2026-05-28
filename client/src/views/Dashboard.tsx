@@ -1,13 +1,27 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { api, type DashboardData, getAgentDefaultIcon, timeAgo } from "../lib/api";
+import gsap from "gsap";
 
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState("");
+  const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     api<DashboardData>("/dashboard")
-      .then(setData)
+      .then((d) => {
+        setData(d);
+        // GSAP stagger entrance for stat cards
+        requestAnimationFrame(() => {
+          if (gridRef.current) {
+            gsap.fromTo(
+              gridRef.current.querySelectorAll(".stat-card"),
+              { opacity: 0, y: 24 },
+              { opacity: 1, y: 0, duration: 0.45, stagger: 0.08, ease: "power3.out" }
+            );
+          }
+        });
+      })
       .catch((e) => setError(e.message));
   }, []);
 
@@ -27,7 +41,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid-4 stagger mb-24">
+      <div className="grid-4 stagger mb-24" ref={gridRef}>
         <div className="stat-card">
           <div className="value">{data.tasks.total}</div>
           <div className="label">Total Tasks</div>
