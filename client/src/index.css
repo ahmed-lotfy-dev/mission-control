@@ -214,6 +214,93 @@ body {
 .app-layout {
   display: flex;
   height: 100vh;
+  overflow: hidden;
+}
+
+/* ══════ Mobile Header ══════ */
+.mobile-header {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background: oklch(0.07 0.014 30);
+  border-bottom: 1px solid var(--border);
+  z-index: 50;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-lg);
+  gap: var(--space-md);
+}
+
+.mobile-header-logo {
+  font-family: "Unbounded", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-bright);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-header-logo .logo-icon {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, var(--accent-dim), var(--accent));
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.hamburger-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.hamburger-btn:hover {
+  background: var(--accent-surface);
+  border-color: var(--border-gold);
+}
+
+.hamburger-btn span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: var(--text);
+  border-radius: 2px;
+  transition: all var(--duration-normal) var(--ease-out);
+  transform-origin: center;
+}
+
+.hamburger-btn.open span:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+.hamburger-btn.open span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+.hamburger-btn.open span:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+/* Mobile backdrop */
+.mobile-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: oklch(0 0 0 / 0.6);
+  z-index: 59;
+  backdrop-filter: blur(2px);
 }
 
 /* ══════ Sidebar — gilded panel ══════ */
@@ -380,6 +467,96 @@ body {
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--border-gold), transparent);
   opacity: 0.3;
+}
+
+/* ── Mobile sidebar state ── */
+.sidebar {
+  transition: transform var(--duration-slow) var(--ease-out), opacity var(--duration-normal) var(--ease-out);
+}
+
+/* ── Tablet: compact icon rail ── */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .sidebar {
+    width: 60px;
+  }
+
+  .sidebar-header {
+    padding: var(--space-lg) var(--space-sm);
+    justify-content: center;
+    display: flex;
+  }
+
+  .sidebar-logo span:not(.logo-icon) {
+    display: none;
+  }
+
+  .sidebar-logo {
+    justify-content: center;
+  }
+
+  .nav-item {
+    justify-content: center;
+    padding: 10px;
+  }
+
+  .nav-item span:not(.nav-icon) {
+    display: none;
+  }
+
+  .nav-item.active::before {
+    display: none;
+  }
+
+  .nav-item.active::after {
+    display: none;
+  }
+
+  .sidebar-footer {
+    justify-content: center;
+    font-size: 0;
+  }
+
+  .sidebar-footer .status-dot {
+    margin: 0;
+  }
+
+  .sidebar-footer::after {
+    content: "●";
+    font-size: 8px;
+    color: var(--green);
+  }
+}
+
+/* ── Mobile: sidebar hidden, slide-in ── */
+@media (max-width: 768px) {
+  .mobile-header {
+    display: flex;
+  }
+
+  .mobile-backdrop {
+    display: block;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--sidebar-w);
+    z-index: 60;
+    transform: translateX(-100%);
+    opacity: 0;
+    box-shadow: 4px 0 40px oklch(0 0 0 / 0.6);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  .main-content {
+    padding-top: 56px !important;
+  }
 }
 
 .status-dot {
@@ -629,6 +806,68 @@ select { cursor: pointer; }
 .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-lg); }
 .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-md); }
 .grid-auto { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--space-lg); }
+
+/* Responsive grids */
+@media (max-width: 1024px) {
+  .grid-3 { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 768px) {
+  .grid-2,
+  .grid-3,
+  .grid-4,
+  .grid-auto {
+    grid-template-columns: 1fr;
+  }
+
+  .main-content {
+    padding: var(--space-lg) var(--space-md) var(--space-2xl) !important;
+  }
+
+  .page-header {
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+  }
+
+  .page-header .subtitle {
+    margin-top: 2px;
+  }
+
+  /* Stat cards — single column on mobile */
+  .stat-card {
+    padding: var(--space-md);
+  }
+
+  /* Pipeline bar */
+  .pipeline-bar {
+    height: 8px;
+    border-radius: 4px;
+  }
+
+  /* Hide agent panel on mobile — it becomes a drawer via AgentSidebar */
+  .agent-panel {
+    display: none;
+  }
+
+  /* Agent grid — single column */
+  .agent-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Cards — tighter padding on mobile */
+  .card,
+  .card-raise {
+    padding: var(--space-md);
+  }
+}
+
+/* Tablet: adjust main content padding */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .main-content {
+    padding: var(--space-xl) var(--space-lg) var(--space-2xl) !important;
+  }
+}
 
 /* ── Section separator with ornament ── */
 
@@ -1467,6 +1706,50 @@ tbody tr:last-child td { border-bottom: none; }
 .agent-s-log-level.warn { color: var(--yellow); }
 .agent-s-log-level.error { color: var(--red); }
 .agent-s-log-msg { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ══════ Agent Mobile Drawer ══════ */
+.agent-drawer {
+  display: none;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(320px, 90vw);
+  z-index: 61;
+  background: linear-gradient(180deg, oklch(0.07 0.014 30) 0%, oklch(0.055 0.012 30) 100%);
+  border-left: 1px solid var(--border-gold);
+  box-shadow: -4px 0 40px oklch(0 0 0 / 0.6);
+}
+
+.agent-drawer-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.agent-drawer-header {
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.agent-drawer-header h3 {
+  margin: 0;
+  font-family: "Unbounded", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-bright);
+}
+
+@media (max-width: 768px) {
+  .agent-drawer {
+    display: block;
+  }
+}
 
 /* ── Agent View Grid ── */
 

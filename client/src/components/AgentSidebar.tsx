@@ -8,7 +8,11 @@ import {
   getAgentDefaultIcon,
 } from "../lib/api";
 
-export default function AgentSidebar() {
+interface Props {
+  onMobileOpen?: () => void;
+}
+
+export default function AgentSidebar({ onMobileOpen }: Props) {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [collapsed, setCollapsed] = useState(false);
   const [expanded, setExpanded] = useState<Record<number, boolean>>({});
