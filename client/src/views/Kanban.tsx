@@ -93,7 +93,7 @@ export default function Kanban() {
                     <div className="kanban-task-header">
                       <span className={`badge badge-${t.priority}`}>{t.priority}</span>
                       {t.tags?.map(tag => (
-                        <span key={tag} className="task-tag" style={{ fontSize: 10 }}>{tag}</span>
+                        <span key={tag} className="task-tag text-[10px]">{tag}</span>
                       ))}
                     </div>
                     <div className="kanban-task-title">{t.title}</div>
@@ -129,7 +129,7 @@ export default function Kanban() {
             </div>
             <div className="form-group">
               <label>Description</label>
-              <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Optional details..." rows={3} style={{ resize: "vertical" }} />
+              <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Optional details..." rows={3} className="resize-y" />
             </div>
             <div className="form-row">
               <div className="form-group">

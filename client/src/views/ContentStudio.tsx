@@ -60,10 +60,10 @@ export default function ContentStudio() {
 
       <div className="grid-4 mb-24 stagger">
         {["image", "video", "audio", "text"].map((t) => (
-          <div key={t} className="card card-hover type-card" style={{ cursor: "pointer", textAlign: "center", padding: "24px" }} onClick={() => openNew(t)}>
-            <div style={{ fontSize: 36, marginBottom: 8 }}>{TYPE_ICONS[t]}</div>
-            <div style={{ fontWeight: 600, fontSize: 13 }}>{t.charAt(0).toUpperCase() + t.slice(1)}</div>
-            <div style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 4 }}>Generate {t}</div>
+          <div key={t} className="card card-hover type-card cursor-pointer text-center p-6" onClick={() => openNew(t)}>
+            <div className="text-[36px] mb-2">{TYPE_ICONS[t]}</div>
+            <div className="font-semibold text-[13px]">{t.charAt(0).toUpperCase() + t.slice(1)}</div>
+            <div className="text-[11px] text-text-dim mt-1">Generate {t}</div>
           </div>
         ))}
       </div>
@@ -86,9 +86,9 @@ export default function ContentStudio() {
                 {assets.map((a) => (
                   <tr key={a.id}>
                     <td>{TYPE_ICONS[a.type] || a.type}</td>
-                    <td style={{ fontWeight: 600 }}>{a.title}</td>
+                    <td className="font-semibold">{a.title}</td>
                     <td><span className={`badge badge-${a.status === "done" ? "low" : a.status === "error" ? "urgent" : "medium"}`}>{a.status}</span></td>
-                    <td style={{ color: "var(--text-dim)", fontSize: 12 }}>{formatDate(a.created_at)}</td>
+                    <td className="text-text-dim text-xs">{formatDate(a.created_at)}</td>
                     <td><button className="btn btn-sm btn-danger" onClick={() => remove(a.id)}>×</button></td>
                   </tr>
                 ))}
@@ -97,7 +97,7 @@ export default function ContentStudio() {
           </div>
         ) : (
           <div className="empty-state">
-            <p style={{ marginTop: 12 }}>No assets yet. Click a card above to create one.</p>
+            <p className="mt-3">No assets yet. Click a card above to create one.</p>
           </div>
         )}
       </div>

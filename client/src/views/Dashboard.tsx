@@ -81,10 +81,10 @@ export default function Dashboard() {
           <h1>Dashboard</h1>
           <div className="subtitle">{today}</div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div className="flex items-center gap-2">
           <div className="status-indicator">
             <span className="status-dot online" style={{ width: 8, height: 8 }} />
-            <span style={{ fontSize: 11, color: "var(--text-dim)" }}>All systems operational</span>
+            <span className="text-[11px] text-text-dim">All systems operational</span>
           </div>
         </div>
       </div>
@@ -122,11 +122,11 @@ export default function Dashboard() {
       </div>
 
       {/* Pipeline + Goals */}
-      <div className="grid-2 mb-24" style={{ marginTop: "var(--space-xl)" }}>
+      <div className="grid-2 mb-24 mt-spacing-xl">
         {/* Task Pipeline */}
         <div className="card" ref={pipelineRef}>
           <div className="section-label">Task Pipeline</div>
-          <div className="pipeline-bar" style={{ marginTop: "var(--space-md)" }}>
+          <div className="pipeline-bar mt-spacing-md">
             {([
               { v: tasks.backlog, c: "var(--text-dim)" },
               { v: tasks.todo, c: "var(--accent)" },
@@ -162,13 +162,13 @@ export default function Dashboard() {
         {/* Today's Goals */}
         <div className="card">
           <div className="section-label">Today's Goals</div>
-          <div style={{ marginTop: "var(--space-md)" }}>
+          <div className="mt-spacing-md">
             {data.goals.goals.length > 0 ? (
               <>
-                <div style={{ marginBottom: "var(--space-sm)", fontSize: 11, color: "var(--text-dim)" }}>
+                <div className="mb-spacing-sm text-[11px] text-text-dim">
                   {data.goals.goals.filter(g => g.done).length} / {data.goals.goals.length} completed
                 </div>
-                <div style={{ height: 4, background: "var(--border)", borderRadius: 2, overflow: "hidden", marginBottom: "var(--space-lg)" }}>
+                <div className="h-1 rounded-sm overflow-hidden mb-spacing-lg bg-border">
                   <div style={{
                     height: "100%",
                     width: `${(data.goals.goals.filter(g => g.done).length / Math.max(data.goals.goals.length, 1)) * 100}%`,
@@ -180,14 +180,14 @@ export default function Dashboard() {
                 {data.goals.goals.map((g, i) => (
                   <div key={i} className={`goal-item${g.done ? " done" : ""}`}>
                     <input type="checkbox" checked={g.done} readOnly />
-                    <span style={{ fontSize: 13 }}>{g.text}</span>
+                    <span className="text-[13px]">{g.text}</span>
                   </div>
                 ))}
               </>
             ) : (
-              <div className="empty-state" style={{ padding: "var(--space-xl) 0" }}>
-                <div className="icon" style={{ fontSize: 32 }}>🎯</div>
-                <p style={{ fontSize: 12 }}>No goals for today. Set some to stay on track.</p>
+              <div className="empty-state py-spacing-xl">
+                <div className="icon text-[32px]">🎯</div>
+                <p className="text-xs">No goals for today. Set some to stay on track.</p>
               </div>
             )}
           </div>
@@ -198,7 +198,7 @@ export default function Dashboard() {
       <div className="grid-2">
         <div className="card">
           <div className="section-label">Active Agents</div>
-          <div style={{ marginTop: "var(--space-md)" }}>
+          <div className="mt-spacing-md">
             {data.agents.length > 0 ? (
               data.agents.map((a) => (
                 <div key={a.id} className="agent-row">
@@ -211,9 +211,9 @@ export default function Dashboard() {
                 </div>
               ))
             ) : (
-              <div className="empty-state" style={{ padding: "var(--space-xl) 0" }}>
-                <div className="icon" style={{ fontSize: 32 }}>🤖</div>
-                <p style={{ fontSize: 12 }}>No agents registered yet.</p>
+              <div className="empty-state py-spacing-xl">
+                <div className="icon text-[32px]">🤖</div>
+                <p className="text-xs">No agents registered yet.</p>
               </div>
             )}
           </div>
@@ -221,17 +221,17 @@ export default function Dashboard() {
 
         <div className="card">
           <div className="section-label">Scheduled Tasks</div>
-          <div style={{ marginTop: "var(--space-lg)" }}>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-              <span style={{ fontFamily: "Unbounded, sans-serif", fontSize: 48, fontWeight: 700, color: "var(--text-bright)", letterSpacing: "-0.03em", lineHeight: 1 }}>
+          <div className="mt-spacing-lg">
+            <div className="flex items-baseline gap-2">
+              <span className="font-[Unbounded] text-4xl font-bold text-text-bright tracking-tight leading-none">
                 {data.scheduled.enabled}
               </span>
-              <span style={{ fontSize: 20, color: "var(--text-dim)" }}>/ {data.scheduled.total}</span>
+              <span className="text-xl text-text-dim">/ {data.scheduled.total}</span>
             </div>
-            <div style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 4 }}>
+            <div className="text-[11px] text-text-dim mt-1">
               Active / Total scheduled jobs
             </div>
-            <div style={{ marginTop: "var(--space-lg)", height: 6, background: "var(--border)", borderRadius: 3, overflow: "hidden" }}>
+            <div className="mt-spacing-lg h-1.5 rounded-sm overflow-hidden bg-border">
               <div style={{
                 height: "100%",
                 width: `${(data.scheduled.enabled / Math.max(data.scheduled.total, 1)) * 100}%`,
@@ -241,9 +241,9 @@ export default function Dashboard() {
               }} />
             </div>
             {data.scheduled.total === 0 ? (
-              <div style={{ marginTop: "var(--space-md)", fontSize: 12, color: "var(--text-dim)" }}>No scheduled tasks configured.</div>
+              <div className="mt-spacing-md text-xs text-text-dim">No scheduled tasks configured.</div>
             ) : (
-              <div style={{ marginTop: "var(--space-sm)", fontSize: 12, color: "var(--accent)" }}>
+              <div className="mt-spacing-sm text-xs text-text-accent">
                 {Math.round((data.scheduled.enabled / Math.max(data.scheduled.total, 1)) * 100)}% of jobs active
               </div>
             )}
@@ -253,8 +253,8 @@ export default function Dashboard() {
 
       {/* Recent Content */}
       {data.recentContent.length > 0 && (
-        <div style={{ marginTop: "var(--space-xl)" }}>
-          <div className="section-label" style={{ marginBottom: "var(--space-md)" }}>Recent Content</div>
+        <div className="mt-spacing-xl">
+          <div className="section-label mb-spacing-md">Recent Content</div>
           <div className="content-row">
             {data.recentContent.slice(0, 4).map((asset) => (
               <div key={asset.id} className="content-chip">

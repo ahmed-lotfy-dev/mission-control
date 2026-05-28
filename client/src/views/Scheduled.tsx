@@ -87,15 +87,15 @@ export default function Scheduled() {
                 {tasks.map((t) => (
                   <tr key={t.id}>
                     <td>
-                      <div style={{ fontWeight: 600, fontSize: 13 }}>{t.name}</div>
-                      {t.description && <div style={{ fontSize: 11, color: "var(--text-dim)" }}>{t.description}</div>}
+                      <div className="font-semibold text-[13px]">{t.name}</div>
+                      {t.description && <div className="text-[11px] text-[var(--text-dim)]">{t.description}</div>}
                     </td>
-                    <td><code style={{ fontSize: 12 }}>{t.schedule}</code></td>
+                    <td><code className="text-xs">{t.schedule}</code></td>
                     <td><span className="badge badge-medium">{t.type}</span></td>
                     <td>
-                      <label className="flex gap-xs" style={{ cursor: "pointer", alignItems: "center" }}>
+                      <label className="flex gap-xs cursor-pointer items-center">
                         <input type="checkbox" checked={!!t.enabled} onChange={(e) => toggle(t.id, e.target.checked)} />
-                        <span style={{ fontSize: 12 }}>{t.enabled ? "Active" : "Paused"}</span>
+                        <span className="text-xs">{t.enabled ? "Active" : "Paused"}</span>
                       </label>
                     </td>
                     <td style={{ fontSize: 12, color: "var(--text-dim)" }}>

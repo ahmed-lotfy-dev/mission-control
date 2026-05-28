@@ -141,19 +141,19 @@ export default function Seo() {
             {keywords.length > 0 ? keywords.map((k: any) => {
               const related = JSON.parse(k.related || "[]");
               return (
-                <div key={k.id} style={{ borderBottom: "1px solid var(--border)", padding: "12px 0" }}>
+                <div key={k.id} className="border-b border-border py-3">
                   <div className="flex-between mb-8">
-                    <span style={{ fontWeight: 600, fontSize: 14, color: "var(--text-bright)" }}>{k.keyword}</span>
+                    <span className="font-semibold text-[14px] text-text-bright">{k.keyword}</span>
                     <Button variant="ghost" size="sm" onClick={() => delKwMut.mutate(k.id)}>×</Button>
                   </div>
-                  <div className="flex gap-lg" style={{ fontSize: 12, color: "var(--text-dim)", marginBottom: 8 }}>
-                    <span>Volume: <strong style={{ color: "var(--text-bright)" }}>{k.volume?.toLocaleString()}</strong></span>
-                    <span>Difficulty: <strong style={{ color: k.difficulty > 70 ? "var(--red)" : k.difficulty > 40 ? "var(--yellow)" : "var(--green)" }}>{k.difficulty}%</strong></span>
+                  <div className="flex gap-lg text-xs text-text-dim mb-2">
+                    <span>Volume: <strong className="text-text-bright">{k.volume?.toLocaleString()}</strong></span>
+                    <span>Difficulty: <strong className={k.difficulty > 70 ? "text-red" : k.difficulty > 40 ? "text-yellow" : "text-green"}>{k.difficulty}%</strong></span>
                   </div>
                   <div className="flex flex-wrap gap-xs">{related.slice(0, 4).map((r: any, i: number) => (<span key={i} className="task-tag">{r.keyword}</span>))}</div>
                 </div>
               );
-            }) : <div className="empty-state" style={{ padding: 20 }}><p>No keywords yet.</p></div>}
+            }) : <div className="empty-state p-5"><p>No keywords yet.</p></div>}
           </div>
         </div>
       )}
@@ -178,11 +178,11 @@ export default function Seo() {
             </Form>
             {cMut.data && (
               <div className="card-raise mt-16" style={{ animation: "statEnter 0.3s ease-out" }}>
-                <div style={{ fontWeight: 600, fontSize: 14, color: "var(--text-bright)", marginBottom: 4 }}>{cMut.data.title}</div>
-                <div style={{ fontSize: 12, color: "var(--text-dim)", marginBottom: 12 }}>{cMut.data.metaDescription}</div>
-                <div style={{ fontSize: 11, color: "var(--accent)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600 }}>Headings</div>
-                {(cMut.data.headings || []).map((h: string, i: number) => (<div key={i} style={{ fontSize: 12, color: "var(--text)", padding: "3px 0" }}>H{Math.min(i + 1, 3)}: {h}</div>))}
-                <div style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 12 }}>Words: ~{cMut.data.wordCount}</div>
+                <div className="font-semibold text-[14px] text-text-bright mb-1">{cMut.data.title}</div>
+                <div className="text-xs text-text-dim mb-3">{cMut.data.metaDescription}</div>
+                <div className="text-[11px] text-accent mb-2 uppercase tracking-widest font-semibold">Headings</div>
+                {(cMut.data.headings || []).map((h: string, i: number) => (<div key={i} className="text-xs text-text py-[3px]">H{Math.min(i + 1, 3)}: {h}</div>))}
+                <div className="text-[11px] text-text-dim mt-3">Words: ~{cMut.data.wordCount}</div>
               </div>
             )}
           </div>
@@ -193,12 +193,12 @@ export default function Seo() {
                 <thead><tr><th>Keyword</th><th>Title</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
                 <tbody>{contentList.map((c: any) => (
                   <tr key={c.id}>
-                    <td style={{ fontWeight: 600 }}>{c.keyword}</td>
-                    <td style={{ fontSize: 12, maxWidth: 300, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.title}</td>
+                    <td className="font-semibold">{c.keyword}</td>
+                    <td className="text-xs max-w-[300px] truncate">{c.title}</td>
                     <td><span className="badge badge-low">{c.status}</span></td>
-                    <td style={{ fontSize: 12, color: "var(--text-dim)" }}>{formatDate(c.created_at)}</td>
+                    <td className="text-xs text-text-dim">{formatDate(c.created_at)}</td>
                     <td>
-                      <div className="table-actions" style={{ display: "flex", gap: 6 }}>
+                      <div className="table-actions flex gap-[6px]">
                         <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/seo/content/$contentId", params: { contentId: String(c.id) } })}>View</Button>
                         <Button variant="destructive" size="sm" onClick={(e) => { e.stopPropagation(); delContentMut.mutate(c.id); }}>×</Button>
                       </div>
@@ -206,7 +206,7 @@ export default function Seo() {
                   </tr>
                 ))}</tbody>
               </table></div>
-            ) : <div className="empty-state" style={{ padding: 20 }}><p>No content generated yet.</p></div>}
+            ) : <div className="empty-state p-5"><p>No content generated yet.</p></div>}
           </div>
         </div>
       )}
@@ -232,11 +232,11 @@ export default function Seo() {
             {rankResult?.history && (
               <div className="card-raise mt-16">
                 <h3>Position — #{rankResult.position}</h3>
-                <div className="flex gap-sm mt-12" style={{ alignItems: "flex-end", minHeight: 80 }}>
+                <div className="flex gap-sm mt-12 items-end min-h-[80px]">
                   {rankResult.history.map((r: any, i: number) => (
-                    <div key={i} className="flex-col" style={{ flex: 1, alignItems: "center", gap: 2 }}>
+                    <div key={i} className="flex-col flex-1 items-center gap-[2px]">
                       <div style={{ width: "100%", height: `${Math.max(8, 80 - r.position * 2.5)}px`, background: r.position <= 3 ? "var(--green)" : r.position <= 10 ? "var(--accent)" : "var(--text-dim)", borderRadius: "4px 4px 0 0", minHeight: 4 }} />
-                      <span style={{ fontSize: 8, color: "var(--text-dim)", whiteSpace: "nowrap" }}>{r.date?.slice(5)}</span>
+                      <span className="text-[8px] text-text-dim whitespace-nowrap">{r.date?.slice(5)}</span>
                     </div>
                   ))}
                 </div>
@@ -253,19 +253,19 @@ export default function Seo() {
                 <thead><tr><th>Keyword</th><th>Position</th><th>Date</th><th>URL</th></tr></thead>
                 <tbody>{filteredRanks.map((r: any) => (
                   <tr key={r.id}>
-                    <td style={{ fontWeight: 600 }}>{r.keyword}</td>
+                    <td className="font-semibold">{r.keyword}</td>
                     <td><span className={`badge badge-${r.position <= 3 ? "low" : r.position <= 10 ? "medium" : "high"}`}>#{r.position}</span></td>
-                    <td style={{ fontSize: 12, color: "var(--text-dim)" }}>{formatDate(r.check_date)}</td>
-                    <td style={{ fontSize: 12, color: "var(--text-dim)", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis" }}>{r.url}</td>
+                    <td className="text-xs text-text-dim">{formatDate(r.check_date)}</td>
+                    <td className="text-xs text-text-dim max-w-[20px] overflow-hidden text-ellipsis">{r.url}</td>
                   </tr>
                 ))}</tbody>
               </table></div>
-            ) : <div className="empty-state" style={{ padding: 20 }}><p>No ranking data yet.</p></div>}
+            ) : <div className="empty-state p-5"><p>No ranking data yet.</p></div>}
           </div>
         </div>
       )}
 
-      {/* ══════ AUDIT — shadcn Form + Zod + Toast + Enter ══════ */}
+      {/* ══════ AUDIT ══════ */}
       {tab === "audit" && (
         <div>
           <div className="card mb-24">
@@ -301,24 +301,24 @@ export default function Seo() {
           <div className="card">
             <h3>Audit History</h3>
             {auditLoading ? (
-              <div className="loading-state" style={{ padding: 20 }}><div className="loading-spinner" /></div>
+              <div className="loading-state p-5"><div className="loading-spinner" /></div>
             ) : auditHistory.length > 0 ? (
               <div className="table-wrap mt-12"><table>
                 <thead><tr><th>URL</th><th>Score</th><th>Issues</th><th>Date</th><th>Actions</th></tr></thead>
                 <tbody>{auditHistory.map((a) => (
                   <tr
                     key={a.id}
+                    className="cursor-pointer transition-[background] duration-150"
                     onClick={() => navigate({ to: "/seo/report/$auditId", params: { auditId: String(a.id) } })}
-                    style={{ cursor: "pointer", transition: "background 0.15s" }}
                     onMouseEnter={(e) => (e.currentTarget.style.background = "var(--accent-surface)")}
                     onMouseLeave={(e) => (e.currentTarget.style.background = "")}
                   >
-                    <td style={{ fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 250 }}>{a.url}</td>
+                    <td className="font-semibold truncate whitespace-nowrap max-w-[250px]">{a.url}</td>
                     <td><span className={`badge badge-${a.score >= 70 ? "low" : a.score >= 40 ? "medium" : "urgent"}`}>{a.score}/100</span></td>
-                    <td style={{ fontSize: 12, color: "var(--text-dim)" }}>{(a.issues || []).length} issues</td>
-                    <td style={{ fontSize: 12, color: "var(--text-dim)" }}>{formatDate(a.created_at)}</td>
+                    <td className="text-xs text-text-dim">{(a.issues || []).length} issues</td>
+                    <td className="text-xs text-text-dim">{formatDate(a.created_at)}</td>
                     <td>
-                      <div style={{ display: "flex", gap: 6 }} onClick={(e) => e.stopPropagation()}>
+                      <div className="flex gap-[6px]" onClick={(e) => e.stopPropagation()}>
                         <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/seo/report/$auditId", params: { auditId: String(a.id) } })}>View</Button>
                         <Button variant="destructive" size="sm" onClick={() => delAuditMut.mutate(a.id)}>×</Button>
                       </div>
@@ -326,7 +326,7 @@ export default function Seo() {
                   </tr>
                 ))}</tbody>
               </table></div>
-            ) : <div className="empty-state" style={{ padding: 20 }}><p>No audits yet. Run one above.</p></div>}
+            ) : <div className="empty-state p-5"><p>No audits yet. Run one above.</p></div>}
           </div>
         </div>
       )}

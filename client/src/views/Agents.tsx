@@ -173,10 +173,10 @@ export default function Agents() {
 
                 {/* Actions */}
                 <div className="agent-card-actions">
-                  <button className="btn btn-sm btn-ghost" onClick={() => ping(a.id)} disabled={pingRes === "loading"} style={{ flex: 1 }}>
+                  <button className="btn btn-sm btn-ghost flex-1" onClick={() => ping(a.id)} disabled={pingRes === "loading"}>
                     {pingRes === "loading" ? "⏳" : "📡"} Ping
                   </button>
-                  <button className="btn btn-sm btn-ghost" onClick={() => toggleLogs(a.id)} style={{ flex: 1 }}>
+                  <button className="btn btn-sm btn-ghost flex-1" onClick={() => toggleLogs(a.id)}>
                     {expandedLogs[a.id] ? "▲" : "▼"} Logs
                   </button>
                   <button className="btn btn-sm btn-ghost" onClick={() => openEdit(a)}>Edit</button>
@@ -189,10 +189,13 @@ export default function Agents() {
                     className="agent-ping-result"
                     style={{ borderColor: pingRes.responsive ? "var(--green)" : "var(--red)" }}
                   >
-                    <span style={{ color: pingRes.responsive ? "var(--green)" : "var(--red)", fontWeight: 600 }}>
+                    <span
+                      className="font-semibold"
+                      style={{ color: pingRes.responsive ? "var(--green)" : "var(--red)" }}
+                    >
                       {pingRes.responsive ? "✓ ONLINE" : "✗ OFFLINE"}
                     </span>
-                    <span style={{ color: "var(--text-dim)" }}>
+                    <span className="text-[var(--text-dim)]">
                       {" · "}{pingRes.details}
                       {pingRes.responseTimeMs != null && pingRes.responseTimeMs > 0 && ` · ${pingRes.responseTimeMs}ms`}
                     </span>

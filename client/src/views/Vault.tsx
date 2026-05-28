@@ -49,9 +49,9 @@ export default function Vault() {
       {stats && (
         <div className="grid-4 mb-24 stagger">
           {Object.entries(stats.folders).slice(0, 8).map(([folder, count]) => (
-            <div key={folder} className="stat-card" style={{ cursor: "pointer" }}>
-              <div className="value" style={{ fontSize: 20 }}>{count}</div>
-              <div className="label" style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{folder}</div>
+            <div key={folder} className="stat-card cursor-pointer">
+              <div className="value text-[20px]">{count}</div>
+              <div className="label overflow-hidden text-ellipsis">{folder}</div>
             </div>
           ))}
         </div>
@@ -62,7 +62,7 @@ export default function Vault() {
           placeholder="Search notes..."
           value={search}
           onChange={(e) => handleSearch(e.target.value)}
-          style={{ maxWidth: 320 }}
+          className="max-w-[320px]"
         />
       </div>
 
@@ -71,7 +71,7 @@ export default function Vault() {
           ? display.slice(0, 100).map((n) => (
               <div key={n.id} className="vault-note">
                 <span className="note-icon">📄</span>
-                <div style={{ flex: 1 }}>
+                <div className="flex-1">
                   <div className="note-title">{n.title}</div>
                   <div className="note-path">{n.folder}/{n.path.split("/").pop()}</div>
                 </div>

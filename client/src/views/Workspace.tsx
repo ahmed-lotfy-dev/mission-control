@@ -51,8 +51,8 @@ export default function Workspace() {
           <h1>Workspace</h1>
           <div className="subtitle">{workspacePath} · {counts.total} files</div>
         </div>
-        <div className="flex gap-sm" style={{ alignItems: "center" }}>
-          <span style={{ fontSize: 11, color: "var(--text-dim)" }}>auto-refresh 30s</span>
+        <div className="flex gap-sm items-center">
+          <span className="text-[11px] text-[var(--text-dim)]">auto-refresh 30s</span>
           <button className="btn btn-sm" onClick={load}>Refresh</button>
         </div>
       </div>
@@ -65,12 +65,12 @@ export default function Workspace() {
             onClick={() => { setFilter(f.key); setPreviewIndex(null); }}
           >
             {f.icon} {f.label}
-            <span className={`badge badge-${f.key === "all" ? "medium" : "low"}`} style={{ fontSize: 9 }}>
+            <span className={`badge badge-${f.key === "all" ? "medium" : "low"} text-[9px]`}>
               {f.key === "all" ? counts.total : (counts as any)[f.key]}
             </span>
           </button>
         ))}
-        <span style={{ marginLeft: "auto", fontSize: 11, color: "var(--text-dim)" }}>
+        <span className="ml-auto text-[11px] text-[var(--text-dim)]">
           {filteredFiles.length} file{filteredFiles.length !== 1 ? "s" : ""}
         </span>
       </div>
@@ -135,25 +135,24 @@ export default function Workspace() {
             ) : previewFile.type === "video" ? (
               <video src={`/api/workspace/file?path=${encodeURIComponent(previewFile.path)}`} controls autoPlay />
             ) : previewFile.type === "audio" ? (
-              <div className="card" style={{ padding: 40, minWidth: 400, textAlign: "center" }}>
-                <div style={{ fontSize: 48, marginBottom: 16 }}>🔊</div>
-                <div style={{ fontWeight: 600, fontSize: 16, color: "var(--text-bright)", marginBottom: 8 }}>{previewFile.name}</div>
-                <div style={{ fontSize: 12, color: "var(--text-dim)", marginBottom: 20 }}>{previewFile.sizeFormatted}</div>
-                <audio src={`/api/workspace/file?path=${encodeURIComponent(previewFile.path)}`} controls autoPlay style={{ width: "100%" }} />
+              <div className="card p-10 min-w-[400px] text-center">
+                <div className="text-5xl mb-4">🔊</div>
+                <div className="font-semibold text-base mb-2 text-[var(--text-bright)]">{previewFile.name}</div>
+                <div className="text-xs mb-5 text-[var(--text-dim)]">{previewFile.sizeFormatted}</div>
+                <audio src={`/api/workspace/file?path=${encodeURIComponent(previewFile.path)}`} controls autoPlay className="w-full" />
               </div>
             ) : (
-              <div className="card" style={{ padding: 40, minWidth: 400, maxWidth: 500, textAlign: "center" }}>
-                <div style={{ fontSize: 48, marginBottom: 16 }}>📄</div>
-                <div style={{ fontWeight: 600, fontSize: 16, color: "var(--text-bright)", marginBottom: 8 }}>{previewFile.name}</div>
-                <div style={{ fontSize: 13, color: "var(--text-dim)" }}>{previewFile.sizeFormatted} · {previewFile.mime}</div>
-                <div style={{ fontSize: 12, color: "var(--text-dim)", marginTop: 8 }}>
+              <div className="card p-10 min-w-[400px] max-w-[500px] text-center">
+                <div className="text-5xl mb-4">📄</div>
+                <div className="font-semibold text-base mb-2 text-[var(--text-bright)]">{previewFile.name}</div>
+                <div className="text-sm text-[var(--text-dim)]">{previewFile.sizeFormatted} · {previewFile.mime}</div>
+                <div className="text-xs mt-2 text-[var(--text-dim)]">
                   Created: {new Date(previewFile.createdAt).toLocaleString()}
                 </div>
                 <a
                   href={`/api/workspace/file?path=${encodeURIComponent(previewFile.path)}`}
                   download={previewFile.name}
-                  className="btn btn-primary mt-16"
-                  style={{ textDecoration: "none", display: "inline-flex" }}
+                  className="btn btn-primary mt-4 no-underline inline-flex"
                 >
                   ⬇ Download
                 </a>

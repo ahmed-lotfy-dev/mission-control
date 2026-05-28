@@ -83,11 +83,11 @@ export default function Daily() {
               ? data.goals.map((g, i) => (
                   <div key={i} className={`goal-item${g.done ? " done" : ""}`}>
                     <input type="checkbox" checked={g.done} onChange={() => toggleGoal(i)} />
-                    <span style={{ flex: 1, fontSize: 13 }}>{g.text}</span>
+                    <span className="flex-1 text-[13px]">{g.text}</span>
                     <button className="btn btn-sm btn-ghost" onClick={() => removeGoal(i)}>✕</button>
                   </div>
                 ))
-              : <div style={{ fontSize: 13, color: "var(--text-dim)", marginBottom: 12 }}>No goals yet.</div>
+              : <div className="text-[13px] text-text-dim mb-3">No goals yet.</div>
             }
           </div>
           <div className="flex gap-sm mt-12">
@@ -120,11 +120,10 @@ export default function Daily() {
           <div className="card">
             <h3>Journal</h3>
             <textarea
-              className="mt-12"
+              className="mt-12 min-h-[200px]"
               value={data.journal}
               onChange={(e) => setData({ ...data, journal: e.target.value })}
               placeholder="What happened today? Thoughts, decisions, ideas..."
-              style={{ minHeight: 200 }}
             />
             <button className="btn btn-primary mt-12" onClick={saveJournal}>Save Journal</button>
           </div>
