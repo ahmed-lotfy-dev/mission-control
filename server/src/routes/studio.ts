@@ -173,32 +173,42 @@ async function generateImageOpenRouter(
   await ensureDirs();
   const outputPaths: string[] = [];
 
-  // OpenRouter images/generations API
-  const resp = await fetch("https://openrouter.ai/api/v1/images/generations", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${OPENROUTER_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      prompt,
-      n: count,
-      size: `${width}x${height}`,
-      ...(negativePrompt ? { negative_prompt: negativePrompt } : {}),
-    }),
-    signal: AbortSignal.timeout(120_000),
-  });
+  const results: string[] = [];
 
-  if (!resp.ok) {
-    const errText = await resp.text().catch(() => "unknown error");
-    throw new Error(`OpenRouter API error ${resp.status}: ${errText.slice(0, 200)}`);
-  }
+  for (let i = 0; i < count; i++) {
+    const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${OPENROUTER_KEY}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://control.ahmedlotfy.site",
+        "X-Title": "Mission Control Studio",
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+        ...(negativePrompt ? { negative_prompt: negativePrompt } : {}),
+      }),
+      signal: AbortSignal.timeout(120_000),
+    });
 
-  const data = (await resp.json()) as { data: Array<{ url: string }> };
+    if (!resp.ok) {
+      const errText = await resp.text().catch(() => "unknown error");
+      throw new Error(`OpenRouter API error ${resp.status}: ${errText.slice(0, 200)}`);
+    }
 
-  for (let i = 0; i < data.data.length; i++) {
-    const imageUrl = data.data[i].url;
+    const data = (await resp.json()) as any;
+    const imageUrl = data?.choices?.[0]?.message?.content;
+
+    if (!imageUrl || typeof imageUrl !== "string") {
+      throw new Error(`OpenRouter returned no image URL. Response: ${JSON.stringify(data).slice(0, 300)}`);
+    }
+
     const hash = createHash("md5").update(prompt + i + Date.now()).digest("hex").slice(0, 8);
     const slug = prompt.replace(/[^a-zA-Z0-9_ ]/g, "").trim().slice(0, 40).replace(/\s+/g, "-");
     const filename = `img-${slug || "image"}-ai-${hash}.png`;
@@ -207,10 +217,10 @@ async function generateImageOpenRouter(
     const imgResp = await fetch(imageUrl, { signal: AbortSignal.timeout(30_000) });
     const buffer = Buffer.from(await imgResp.arrayBuffer());
     await writeFile(outputPath, buffer);
-    outputPaths.push(outputPath);
+    results.push(outputPath);
   }
 
-  return outputPaths;
+  return results;
 }
 
 // ── Track in content_assets ──
