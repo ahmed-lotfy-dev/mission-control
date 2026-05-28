@@ -1,14 +1,55 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-/* ═══════════════════════════════════════════
-   Mission Control — Emile Kwalski Design System
-   Atmospheric dark command aesthetic
-   ═══════════════════════════════════════════ */
+@theme {
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 24px;
+  --spacing-2xl: 32px;
+  --spacing-3xl: 48px;
+
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-lg: 12px;
+
+  --color-bg-deep: oklch(0.055 0.012 30);
+  --color-bg: oklch(0.085 0.015 28);
+  --color-bg-raise: oklch(0.115 0.018 26);
+  --color-bg-hover: oklch(0.155 0.020 25);
+  --color-border: oklch(0.20 0.025 35);
+  --color-border-bright: oklch(0.30 0.035 40);
+  --color-border-gold: oklch(0.55 0.10 70 / 0.3);
+  --color-text: oklch(0.78 0.015 45);
+  --color-text-dim: oklch(0.45 0.02 35);
+  --color-text-bright: oklch(0.92 0.01 45);
+  --color-accent: oklch(0.60 0.105 70);
+  --color-accent-dim: oklch(0.45 0.09 70);
+  --color-accent-bright: oklch(0.72 0.12 70);
+  --color-accent-glow: oklch(0.60 0.105 70 / 0.12);
+  --color-accent-surface: oklch(0.60 0.105 70 / 0.06);
+  --color-green: oklch(0.55 0.09 155);
+  --color-green-dim: oklch(0.38 0.07 155);
+  --color-yellow: oklch(0.60 0.10 80);
+  --color-orange: oklch(0.58 0.12 55);
+  --color-red: oklch(0.50 0.11 25);
+  --color-red-dim: oklch(0.35 0.09 25);
+  --color-purple: oklch(0.52 0.08 295);
+
+  --animate-sidebar-enter: sidebarEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-content-enter: contentEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-stat-enter: statEnter 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-task-enter: taskEnter 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-overlay-enter: overlayEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-modal-enter: modalEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-modal-slide-up: modalSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-pulse: pulse 2s ease-out infinite;
+  --animate-ambient-drift: ambientDrift 20s ease-in-out infinite;
+}
 
 @layer base {
   :root {
+    /* Shadcn design tokens */
     --background: 30 8% 9%;
     --foreground: 45 15% 78%;
     --card: 28 8% 12%;
@@ -29,70 +70,69 @@
     --input: 35 8% 22%;
     --ring: 70 10% 60%;
     --radius: 0.5rem;
+
+    /* Mission Control — Emile Kwalski Design System */
+    /* Surface — warm charcoal, aged obsidian */
+    --bg-deep: oklch(0.055 0.012 30);
+    --bg: oklch(0.085 0.015 28);
+    --bg-raise: oklch(0.115 0.018 26);
+    --bg-hover: oklch(0.155 0.020 25);
+    --border: oklch(0.20 0.025 35);
+    --border-bright: oklch(0.30 0.035 40);
+    --border-gold: oklch(0.55 0.10 70 / 0.3);
+
+    /* Text — warm ivory, never cold gray */
+    --text: oklch(0.78 0.015 45);
+    --text-dim: oklch(0.45 0.02 35);
+    --text-bright: oklch(0.92 0.01 45);
+
+    /* Accent — aged gold, not modern yellow */
+    --accent: oklch(0.60 0.105 70);
+    --accent-dim: oklch(0.45 0.09 70);
+    --accent-bright: oklch(0.72 0.12 70);
+    --accent-glow: oklch(0.60 0.105 70 / 0.12);
+    --accent-surface: oklch(0.60 0.105 70 / 0.06);
+
+    /* Semantic — patina, rust, amber */
+    --green: oklch(0.55 0.09 155);
+    --green-dim: oklch(0.38 0.07 155);
+    --yellow: oklch(0.60 0.10 80);
+    --orange: oklch(0.58 0.12 55);
+    --red: oklch(0.50 0.11 25);
+    --red-dim: oklch(0.35 0.09 25);
+    --purple: oklch(0.52 0.08 295);
+
+    /* Shadows — atmospheric depth */
+    --shadow-sm: 0 1px 3px oklch(0 0 0 / 0.4), 0 1px 2px oklch(0 0 0 / 0.3);
+    --shadow-md: 0 4px 16px oklch(0 0 0 / 0.45), 0 2px 4px oklch(0 0 0 / 0.35);
+    --shadow-lg: 0 8px 40px oklch(0 0 0 / 0.5), 0 4px 8px oklch(0 0 0 / 0.4);
+    --shadow-glow-accent: 0 0 24px var(--accent-glow);
+    --shadow-inner: inset 0 1px 0 oklch(1 1 1 / 0.03);
+
+    /* Radii — slightly architectural */
+    --radius-sm: 4px;
+    --radius: 8px;
+    --radius-lg: 12px;
+
+    /* Spacing */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 12px;
+    --space-lg: 16px;
+    --space-xl: 24px;
+    --space-2xl: 32px;
+    --space-3xl: 48px;
+
+    /* Sidebar */
+    --sidebar-w: 240px;
+
+    /* Transitions */
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    --duration-fast: 150ms;
+    --duration-normal: 250ms;
+    --duration-slow: 400ms;
   }
-}
-
-:root {
-  /* Surface — warm charcoal, aged obsidian */
-  --bg-deep: oklch(0.055 0.012 30);
-  --bg: oklch(0.085 0.015 28);
-  --bg-raise: oklch(0.115 0.018 26);
-  --bg-hover: oklch(0.155 0.020 25);
-  --border: oklch(0.20 0.025 35);
-  --border-bright: oklch(0.30 0.035 40);
-  --border-gold: oklch(0.55 0.10 70 / 0.3);
-
-  /* Text — warm ivory, never cold gray */
-  --text: oklch(0.78 0.015 45);
-  --text-dim: oklch(0.45 0.02 35);
-  --text-bright: oklch(0.92 0.01 45);
-
-  /* Accent — aged gold, not modern yellow */
-  --accent: oklch(0.60 0.105 70);
-  --accent-dim: oklch(0.45 0.09 70);
-  --accent-bright: oklch(0.72 0.12 70);
-  --accent-glow: oklch(0.60 0.105 70 / 0.12);
-  --accent-surface: oklch(0.60 0.105 70 / 0.06);
-
-  /* Semantic — patina, rust, amber */
-  --green: oklch(0.55 0.09 155);
-  --green-dim: oklch(0.38 0.07 155);
-  --yellow: oklch(0.60 0.10 80);
-  --orange: oklch(0.58 0.12 55);
-  --red: oklch(0.50 0.11 25);
-  --red-dim: oklch(0.35 0.09 25);
-  --purple: oklch(0.52 0.08 295);
-
-  /* Shadows — atmospheric depth */
-  --shadow-sm: 0 1px 3px oklch(0 0 0 / 0.4), 0 1px 2px oklch(0 0 0 / 0.3);
-  --shadow-md: 0 4px 16px oklch(0 0 0 / 0.45), 0 2px 4px oklch(0 0 0 / 0.35);
-  --shadow-lg: 0 8px 40px oklch(0 0 0 / 0.5), 0 4px 8px oklch(0 0 0 / 0.4);
-  --shadow-glow-accent: 0 0 24px var(--accent-glow);
-  --shadow-inner: inset 0 1px 0 oklch(1 1 1 / 0.03);
-
-  /* Radii — slightly architectural */
-  --radius-sm: 4px;
-  --radius: 8px;
-  --radius-lg: 12px;
-
-  /* Spacing */
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-md: 12px;
-  --space-lg: 16px;
-  --space-xl: 24px;
-  --space-2xl: 32px;
-  --space-3xl: 48px;
-
-  /* Sidebar */
-  --sidebar-w: 240px;
-
-  /* Transitions */
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-  --duration-fast: 150ms;
-  --duration-normal: 250ms;
-  --duration-slow: 400ms;
 }
 
 /* ── Ambient background animation ── */
@@ -161,30 +201,28 @@
 
 /* ── Decorative SVG ornament (injected via pseudo-elements) ── */
 
-@layer ornaments {
-  .ornament-divider {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 16px 0;
-    color: var(--border-gold);
-    opacity: 0.6;
-  }
+.ornament-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  color: var(--border-gold);
+  opacity: 0.6;
+}
 
-  .ornament-divider::before {
-    content: "— — —";
-    letter-spacing: 6px;
-    font-family: monospace;
-    font-size: 10px;
-    opacity: 0.4;
-    flex: 1;
-  }
+.ornament-divider::before {
+  content: "— — —";
+  letter-spacing: 6px;
+  font-family: monospace;
+  font-size: 10px;
+  opacity: 0.4;
+  flex: 1;
+}
 
-  .ornament-divider::after {
-    content: "✦";
-    font-size: 10px;
-    opacity: 0.7;
-  }
+.ornament-divider::after {
+  content: "✦";
+  font-size: 10px;
+  opacity: 0.7;
 }
 
 /* Reset */
@@ -317,12 +355,6 @@ body {
   border-color: var(--border-gold);
 }
 
-.mobile-agent-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px;
-}
 /* ══════ Sidebar — gilded panel ══════ */
 .sidebar {
   width: var(--sidebar-w);
@@ -649,44 +681,6 @@ body {
   gap: 8px;
   font-size: 12px;
   color: var(--text-dim);
-}
-
-/* ══════ Shadcn Sheet — Mobile Agent Drawer ══════ */
-.mobile-agent-sheet {
-  background: oklch(0.06 0.013 30) !important;
-  border-left: 1px solid var(--border) !important;
-  width: 340px !important;
-  max-width: 90vw !important;
-  padding: 0 !important;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-}
-
-.mobile-agent-sheet .agent-drawer-header {
-  padding: var(--space-lg) var(--space-lg);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky;
-  top: 0;
-  background: oklch(0.06 0.013 30);
-  z-index: 5;
-}
-
-.mobile-agent-sheet .agent-drawer-header h3 {
-  font-family: "Unbounded", sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text-bright);
-  margin: 0;
-}
-
-.mobile-agent-sheet .agent-panel-list {
-  padding: var(--space-md);
-  flex: 1;
-  overflow-y: auto;
 }
 
 /* Sheet overlay override for dark theme */
@@ -2299,50 +2293,6 @@ html { scroll-behavior: smooth; }
 .agent-s-log-level.warn { color: var(--yellow); }
 .agent-s-log-level.error { color: var(--red); }
 .agent-s-log-msg { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-/* ══════ Agent Mobile Drawer ══════ */
-.agent-drawer {
-  display: none;
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: min(320px, 90vw);
-  z-index: 61;
-  background: linear-gradient(180deg, oklch(0.07 0.014 30) 0%, oklch(0.055 0.012 30) 100%);
-  border-left: 1px solid var(--border-gold);
-  box-shadow: -4px 0 40px oklch(0 0 0 / 0.6);
-}
-
-.agent-drawer-panel {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-}
-
-.agent-drawer-header {
-  padding: var(--space-md) var(--space-lg);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.agent-drawer-header h3 {
-  margin: 0;
-  font-family: "Unbounded", sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-bright);
-}
-
-@media (max-width: 768px) {
-  .agent-drawer {
-    display: block;
-  }
-}
 
 /* ── Agent View Grid ── */
 

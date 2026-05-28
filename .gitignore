@@ -5,3 +5,4 @@ mission-control.db-shm
 *.sqlite
 *.sqlite3
 .DS_Store
+client/dist/
