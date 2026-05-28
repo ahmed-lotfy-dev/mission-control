@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   api,
   type Agent,
@@ -9,6 +9,7 @@ import {
   formatTime,
   getAgentDefaultIcon,
 } from "../lib/api";
+import gsap from "gsap";
 
 export default function Agents() {
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -19,10 +20,22 @@ export default function Agents() {
   const [expandedLogs, setExpandedLogs] = useState<Record<number, boolean>>({});
   const [pingResults, setPingResults] = useState<Record<number, AgentPingResult | "loading">>({});
   const [logCache, setLogCache] = useState<Record<number, AgentLog[]>>({});
+  const gridRef = useRef<HTMLDivElement>(null);
 
   const load = () => {
     setLoading(true);
-    api<Agent[]>("/agents").then(setAgents).finally(() => setLoading(false));
+    api<Agent[]>("/agents").then((data) => {
+      setAgents(data);
+      requestAnimationFrame(() => {
+        if (gridRef.current) {
+          gsap.fromTo(
+            gridRef.current.querySelectorAll(".agent-card"),
+            { opacity: 0, y: 20, scale: 0.96 },
+            { opacity: 1, y: 0, scale: 1, duration: 0.4, stagger: 0.07, ease: "back.out(1.4)" }
+          );
+        }
+      });
+    }).finally(() => setLoading(false));
   };
 
   useEffect(load, []);
@@ -111,7 +124,7 @@ export default function Agents() {
           <button className="btn btn-primary mt-16" onClick={openNew}>Register your first agent</button>
         </div>
       ) : (
-        <div className="agent-grid stagger">
+        <div className="agent-grid stagger" ref={gridRef}>
           {agents.map((a) => {
             const icon = a.icon || getAgentDefaultIcon(a.name);
             const meta = (a.metadata || {}) as Record<string, string>;

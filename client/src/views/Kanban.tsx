@@ -1,180 +1,156 @@
-import { useEffect, useState, useRef } from "react";
-import { api, type Task } from "../lib/api";
-
-const COLUMNS = [
-  { key: "backlog" as const, label: "Backlog", icon: "📥" },
-  { key: "todo" as const, label: "To Do", icon: "📌" },
-  { key: "in_progress" as const, label: "In Progress", icon: "🔄" },
-  { key: "done" as const, label: "Done", icon: "✅" },
-];
-
-const PRIORITIES = ["low", "medium", "high", "urgent"] as const;
+import { useEffect, useState } from "react";
+import { api, type KanbanBoard } from "../lib/api";
 
 export default function Kanban() {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [board, setBoard] = useState<KanbanBoard | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
-  const [form, setForm] = useState({ title: "", description: "", status: "backlog", priority: "medium", project: "", tags: "", dueDate: "" });
-  const dragRef = useRef<number | null>(null);
+  const [form, setForm] = useState({ title: "", description: "", status: "todo", priority: "medium", tags: "" });
+  const [dragging, setDragging] = useState<number | null>(null);
+  const [dragOver, setDragOver] = useState<string | null>(null);
 
-  const load = () => {
-    setLoading(true);
-    api<Task[]>("/tasks")
-      .then(setTasks)
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  };
+  useEffect(() => {
+    api<KanbanBoard>("/kanban").then(setBoard).finally(() => setLoading(false));
+  }, []);
 
-  useEffect(load, []);
-
-  const openNew = () => {
-    setEditId(null);
-    setForm({ title: "", description: "", status: "backlog", priority: "medium", project: "", tags: "", dueDate: "" });
-    setShowModal(true);
-  };
-
-  const openEdit = (t: Task) => {
+  const openNew = () => { setEditId(null); setForm({ title: "", description: "", status: "todo", priority: "medium", tags: "" }); setShowModal(true); };
+  const openEdit = (t: typeof board extends null ? never : NonNullable<typeof board>["tasks"][0]) => {
     setEditId(t.id);
-    setForm({ title: t.title, description: t.description, status: t.status, priority: t.priority, project: t.project, tags: t.tags, dueDate: t.due_date });
+    setForm({ title: t.title, description: t.description, status: t.status, priority: t.priority, tags: t.tags?.join(", ") ?? "" });
     setShowModal(true);
   };
 
   const save = async () => {
     if (!form.title.trim()) return;
-    const body = JSON.stringify(form);
-    if (editId) {
-      await api(`/tasks/${editId}`, { method: "PATCH", body });
-    } else {
-      await api("/tasks", { method: "POST", body });
-    }
+    const body = JSON.stringify({ ...form, tags: form.tags ? form.tags.split(",").map(t => t.trim()).filter(Boolean) : [] });
+    if (editId) await api(`/tasks/${editId}`, { method: "PATCH", body });
+    else await api("/tasks", { method: "POST", body });
     setShowModal(false);
-    load();
+    const b = await api<KanbanBoard>("/kanban");
+    setBoard(b);
   };
 
   const remove = async (id: number) => {
-    if (!confirm("Delete this task?")) return;
+    if (!confirm("Remove this task?")) return;
     await api(`/tasks/${id}`, { method: "DELETE" });
-    load();
+    const b = await api<KanbanBoard>("/kanban");
+    setBoard(b);
   };
 
-  const move = async (id: number, status: string) => {
-    await api(`/tasks/${id}`, { method: "PATCH", body: JSON.stringify({ status }) });
-    load();
+  const drop = async (status: string) => {
+    if (dragging === null) return;
+    await api(`/tasks/${dragging}`, { method: "PATCH", body: JSON.stringify({ status }) });
+    const b = await api<KanbanBoard>("/kanban");
+    setBoard(b);
+    setDragging(null);
+    setDragOver(null);
   };
 
-  const onDragStart = (id: number) => {
-    dragRef.current = id;
-  };
+  const cols = ["backlog", "todo", "in_progress", "done"] as const;
+  const colLabels: Record<string, string> = { backlog: "Backlog", todo: "To Do", in_progress: "In Progress", done: "Done" };
+  const colColors: Record<string, string> = { backlog: "var(--text-dim)", todo: "var(--accent)", in_progress: "var(--yellow)", done: "var(--green)" };
 
-  const onDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-
-  const onDrop = (status: string) => {
-    if (dragRef.current != null) {
-      move(dragRef.current, status);
-      dragRef.current = null;
-    }
-  };
-
-  if (error) return <div className="loading-state">Error: {error}</div>;
-  if (loading) return <div className="loading-state"><div className="loading-spinner" />Loading...</div>;
+  if (loading) return <div className="loading-state"><div className="loading-spinner" /><span>Loading board...</span></div>;
 
   return (
     <div>
       <div className="page-header">
         <div>
           <h1>Kanban Board</h1>
-          <div className="subtitle">{tasks.length} tasks</div>
+          <div className="subtitle">{board?.tasks.length ?? 0} tasks · {board?.tasks.filter(t => t.status === "done").length ?? 0} done</div>
         </div>
         <button className="btn btn-primary" onClick={openNew}>+ New Task</button>
       </div>
 
+      {/* Board */}
       <div className="kanban-board">
-        {COLUMNS.map((col) => {
-          const colTasks = tasks.filter((t) => t.status === col.key);
+        {cols.map((col) => {
+          const tasks = board?.tasks.filter(t => t.status === col) ?? [];
           return (
-            <div key={col.key} className="kanban-col">
+            <div
+              key={col}
+              className={`kanban-col${dragOver === col ? " drag-over" : ""}`}
+              onDragOver={(e) => { e.preventDefault(); setDragOver(col); }}
+              onDragLeave={() => setDragOver(null)}
+              onDrop={() => drop(col)}
+            >
               <div className="kanban-col-header">
-                <div className="flex gap-xs" style={{ alignItems: "center" }}>
-                  <span>{col.icon}</span>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-bright)" }}>{col.label}</span>
-                </div>
-                <span className="count">{colTasks.length}</span>
+                <span className="kanban-col-indicator" style={{ background: colColors[col] }} />
+                <span className="kanban-col-title">{colLabels[col]}</span>
+                <span className="kanban-col-count" style={{ background: `${colColors[col]}20`, color: colColors[col] }}>{tasks.length}</span>
               </div>
-              <div
-                className="kanban-col-tasks"
-                onDragOver={onDragOver}
-                onDrop={() => onDrop(col.key)}
-              >
-                {colTasks.map((t) => (
+              <div className="kanban-col-tasks">
+                {tasks.map((t) => (
                   <div
                     key={t.id}
-                    className="task-card"
+                    className="kanban-task"
                     draggable
-                    onDragStart={() => onDragStart(t.id)}
+                    onDragStart={() => { setDragging(t.id); }}
+                    onDragEnd={() => { setDragging(null); setDragOver(null); }}
+                    onClick={() => openEdit(t)}
                   >
-                    <div className="task-title">{t.title}</div>
-                    {t.description && <div className="task-desc">{t.description}</div>}
-                    <div className="task-meta">
-                      <div className="task-tags">
-                        {t.project && <span className="task-tag task-project-tag">{t.project}</span>}
-                        <span className={`badge badge-${t.priority}`}>{t.priority}</span>
-                      </div>
-                      <div className="flex gap-xs">
+                    <div className="kanban-task-header">
+                      <span className={`badge badge-${t.priority}`}>{t.priority}</span>
+                      {t.tags?.map(tag => (
+                        <span key={tag} className="task-tag" style={{ fontSize: 10 }}>{tag}</span>
+                      ))}
+                    </div>
+                    <div className="kanban-task-title">{t.title}</div>
+                    {t.description && <div className="kanban-task-desc">{t.description}</div>}
+                    <div className="kanban-task-meta">
+                      {t.due_date && (
+                        <span className="kanban-task-date">📅 {new Date(t.due_date).toLocaleDateString()}</span>
+                      )}
+                      <div className="kanban-task-actions" onClick={(e) => e.stopPropagation()}>
                         <button className="btn btn-sm btn-ghost" onClick={() => openEdit(t)}>Edit</button>
-                        <button className="btn btn-sm btn-danger" onClick={() => remove(t.id)}>×</button>
+                        <button className="btn btn-sm btn-danger" onClick={() => remove(t.id)}>Del</button>
                       </div>
                     </div>
                   </div>
                 ))}
+                {tasks.length === 0 && (
+                  <div className="kanban-empty-col">Drop tasks here</div>
+                )}
               </div>
             </div>
           );
         })}
       </div>
 
+      {/* Modal */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h2>{editId ? "Edit Task" : "New Task"}</h2>
             <div className="form-group">
               <label>Title</label>
-              <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="What needs to be done?" />
+              <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="What needs to be done?" autoFocus />
             </div>
             <div className="form-group">
               <label>Description</label>
-              <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Details..." />
+              <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Optional details..." rows={3} style={{ resize: "vertical" }} />
             </div>
             <div className="form-row">
               <div className="form-group">
                 <label>Status</label>
                 <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
-                  {COLUMNS.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
+                  {cols.map(c => <option key={c} value={c}>{colLabels[c]}</option>)}
                 </select>
               </div>
               <div className="form-group">
                 <label>Priority</label>
                 <select value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })}>
-                  {PRIORITIES.map((p) => <option key={p} value={p}>{p}</option>)}
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
                 </select>
               </div>
             </div>
-            <div className="form-row">
-              <div className="form-group">
-                <label>Project</label>
-                <input value={form.project} onChange={(e) => setForm({ ...form, project: e.target.value })} placeholder="Project name" />
-              </div>
-              <div className="form-group">
-                <label>Due Date</label>
-                <input type="date" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })} />
-              </div>
-            </div>
             <div className="form-group">
-              <label>Tags</label>
-              <input value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} placeholder="frontend, bug, urgent" />
+              <label>Tags (comma-separated)</label>
+              <input value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} placeholder="design, frontend, urgent" />
             </div>
             <div className="form-actions">
               <button className="btn" onClick={() => setShowModal(false)}>Cancel</button>

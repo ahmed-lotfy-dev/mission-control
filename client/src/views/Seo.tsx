@@ -198,7 +198,7 @@ export default function Seo() {
                     <td><span className="badge badge-low">{c.status}</span></td>
                     <td style={{ fontSize: 12, color: "var(--text-dim)" }}>{formatDate(c.created_at)}</td>
                     <td>
-                      <div style={{ display: "flex", gap: 6 }}>
+                      <div className="table-actions" style={{ display: "flex", gap: 6 }}>
                         <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/seo/content/$contentId", params: { contentId: String(c.id) } })}>View</Button>
                         <Button variant="destructive" size="sm" onClick={(e) => { e.stopPropagation(); delContentMut.mutate(c.id); }}>×</Button>
                       </div>

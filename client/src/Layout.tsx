@@ -28,6 +28,8 @@ export default function Layout() {
   const [agentDrawerOpen, setAgentDrawerOpen] = useState(false);
   const sidebarRef = useRef<HTMLElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
+  const mainRef = useRef<HTMLDivElement>(null);
+  const prevPath = useRef(currentPath);
 
   // GSAP: open sidebar with slide-in animation
   const openSidebar = () => {
@@ -65,6 +67,16 @@ export default function Layout() {
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, [sidebarOpen]);
+
+  // GSAP entrance animation on route change (without remounting the view)
+  useEffect(() => {
+    if (prevPath.current !== currentPath) {
+      prevPath.current = currentPath;
+      if (mainRef.current) {
+        gsap.fromTo(mainRef.current, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" });
+      }
+    }
+  }, [currentPath]);
 
   return (
     <div className="app-layout">
@@ -140,11 +152,7 @@ export default function Layout() {
       </aside>
 
       {/* ── Main Content ── */}
-      <main className="main-content" key={currentPath} ref={(el) => {
-        if (el) {
-          gsap.fromTo(el, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" });
-        }
-      }}>
+      <main className="main-content" ref={mainRef}>
         <Outlet />
       </main>
 

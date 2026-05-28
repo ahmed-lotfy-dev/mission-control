@@ -4,22 +4,23 @@ import { join, extname } from "node:path";
 import { homedir } from "node:os";
 import { spawn, execSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { getNvidiaKey, formatSize, getMime, listRecentAssets } from "../lib/helpers";
+import { getNvidiaKey, getOpenRouterKey, formatSize, getMime, listRecentAssets } from "../lib/helpers";
 import { db } from "../db";
+import { standardLimiter } from "../lib/rate-limit";
 
 const OUTPUT_DIR = join(homedir(), "agent-outputs");
 const NVIDIA_KEY = getNvidiaKey();
+const OPENROUTER_KEY = getOpenRouterKey();
 
 // ── Model Status ──
 // NVIDIA's hosted images/generations API endpoint has been deprecated (404).
 // Only chat completions work on the integrate.api.nvidia.com/v1/ path.
 // Image generation falls back to ImageMagick (`magick`) which is installed locally.
 // For future real AI image gen, options: ComfyUI (local), OpenRouter API, or local GGUF models.
-
-// ── Video status ──
-// NVIDIA Cosmos video generation is available via NVCF but requires authorization.
-// The `cosmos-predict1-5b` function exists but is owned by another account.
-// Until authorized, video generation produces metadata placeholders.
+// ── Image Models ──
+// Local: ImageMagick (always available, no API key)
+// AI: OpenRouter /v1/images/generations (SDXL, Flux, Playground v2.5, etc.)
+// Set OPENROUTER_API_KEY in .env to enable AI image generation.
 
 export interface ImageModel {
   id: string;
@@ -32,7 +33,42 @@ export interface ImageModel {
 }
 
 export const IMAGE_MODELS: ImageModel[] = [
-  { id: "imagemagick", name: "ImageMagick", provider: "Local", description: "Built-in image generation via ImageMagick — no API key needed. Works offline.", speed: "fast", status: "available", recommendedFor: "Always available, quick mockups" },
+  {
+    id: "imagemagick",
+    name: "ImageMagick",
+    provider: "Local",
+    description: "Built-in image generation via ImageMagick — no API key needed. Works offline.",
+    speed: "fast",
+    status: "available",
+    recommendedFor: "Always available, quick mockups",
+  },
+  {
+    id: "stabilityai/stable-diffusion-xl-base-1.0",
+    name: "Stable Diffusion XL",
+    provider: "OpenRouter",
+    description: "High-quality text-to-image by Stability AI. 1024x1024. Great detail and composition.",
+    speed: "medium",
+    status: "available",
+    recommendedFor: "General purpose, high quality",
+  },
+  {
+    id: "black-forest-labs/flux-dev",
+    name: "Flux.1 Dev",
+    provider: "OpenRouter",
+    description: "Black Forest Labs' flagship model. Excellent photorealism and prompt adherence.",
+    speed: "slow",
+    status: "available",
+    recommendedFor: "Photorealism, complex scenes",
+  },
+  {
+    id: "playgroundai/playground-v2.5-1024px-aesthetic",
+    name: "Playground v2.5",
+    provider: "OpenRouter",
+    description: "Aesthetic-focused model from Playground AI. Vibrant colors, artistic compositions.",
+    speed: "medium",
+    status: "available",
+    recommendedFor: "Artistic, vibrant imagery",
+  },
 ];
 
 export interface VideoModel {
@@ -121,6 +157,62 @@ async function generateImageLocal(
   return outputPaths;
 }
 
+// ── Image via OpenRouter API (real AI) ──
+async function generateImageOpenRouter(
+  prompt: string,
+  model: string,
+  width: number = 1024,
+  height: number = 1024,
+  count: number = 1,
+  negativePrompt?: string,
+): Promise<string[]> {
+  if (!OPENROUTER_KEY) {
+    throw new Error("OPENROUTER_API_KEY not set. Add it to .env or ~/.hermes/.env");
+  }
+
+  await ensureDirs();
+  const outputPaths: string[] = [];
+
+  // OpenRouter images/generations API
+  const resp = await fetch("https://openrouter.ai/api/v1/images/generations", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${OPENROUTER_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      prompt,
+      n: count,
+      size: `${width}x${height}`,
+      ...(negativePrompt ? { negative_prompt: negativePrompt } : {}),
+    }),
+    signal: AbortSignal.timeout(120_000),
+  });
+
+  if (!resp.ok) {
+    const errText = await resp.text().catch(() => "unknown error");
+    throw new Error(`OpenRouter API error ${resp.status}: ${errText.slice(0, 200)}`);
+  }
+
+  const data = (await resp.json()) as { data: Array<{ url: string }> };
+
+  for (let i = 0; i < data.data.length; i++) {
+    const imageUrl = data.data[i].url;
+    const hash = createHash("md5").update(prompt + i + Date.now()).digest("hex").slice(0, 8);
+    const slug = prompt.replace(/[^a-zA-Z0-9_ ]/g, "").trim().slice(0, 40).replace(/\s+/g, "-");
+    const filename = `img-${slug || "image"}-ai-${hash}.png`;
+    const outputPath = join(OUTPUT_DIR, "images", filename);
+
+    const imgResp = await fetch(imageUrl, { signal: AbortSignal.timeout(30_000) });
+    const buffer = Buffer.from(await imgResp.arrayBuffer());
+    await writeFile(outputPath, buffer);
+    outputPaths.push(outputPath);
+  }
+
+  return outputPaths;
+}
+
 // ── Track in content_assets ──
 function trackAsset(type: string, title: string, prompt: string, filePath: string, status: string, metadata: Record<string, any> = {}) {
   const now = new Date().toISOString();
@@ -133,6 +225,7 @@ function trackAsset(type: string, title: string, prompt: string, filePath: strin
 // ── Routes ──
 
 export const studioRoutes = new Elysia({ prefix: "/api/studio" })
+  .use(standardLimiter)
 
   // ── List available models ──
   .get("/models", () => ({
@@ -153,15 +246,34 @@ export const studioRoutes = new Elysia({ prefix: "/api/studio" })
     }
   }, { body: t.Object({ text: t.String({ minLength: 1, maxLength: 5000 }), voice: t.Optional(t.String()) }) })
 
-  // ── Image (ImageMagick local generation) ──
+  // ── Image ──
   .post("/image", async ({ body }) => {
     try {
       const numImages = body.numImages || 1;
-      const outputPaths = await generateImageLocal(body.prompt, body.width, body.height, numImages);
+      const model = body.model || "imagemagick";
+      const isAiModel = model !== "imagemagick";
+
+      let outputPaths: string[];
+      let method: string;
+
+      if (isAiModel) {
+        outputPaths = await generateImageOpenRouter(
+          body.prompt,
+          model,
+          body.width,
+          body.height,
+          numImages,
+          body.negativePrompt,
+        );
+        method = `openrouter/${model}`;
+      } else {
+        outputPaths = await generateImageLocal(body.prompt, body.width, body.height, numImages);
+        method = "imagemagick";
+      }
 
       const results = outputPaths.map((p) => {
         const rel = p.replace(OUTPUT_DIR, "").replace(/^\//, "");
-        trackAsset("image", body.prompt, body.prompt, p, "done", { method: "imagemagick", width: body.width, height: body.height });
+        trackAsset("image", body.prompt, body.prompt, p, "done", { method, model, width: body.width, height: body.height });
         return {
           file: p,
           filename: p.split("/").pop(),
@@ -169,16 +281,18 @@ export const studioRoutes = new Elysia({ prefix: "/api/studio" })
         };
       });
 
-      return { status: "done", images: results, count: results.length, method: "imagemagick" };
+      return { status: "done", images: results, count: results.length, method };
     } catch (e: any) {
       return { status: "error", error: e.message };
     }
   }, {
     body: t.Object({
       prompt: t.String({ minLength: 1, maxLength: 4000 }),
+      model: t.Optional(t.String()),
       numImages: t.Optional(t.Number()),
       width: t.Optional(t.Number()),
       height: t.Optional(t.Number()),
+      negativePrompt: t.Optional(t.String()),
     }),
   })
 

@@ -1,3 +1,5 @@
+import { toast } from "sonner";
+
 const BASE = "/api";
 
 export async function api<T = any>(path: string, opts?: RequestInit): Promise<T> {
@@ -5,7 +7,12 @@ export async function api<T = any>(path: string, opts?: RequestInit): Promise<T>
     headers: { "Content-Type": "application/json" },
     ...opts,
   });
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    const msg = body?.error || `API error: ${res.status} ${res.statusText}`;
+    toast.error(msg, { duration: 5000 });
+    throw new Error(msg);
+  }
   return res.json();
 }
 

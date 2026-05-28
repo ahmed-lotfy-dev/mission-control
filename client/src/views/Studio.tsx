@@ -230,7 +230,7 @@ export default function Studio() {
         <div>
           <h1>🎬 Studio</h1>
           <div className="subtitle">
-            TTS via edge-tts · Images via ImageMagick · Generation history · ~/agent-outputs/
+            TTS via edge-tts · Images via OpenRouter AI + ImageMagick · Generation history · ~/agent-outputs/
           </div>
         </div>
         <button className="btn btn-sm btn-ghost" onClick={refresh}>Refresh</button>
@@ -338,8 +338,8 @@ export default function Studio() {
           <div className="card">
             <h3>Generate Image</h3>
             <small style={{ color: "var(--text-dim)" }}>
-              Powered by ImageMagick 7 — local, no API key needed.
-              {imageModels.length <= 1 && " NVIDIA hosted image gen API was deprecated."}
+              Powered by OpenRouter AI + ImageMagick 7.
+              {selectedModel?.provider === "Local" ? " Using local ImageMagick (no API key)." : ` Using ${selectedModel?.name || "AI"} via OpenRouter.`}
             </small>
 
             <textarea
@@ -349,6 +349,40 @@ export default function Studio() {
               placeholder="Describe the image you want to generate..."
               style={{ minHeight: 100 }}
             />
+
+            {/* Model selector */}
+            {imageModels.length > 1 && (
+              <div className="form-row mt-12">
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label>Model</label>
+                  <select value={imgModel} onChange={(e) => setImgModel(e.target.value)}>
+                    {imageModels.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {SPEED_ICONS[m.speed] || "⚡"} {m.name} ({m.provider})
+                      </option>
+                    ))}
+                  </select>
+                  {selectedModel && (
+                    <div style={{ fontSize: 10, color: "var(--text-dim)", marginTop: 4 }}>
+                      {selectedModel.description}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Negative prompt (for AI models) */}
+            <div className="form-row mt-12">
+              <div className="form-group" style={{ flex: 1 }}>
+                <label>Negative Prompt <span style={{ fontSize: 9, color: "var(--text-dim)", fontWeight: 400 }}>(optional, AI models only)</span></label>
+                <input
+                  type="text"
+                  value={imgNegative}
+                  onChange={(e) => setImgNegative(e.target.value)}
+                  placeholder="Things to avoid: blurry, low quality, ugly..."
+                />
+              </div>
+            </div>
 
             {/* Batch count + Aspect ratio */}
             <div className="form-row mt-12">
@@ -382,7 +416,7 @@ export default function Studio() {
               <div className="mt-12" style={{ animation: "statEnter 0.3s var(--ease-out)" }}>
                 <div style={{ fontWeight: 600, fontSize: 13, color: "var(--green)", marginBottom: 8 }}>
                   ✅ {imgResults.length} image{imgResults.length > 1 ? "s" : ""} generated
-                  <span style={{ color: "var(--text-dim)", fontWeight: 400 }}> · ImageMagick</span>
+                  <span style={{ color: "var(--text-dim)", fontWeight: 400 }}> · {selectedModel?.name || "ImageMagick"}</span>
                 </div>
                 <div className={imgResults.length > 1 ? "grid-2" : ""} style={{ gap: 8 }}>
                   {imgResults.map((path, i) => (

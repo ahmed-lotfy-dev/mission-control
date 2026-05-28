@@ -12,8 +12,37 @@ import Seo from "./views/Seo";
 import SeoReport from "./features/seo/components/SeoReport";
 import SeoContentPreview from "./features/seo/components/SeoContentPreview";
 
+// ── Route-level error fallback ──
+function RouteErrorComponent({ error }: { error: Error }) {
+  return (
+    <div className="card" style={{ padding: 32, textAlign: "center" }}>
+      <div style={{ fontSize: 40, marginBottom: 12 }}>⚠️</div>
+      <h2>Route Error</h2>
+      <p style={{ color: "var(--red)", fontSize: 13, marginTop: 8 }}>
+        {error.message || "An unexpected error occurred while rendering this view"}
+      </p>
+      <button
+        className="btn btn-primary mt-16"
+        onClick={() => window.location.reload()}
+      >
+        Reload
+      </button>
+    </div>
+  );
+}
+
 const rootRoute = createRootRoute({
   component: Layout,
+  errorComponent: RouteErrorComponent,
+  notFoundComponent: () => (
+    <div className="card" style={{ padding: 48, textAlign: "center" }}>
+      <div style={{ fontSize: 64, marginBottom: 16 }}>🛸</div>
+      <h1 style={{ margin: 0 }}>404</h1>
+      <p style={{ color: "var(--text-dim)", marginTop: 8 }}>
+        This page drifted off into deep space.
+      </p>
+    </div>
+  ),
 });
 
 const dashboardRoute = createRoute({ getParentRoute: () => rootRoute, path: "/", component: Dashboard });

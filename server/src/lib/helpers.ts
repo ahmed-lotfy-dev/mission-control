@@ -136,6 +136,10 @@ export function getNvidiaKey(): string | null {
   return getApiKey("NVIDIA_API_KEY");
 }
 
+export function getOpenRouterKey(): string | null {
+  return getApiKey("OPENROUTER_API_KEY");
+}
+
 // ── Agent process detection ──
 
 const PROCESS_MAP: Record<string, { pattern: string; detect: "pid" | "proc" | "pgrep" }> = {

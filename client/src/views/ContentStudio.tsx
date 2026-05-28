@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { api, type ContentAsset, formatDate } from "../lib/api";
+import gsap from "gsap";
 
 const TYPE_ICONS: Record<string, string> = { image: "🖼️", video: "🎬", audio: "🔊", text: "📝" };
 
@@ -13,7 +14,13 @@ export default function ContentStudio() {
 
   const load = () => {
     setLoading(true);
-    api<ContentAsset[]>("/content").then(setAssets).finally(() => setLoading(false));
+    api<ContentAsset[]>("/content").then((data) => {
+      setAssets(data);
+      requestAnimationFrame(() => {
+        const cards = document.querySelectorAll(".type-card");
+        if (cards.length) gsap.fromTo(cards, { opacity: 0, y: 24, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, stagger: 0.08, ease: "back.out(1.5)" });
+      });
+    }).finally(() => setLoading(false));
   };
 
   useEffect(load, []);
@@ -53,7 +60,7 @@ export default function ContentStudio() {
 
       <div className="grid-4 mb-24 stagger">
         {["image", "video", "audio", "text"].map((t) => (
-          <div key={t} className="card card-hover" style={{ cursor: "pointer", textAlign: "center", padding: "24px" }} onClick={() => openNew(t)}>
+          <div key={t} className="card card-hover type-card" style={{ cursor: "pointer", textAlign: "center", padding: "24px" }} onClick={() => openNew(t)}>
             <div style={{ fontSize: 36, marginBottom: 8 }}>{TYPE_ICONS[t]}</div>
             <div style={{ fontWeight: 600, fontSize: 13 }}>{t.charAt(0).toUpperCase() + t.slice(1)}</div>
             <div style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 4 }}>Generate {t}</div>

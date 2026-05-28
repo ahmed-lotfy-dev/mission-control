@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { safeJson, timeAgoStr, formatSize } from "../src/lib/helpers";
+import { safeJson, timeAgoStr, formatSize } from "../server/src/lib/helpers";
 
 // ── categorizeIssue (re-implemented from seo.ts for test) ──
 

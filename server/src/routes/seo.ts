@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { join, extname } from "node:path";
 import { homedir } from "node:os";
 import { getNvidiaKey, timeAgoStr } from "../lib/helpers";
+import { strictLimiter } from "../lib/rate-limit";
 
 const NVIDIA_KEY = getNvidiaKey();
 
@@ -291,6 +292,7 @@ async function crawlUrl(url: string) {
 // ── Routes ──
 
 export const seoRoutes = new Elysia({ prefix: "/api/seo" })
+  .use(strictLimiter)
 
   // ── Keywords ──
   .get("/keywords", () => db.query("SELECT * FROM seo_keywords ORDER BY created_at DESC").all())
