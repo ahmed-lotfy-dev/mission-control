@@ -83,7 +83,7 @@ export default function Dashboard() {
         </div>
         <div className="flex items-center gap-2">
           <div className="status-indicator">
-            <span className="status-dot online" style={{ width: 8, height: 8 }} />
+            <span className="status-dot online w-2 h-2" />
             <span className="text-[11px] text-text-dim">All systems operational</span>
           </div>
         </div>

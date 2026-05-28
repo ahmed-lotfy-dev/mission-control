@@ -98,7 +98,7 @@ export default function Scheduled() {
                         <span className="text-xs">{t.enabled ? "Active" : "Paused"}</span>
                       </label>
                     </td>
-                    <td style={{ fontSize: 12, color: "var(--text-dim)" }}>
+                    <td className="text-xs text-text-dim">
                       {t.last_run ? (
                         <>{timeAgo(t.last_run)} <span className={`badge badge-${t.last_status === "success" ? "low" : "urgent"}`}>{t.last_status}</span></>
                       ) : "Never"}
