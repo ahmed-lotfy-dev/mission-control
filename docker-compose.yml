@@ -9,3 +9,8 @@ services:
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
     expose:
       - "3000"
+    volumes:
+      - mission-control-data:/data
+
+volumes:
+  mission-control-data:

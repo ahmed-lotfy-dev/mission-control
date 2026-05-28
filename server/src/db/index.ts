@@ -4,7 +4,12 @@ let _db: Database | null = null;
 
 function initDB(): Database {
   if (!_db) {
-    _db = new Database("mission-control.db", { create: true });
+    const dbPath = process.env.DB_PATH || "/data/mission-control.db";
+    const dir = dbPath.substring(0, dbPath.lastIndexOf("/"));
+    if (dir && dir !== "/data" && !Bun.file(dir).exists()) {
+      try { Bun.write(dir + "/.keep", ""); } catch {}
+    }
+    _db = new Database(dbPath, { create: true });
     _db.exec("PRAGMA journal_mode = WAL");
     _db.exec("PRAGMA foreign_keys = ON");
   }
