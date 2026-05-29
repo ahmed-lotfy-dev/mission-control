@@ -9,6 +9,7 @@ import Scheduled from "./views/Scheduled";
 import Workspace from "./views/Workspace";
 import Studio from "./views/Studio";
 import Seo from "./views/Seo";
+import Gallery from "./views/Gallery";
 import SeoReport from "./features/seo/components/SeoReport";
 import SeoContentPreview from "./features/seo/components/SeoContentPreview";
 
@@ -53,6 +54,7 @@ const dailyRoute = createRoute({ getParentRoute: () => rootRoute, path: "/daily"
 const scheduledRoute = createRoute({ getParentRoute: () => rootRoute, path: "/scheduled", component: Scheduled });
 const workspaceRoute = createRoute({ getParentRoute: () => rootRoute, path: "/workspace", component: Workspace });
 const studioRoute = createRoute({ getParentRoute: () => rootRoute, path: "/studio", component: Studio });
+const galleryRoute = createRoute({ getParentRoute: () => rootRoute, path: "/gallery", component: Gallery });
 const seoRoute = createRoute({ getParentRoute: () => rootRoute, path: "/seo", component: Seo });
 const seoReportRoute = createRoute({ getParentRoute: () => rootRoute, path: "/seo/report/$auditId", component: SeoReport });
 const seoContentPreviewRoute = createRoute({ getParentRoute: () => rootRoute, path: "/seo/content/$contentId", component: SeoContentPreview });
@@ -66,6 +68,7 @@ const routeTree = rootRoute.addChildren([
   scheduledRoute,
   workspaceRoute,
   studioRoute,
+  galleryRoute,
   seoRoute,
   seoReportRoute,
   seoContentPreviewRoute,

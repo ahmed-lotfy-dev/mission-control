@@ -5,6 +5,7 @@ import { homedir } from "node:os";
 import { spawn, execSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { getNvidiaKey, getOpenRouterKey, getGeminiKey, getCloudflareAccountId, getCloudflareApiToken, formatSize, getMime, listRecentAssets } from "../lib/helpers";
+import { uploadToR2, isR2Configured } from "../lib/r2";
 import { db } from "../db";
 import { standardLimiter } from "../lib/rate-limit";
 
@@ -14,6 +15,7 @@ const OPENROUTER_KEY = getOpenRouterKey();
 const GEMINI_KEY = getGeminiKey();
 const CF_ACCOUNT_ID = getCloudflareAccountId();
 const CF_API_TOKEN = getCloudflareApiToken();
+const R2_ENABLED = isR2Configured();
 
 // ── Model Status ──
 // NVIDIA's hosted images/generations API endpoint has been deprecated (404).
@@ -215,6 +217,7 @@ async function generateImageGoogle(prompt: string, model: string, count: number)
       const filename = "img-" + promptSlug + "-" + modelSlug + "-" + (i + 1) + ".png";
       const outputPath = join(OUTPUT_DIR, "images", filename);
       await writeFile(outputPath, Buffer.from(base64, "base64"));
+      backupToR2(outputPath, filename);
       results.push(outputPath);
     }
   }
@@ -258,6 +261,7 @@ async function generateImageNvidiaNIM(prompt: string, model: string, width: numb
     const filename = "img-" + promptSlug + "-" + modelSlug + "-" + (i + 1) + ".png";
     const outputPath = join(OUTPUT_DIR, "images", filename);
     await writeFile(outputPath, buf);
+    backupToR2(outputPath, filename);
     results.push(outputPath);
   }
   return results;
@@ -299,6 +303,8 @@ async function generateImageCloudflare(prompt: string, model: string, count: num
     const filename = "img-" + promptSlug + "-" + modelSlug + "-" + (i + 1) + ".png";
     const outputPath = join(OUTPUT_DIR, "images", filename);
     await writeFile(outputPath, buffer);
+    const fname = outputPath.split("/").pop() || "image.png";
+    backupToR2(outputPath, fname);
     results.push(outputPath);
   }
   return results;
@@ -363,6 +369,8 @@ async function generateImageOpenRouter(
     const imgResp = await fetch(imageUrl, { signal: AbortSignal.timeout(30_000) });
     const buffer = Buffer.from(await imgResp.arrayBuffer());
     await writeFile(outputPath, buffer);
+    const fname = outputPath.split("/").pop() || "image.png";
+    backupToR2(outputPath, fname);
     results.push(outputPath);
   }
 
@@ -599,3 +607,52 @@ export const serveRoutes = new Elysia()
       return new Response("Error", { status: 500 });
     }
   }, { params: t.Object({ type: t.String(), filename: t.String() }) });
+
+// ── R2 proxy routes (serves files from Cloudflare R2) ─────────────────
+
+import { listR2Files, getR2File } from "../lib/r2";
+
+export const r2Routes = new Elysia({ prefix: "/api/r2" })
+  // List files in R2 bucket, grouped by model
+  .get("/files", async ({ query }) => {
+    try {
+      const prefix = query.prefix || "images/";
+      const files = await listR2Files(prefix, 200);
+      // Group by model slug
+      const grouped: Record<string, any[]> = {};
+      for (const f of files) {
+        const model = f.modelSlug || "unknown";
+        if (!grouped[model]) grouped[model] = [];
+        grouped[model].push(f);
+      }
+      return { files, grouped, count: files.length, r2Enabled: R2_ENABLED };
+    } catch (e: any) {
+      return { files: [], grouped: {}, count: 0, r2Enabled: R2_ENABLED, error: e.message };
+    }
+  })
+
+  // Get a single file from R2
+  .get("/file", async ({ query }) => {
+    const key = query.key as string;
+    if (!key) return new Response("Missing key", { status: 400 });
+    try {
+      const result = await getR2File(key);
+      if (!result) return new Response("Not found", { status: 404 });
+      return new Response(result.data, {
+        headers: { "Content-Type": result.contentType, "Cache-Control": "public, max-age=86400" },
+      });
+    } catch (e: any) {
+      return new Response("Error: " + e.message, { status: 500 });
+    }
+  });
+
+// ── Hook R2 upload after every image generation ─────────────────────────
+
+async function backupToR2(localPath: string, filename: string): Promise<void> {
+  if (!R2_ENABLED) return;
+  try {
+    await uploadToR2(localPath, filename);
+  } catch (e: any) {
+    console.error("[R2] Backup failed:", e.message);
+  }
+}
