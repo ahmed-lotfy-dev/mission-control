@@ -5,11 +5,11 @@ services:
       dockerfile: server/Dockerfile
     restart: unless-stopped
     environment:
-      NVIDIA_API_KEY: ${NVIDIA_API_KEY}
-      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
-      GEMINI_API_TOKEN: ${GEMINI_API_TOKEN}
-      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN}
-      CLOUDFLARE_ACCOUNT_ID: ${CLOUDFLARE_ACCOUNT_ID}
+      NVIDIA_API_KEY: ${NVIDIA_API_KEY:-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      GEMINI_API_TOKEN: ${GEMINI_API_TOKEN:-}
+      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:-}
+      CLOUDFLARE_ACCOUNT_ID: ${CLOUDFLARE_ACCOUNT_ID:-}
       DB_PATH: /data/mission-control.db
     expose:
       - "3000"
