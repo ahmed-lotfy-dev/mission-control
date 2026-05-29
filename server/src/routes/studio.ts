@@ -107,6 +107,19 @@ async function ensureDirs() {
   }
 }
 
+// ── Generate meaningful filename from prompt ──
+// Takes first 5 meaningful words, cleans them, creates slug like "sunset-mountain-lake"
+function slugifyPrompt(prompt: string, maxWords: number = 5): string {
+  const stopWords = new Set(["a", "an", "the", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "do", "does", "did", "will", "would", "could", "should", "may", "might", "shall", "can", "need", "dare", "ought", "used", "to", "of", "in", "for", "on", "with", "at", "by", "from", "as", "into", "through", "during", "before", "after", "above", "below", "between", "out", "off", "over", "under", "again", "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "each", "every", "both", "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very", "just", "because", "but", "and", "or", "if", "while", "although", "though", "that", "this", "these", "those", "it", "its", "i", "me", "my", "we", "our", "you", "your", "he", "him", "his", "she", "her", "they", "them", "their", "what", "which", "who", "whom", "image", "picture", "photo", "drawing", "painting", "art", "style", "make", "create", "generate", "show", "with", "without", "high", "quality", "detailed", "realistic", "hd", "4k", "8k", "resolution"]);
+  const words = prompt
+    .replace(/[^a-zA-Z0-9\u0600-\u06FF ]/g, "")
+    .trim()
+    .split(/\s+/)
+    .filter(w => w.length > 1 && !stopWords.has(w.toLowerCase()))
+    .slice(0, maxWords);
+  return words.join("-").toLowerCase().slice(0, 50) || "generated-image";
+}
+
 // ── TTS via edge-tts ──
 async function generateTTS(text: string, voice: string): Promise<string> {
   const hash = createHash("md5").update(text + voice).digest("hex").slice(0, 8);
@@ -135,9 +148,8 @@ async function generateImageLocal(
   const outputPaths: string[] = [];
 
   for (let i = 0; i < count; i++) {
-    const hash = createHash("md5").update(prompt + i + Date.now()).digest("hex").slice(0, 8);
-    const slug = prompt.replace(/[^a-zA-Z0-9_ ]/g, "").trim().slice(0, 40).replace(/\s+/g, "-");
-    const filename = `img-${slug || "image"}-magick-${hash}.png`;
+    const slug = slugifyPrompt(prompt);
+    const filename = `img-${slug}.png`;
     const outputPath = join(OUTPUT_DIR, "images", filename);
 
     const label = prompt.replace(/'/g, "'\\''").slice(0, 80);
@@ -203,9 +215,8 @@ async function generateImageGoogle(prompt: string, model: string, count: number)
     for (const part of parts) {
       const inlineData = part?.inlineData?.data || part?.inline_data?.data;
       if (!inlineData) continue;
-      const hash = createHash("md5").update(prompt + i + Date.now()).digest("hex").slice(0, 8);
-      const slug = prompt.replace(/[^a-zA-Z0-9_ ]/g, "").trim().slice(0, 40).replace(/\s+/g, "-");
-      const filename = "img-" + (slug || "image") + "-google-" + hash + ".png";
+      const slug = slugifyPrompt(prompt);
+      const filename = `img-${slug}.png`;
       const outputPath = join(OUTPUT_DIR, "images", filename);
       await writeFile(outputPath, Buffer.from(inlineData, "base64"));
       results.push(outputPath);
@@ -246,9 +257,8 @@ async function generateImageNvidiaNIM(prompt: string, model: string, width: numb
     if (!imgUrl) throw new Error("Nvidia NIM returned no image URL: " + JSON.stringify(data).slice(0, 300));
     const imgResp = await fetch(imgUrl, { signal: AbortSignal.timeout(60_000) });
     const buf = Buffer.from(await imgResp.arrayBuffer());
-    const hash = createHash("md5").update(prompt + i + Date.now()).digest("hex").slice(0, 8);
-    const slug = prompt.replace(/[^a-zA-Z0-9_ ]/g, "").trim().slice(0, 40).replace(/\s+/g, "-");
-    const filename = "img-" + (slug || "image") + "-nvidia-" + hash + ".png";
+    const slug = slugifyPrompt(prompt);
+    const filename = `img-${slug}.png`;
     const outputPath = join(OUTPUT_DIR, "images", filename);
     await writeFile(outputPath, buf);
     results.push(outputPath);
@@ -287,9 +297,8 @@ async function generateImageCloudflare(prompt: string, model: string, count: num
       if (!imageBase64) throw new Error("Cloudflare AI returned no image: " + JSON.stringify(res).slice(0, 300));
       buffer = Buffer.from(imageBase64.replace(/^data:image\/\w+;base64,/, ""), "base64");
     }
-    const hash = createHash("md5").update(prompt + i + Date.now()).digest("hex").slice(0, 8);
-    const slug = prompt.replace(/[^a-zA-Z0-9_ ]/g, "").trim().slice(0, 40).replace(/\s+/g, "-");
-    const filename = "img-" + (slug || "image") + "-cf-" + hash + ".png";
+    const slug = slugifyPrompt(prompt);
+    const filename = `img-${slug}.png`;
     const outputPath = join(OUTPUT_DIR, "images", filename);
     await writeFile(outputPath, buffer);
     results.push(outputPath);
@@ -348,9 +357,8 @@ async function generateImageOpenRouter(
       throw new Error(`OpenRouter returned no image URL. Response: ${JSON.stringify(data).slice(0, 300)}`);
     }
 
-    const hash = createHash("md5").update(prompt + i + Date.now()).digest("hex").slice(0, 8);
-    const slug = prompt.replace(/[^a-zA-Z0-9_ ]/g, "").trim().slice(0, 40).replace(/\s+/g, "-");
-    const filename = `img-${slug || "image"}-ai-${hash}.png`;
+    const slug = slugifyPrompt(prompt);
+    const filename = `img-${slug}.png`;
     const outputPath = join(OUTPUT_DIR, "images", filename);
 
     const imgResp = await fetch(imageUrl, { signal: AbortSignal.timeout(30_000) });
