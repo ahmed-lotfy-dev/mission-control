@@ -37,88 +37,46 @@ export interface ImageModel {
   free?: boolean;
 }
 
-export const IMAGE_MODELS: ImageModel[] = [
+// All possible models — filtered at runtime based on which API keys are configured
+const ALL_IMAGE_MODELS: ImageModel[] = [
   {
-    id: "imagemagick",
-    name: "ImageMagick",
-    provider: "Local",
+    id: "imagemagick", name: "ImageMagick", provider: "Local",
     description: "Built-in image generation via ImageMagick — no API key needed. Works offline.",
-    speed: "fast",
-    status: "available",
-    recommendedFor: "Always available, quick mockups",
+    speed: "fast", status: "available", recommendedFor: "Always available, quick mockups",
   },
   {
-    id: "stabilityai/stable-diffusion-xl-base-1.0",
-    name: "Stable Diffusion XL",
-    provider: "OpenRouter",
-    description: "High-quality text-to-image by Stability AI. 1024x1024. Great detail and composition.",
-    speed: "medium",
-    status: "available",
-    recommendedFor: "General purpose, high quality",
-  },
-  {
-    id: "black-forest-labs/flux-dev",
-    name: "Flux.1 Dev",
-    provider: "OpenRouter",
-    description: "Black Forest Labs' flagship model. Excellent photorealism and prompt adherence.",
-    speed: "slow",
-    status: "available",
-    recommendedFor: "Photorealism, complex scenes",
-  },
-  {
-    id: "playgroundai/playground-v2.5-1024px-aesthetic",
-    name: "Playground v2.5",
-    provider: "OpenRouter",
-    description: "Aesthetic-focused model from Playground AI. Vibrant colors, artistic compositions.",
-    speed: "medium",
-    status: "available",
-    recommendedFor: "Artistic, vibrant imagery",
-  },
-  {
-    id: "openrouter/openai/gpt-image-1",
-    name: "GPT-Image-1",
-    provider: "OpenRouter",
+    id: "openrouter/openai/gpt-image-1", name: "GPT-Image-1", provider: "OpenRouter",
     description: "OpenAI's latest image model via OpenRouter. Excellent quality and prompt following.",
-    speed: "medium",
-    status: "available",
-    needsAuth: true,
+    speed: "medium", status: "available", needsAuth: true, recommendedFor: "High quality, prompt accuracy",
   },
-  // ── Google Imagen (free tier: 1500 req/day from aistudio.google.com) ──
   {
-    id: "google/imagen-3.0-generate-002",
-    name: "Imagen 3",
-    provider: "Google",
+    id: "google/imagen-3.0-generate-002", name: "Imagen 3", provider: "Google",
     description: "Google Imagen 3 text-to-image. Excellent quality, photorealism, text rendering. Free tier: 1500 req/day.",
-    speed: "medium",
-    status: "available",
-    needsAuth: true,
-    free: true,
-    recommendedFor: "Photorealism, text in images",
+    speed: "medium", status: "available", needsAuth: true, free: true, recommendedFor: "Photorealism, text in images",
   },
-  // ── Cloudflare Workers AI (free daily quota) ──
   {
-    id: "@cf/black-forest-labs/flux-1-schnell",
-    name: "FLUX.1 Schnell",
-    provider: "Cloudflare",
+    id: "@cf/black-forest-labs/flux-1-schnell", name: "FLUX.1 Schnell", provider: "Cloudflare",
     description: "Fast image generation via Cloudflare Workers AI. Free daily quota.",
-    speed: "fast",
-    status: "available",
-    needsAuth: true,
-    free: true,
-    recommendedFor: "Fast generation, free tier",
+    speed: "fast", status: "available", needsAuth: true, free: true, recommendedFor: "Fast generation, free tier",
   },
   {
-    id: "@cf/stabilityai/stable-diffusion-xl-base-1.0",
-    name: "SDXL 1.0",
-    provider: "Cloudflare",
+    id: "@cf/stabilityai/stable-diffusion-xl-base-1.0", name: "SDXL 1.0", provider: "Cloudflare",
     description: "Stable Diffusion XL via Cloudflare Workers AI. Free daily quota.",
-    speed: "fast",
-    status: "available",
-    needsAuth: true,
-    free: true,
-    recommendedFor: "General purpose, free tier",
+    speed: "fast", status: "available", needsAuth: true, free: true, recommendedFor: "General purpose, free tier",
   },
 ];
+
+// Filter models based on which API keys are actually configured at runtime
+export function getAvailableImageModels(): ImageModel[] {
+  return ALL_IMAGE_MODELS.filter(m => {
+    if (!m.needsAuth) return true;
+    if (m.provider === "OpenRouter") return !!OPENROUTER_KEY;
+    if (m.provider === "Google") return !!GEMINI_KEY;
+    if (m.provider === "Cloudflare") return !!CF_ACCOUNT_ID && !!CF_API_TOKEN;
+    if (m.provider === "Nvidia") return !!NVIDIA_KEY;
+    return false;
+  });
+}
 
 export interface VideoModel {
   id: string;
@@ -395,7 +353,7 @@ export const studioRoutes = new Elysia({ prefix: "/api/studio" })
 
   // ── List available models ──
   .get("/models", () => ({
-    image: IMAGE_MODELS,
+    image: getAvailableImageModels(),
     video: VIDEO_MODELS,
     note: "NVIDIA hosted images/generations API deprecated. Using ImageMagick for local generation. For AI image gen, setup ComfyUI or use OpenRouter.",
   }))
