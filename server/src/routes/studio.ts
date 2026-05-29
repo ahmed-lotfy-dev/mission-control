@@ -258,10 +258,18 @@ async function generateImageCloudflare(prompt: string, model: string, count: num
       const e = await resp.text().catch(() => "unknown");
       throw new Error("Cloudflare AI error " + resp.status + ": " + e.slice(0, 300));
     }
-    const res = (await resp.json()) as any;
-    const imageBase64 = res?.result?.image;
-    if (!imageBase64) throw new Error("Cloudflare AI returned no image: " + JSON.stringify(res).slice(0, 300));
-    const buffer = Buffer.from(imageBase64.replace(/^data:image\/\w+;base64,/, ""), "base64");
+    const contentType = resp.headers.get("content-type") || "";
+    let buffer: Buffer;
+    if (contentType.startsWith("image/")) {
+      // SDXL and some models return raw image binary
+      buffer = Buffer.from(await resp.arrayBuffer());
+    } else {
+      // JSON response with base64 image
+      const res = (await resp.json()) as any;
+      const imageBase64 = res?.result?.image;
+      if (!imageBase64) throw new Error("Cloudflare AI returned no image: " + JSON.stringify(res).slice(0, 300));
+      buffer = Buffer.from(imageBase64.replace(/^data:image\/\w+;base64,/, ""), "base64");
+    }
     const hash = createHash("md5").update(prompt + i + Date.now()).digest("hex").slice(0, 8);
     const slug = prompt.replace(/[^a-zA-Z0-9_ ]/g, "").trim().slice(0, 40).replace(/\s+/g, "-");
     const filename = "img-" + (slug || "image") + "-cf-" + hash + ".png";
