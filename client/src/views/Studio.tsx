@@ -236,14 +236,18 @@ export default function Studio() {
                   <span className="text-text-dim font-normal"> · {selectedModel?.name || "ImageMagick"}</span>
                 </div>
                 <div className={imgResults.length > 1 ? "grid-2" : ""} style={{ gap: 8 }}>
-                  {imgResults.map((path, i) => (
+                  {imgResults.map((img, i) => {
+                    const filename = typeof img === "string" ? img.split("/").pop() : (img.filename || img.file?.split("/").pop());
+                    return (
                     <div key={i} className="rounded-lg overflow-hidden border border-border">
-                      {isImageFile(path) ? (
-                        <img src={`/api/workspace/file?path=${encodeURIComponent(path)}`} alt={`Generated ${i + 1}`} className="w-full block bg-bg-deep" />
-                      ) : null}
-                      <div className="py-[6px] px-2 text-[10px] text-text-dim">{path.split("/").pop()}</div>
+                      <img src={`/api/workspace/file?path=${encodeURIComponent(typeof img === "string" ? img : img.file)}`} alt={filename} className="w-full block bg-bg-deep" />
+                      <div className="py-[6px] px-2 flex items-center justify-between gap-2">
+                        <span className="text-[10px] text-text-dim truncate flex-1">{filename}</span>
+                        <a href={`/api/workspace/file?path=${encodeURIComponent(typeof img === "string" ? img : img.file)}&download=1`} download={filename} className="text-[10px] text-accent hover:text-accent-bright flex-shrink-0">⬇ Download</a>
+                      </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
