@@ -17,6 +17,7 @@ interface AssetItem {
 interface ImageModel {
   id: string; name: string; provider: string; description: string;
   speed: "fast" | "medium" | "slow"; recommendedFor: string;
+  needsAuth: string[];
 }
 
 interface HistoryItem {
@@ -59,7 +60,7 @@ export default function Studio() {
   // Image
   const [imgPrompt, setImgPrompt] = useState("");
   const [imgNegative, setImgNegative] = useState("");
-  const [imgModel, setImgModel] = useState("stabilityai/stable-diffusion-xl-base-1.0");
+  const [imgModel, setImgModel] = useState("imagemagick");
   const [imgCount, setImgCount] = useState(1);
   const [imgAspect, setImgAspect] = useState(0);
   const [imgGenerating, setImgGenerating] = useState(false);
