@@ -4,22 +4,26 @@ import { join, extname } from "node:path";
 import { homedir } from "node:os";
 import { spawn, execSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { getNvidiaKey, getOpenRouterKey, formatSize, getMime, listRecentAssets, getApiKey } from "../lib/helpers";
+import { getNvidiaKey, getOpenRouterKey, getGeminiKey, getCloudflareAccountId, getCloudflareApiToken, formatSize, getMime, listRecentAssets } from "../lib/helpers";
 import { db } from "../db";
 import { standardLimiter } from "../lib/rate-limit";
 
 const OUTPUT_DIR = join(homedir(), "agent-outputs");
 const NVIDIA_KEY = getNvidiaKey();
 const OPENROUTER_KEY = getOpenRouterKey();
-const CLOUDFLARE_ACCOUNT_ID = getApiKey("CLOUDFLARE_ACCOUNT_ID");
-const CLOUDFLARE_API_TOKEN = getApiKey("CLOUDFLARE_API_TOKEN");
+const GEMINI_KEY = getGeminiKey();
+const CF_ACCOUNT_ID = getCloudflareAccountId();
+const CF_API_TOKEN = getCloudflareApiToken();
 
+// ── Model Status ──
+// NVIDIA's hosted images/generations API endpoint has been deprecated (404).
+// Only chat completions work on the integrate.api.nvidia.com/v1/ path.
+// Image generation falls back to ImageMagick (`magick`) which is installed locally.
+// For future real AI image gen, options: ComfyUI (local), OpenRouter API, or local GGUF models.
 // ── Image Models ──
 // Local: ImageMagick (always available, no API key)
-// API key env vars:
-//   OPENROUTER_API_KEY  — openrouter.ai (Gemini, GPT image models)
-//   NVIDIA_API_KEY      — build.nvidia.com (Qwen Image, free tier)
-//   CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_API_TOKEN — workers.ai (FLUX, SDXL)
+// AI: OpenRouter /v1/images/generations (SDXL, Flux, Playground v2.5, etc.)
+// Set OPENROUTER_API_KEY in .env to enable AI image generation.
 
 export interface ImageModel {
   id: string;
@@ -29,11 +33,11 @@ export interface ImageModel {
   speed: "fast" | "medium" | "slow";
   status: "available" | "deprecated" | "external";
   recommendedFor: string;
-  needsAuth: string[];  // env var names needed
+  needsAuth?: boolean;
+  free?: boolean;
 }
 
 export const IMAGE_MODELS: ImageModel[] = [
-  // ── Local (no API key) ──
   {
     id: "imagemagick",
     name: "ImageMagick",
@@ -42,96 +46,77 @@ export const IMAGE_MODELS: ImageModel[] = [
     speed: "fast",
     status: "available",
     recommendedFor: "Always available, quick mockups",
-    needsAuth: [],
-  },
-
-  // ── OpenRouter (needs OPENROUTER_API_KEY) ──
-  {
-    id: "google/gemini-2.5-flash-image",
-    name: "Gemini 2.5 Flash Image",
-    provider: "OpenRouter",
-    description: "Google's fast image model. ~$0.0000003/token prompt. Best value.",
-    speed: "fast",
-    status: "available",
-    recommendedFor: "Best value, fast generation",
-    needsAuth: ["OPENROUTER_API_KEY"],
   },
   {
-    id: "google/gemini-3.1-flash-image-preview",
-    name: "Gemini 3.1 Flash Image (Nano Banana 2)",
-    provider: "OpenRouter",
-    description: "Google's latest image model. Pro-level quality at Flash speed. Image generation + editing.",
-    speed: "fast",
-    status: "available",
-    recommendedFor: "Latest quality, image editing",
-    needsAuth: ["OPENROUTER_API_KEY"],
-  },
-  {
-    id: "openai/gpt-5-image-mini",
-    name: "GPT-5 Image Mini",
-    provider: "OpenRouter",
-    description: "OpenAI's compact image model. High quality text-to-image.",
-    speed: "medium",
-    status: "available",
-    recommendedFor: "OpenAI ecosystem, reliable output",
-    needsAuth: ["OPENROUTER_API_KEY"],
-  },
-
-  // ── Nvidia NIM (needs NVIDIA_API_KEY from build.nvidia.com, free tier) ──
-  {
-    id: "qwen/qwen-image",
-    name: "Qwen Image",
-    provider: "NVIDIA NIM",
-    description: "Qwen text-to-image model. Excellent multilingual text rendering in images. Free tier available via build.nvidia.com.",
-    speed: "medium",
-    status: "available",
-    recommendedFor: "Free AI generation, text in images",
-    needsAuth: ["NVIDIA_API_KEY"],
-  },
-  {
-    id: "qwen/qwen-image-edit",
-    name: "Qwen Image Edit",
-    provider: "NVIDIA NIM",
-    description: "Qwen image editing model. Style transfer, object add/remove, pose manipulation. Free tier available.",
-    speed: "medium",
-    status: "available",
-    recommendedFor: "Image editing, style transfer",
-    needsAuth: ["NVIDIA_API_KEY"],
-  },
-
-  // ── Cloudflare Workers AI (needs CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_API_TOKEN) ──
-  {
-    id: "@cf/black-forest-labs/flux-1-schnell",
-    name: "FLUX.1 [Schnell]",
-    provider: "Cloudflare AI",
-    description: "Black Forest Labs' fast text-to-image model. 1-4 step generation. Free daily quota on Cloudflare Workers AI.",
-    speed: "fast",
-    status: "available",
-    recommendedFor: "Fast free AI generation (12M+ free tokens/day)",
-    needsAuth: ["CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_API_TOKEN"],
-  },
-  {
-    id: "@cf/stabilityai/stable-diffusion-xl-base-1.0",
+    id: "stabilityai/stable-diffusion-xl-base-1.0",
     name: "Stable Diffusion XL",
-    provider: "Cloudflare AI",
-    description: "Stability AI's SDXL model hosted on Cloudflare. High quality, classic text-to-image. Free daily quota.",
+    provider: "OpenRouter",
+    description: "High-quality text-to-image by Stability AI. 1024x1024. Great detail and composition.",
     speed: "medium",
     status: "available",
-    recommendedFor: "Classic SDXL quality, free tier",
-    needsAuth: ["CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_API_TOKEN"],
+    recommendedFor: "General purpose, high quality",
   },
-,
-
-  // ── Google Imagen (needs GEMINI_API_TOKEN from aistudio.google.com) ──
+  {
+    id: "black-forest-labs/flux-dev",
+    name: "Flux.1 Dev",
+    provider: "OpenRouter",
+    description: "Black Forest Labs' flagship model. Excellent photorealism and prompt adherence.",
+    speed: "slow",
+    status: "available",
+    recommendedFor: "Photorealism, complex scenes",
+  },
+  {
+    id: "playgroundai/playground-v2.5-1024px-aesthetic",
+    name: "Playground v2.5",
+    provider: "OpenRouter",
+    description: "Aesthetic-focused model from Playground AI. Vibrant colors, artistic compositions.",
+    speed: "medium",
+    status: "available",
+    recommendedFor: "Artistic, vibrant imagery",
+  },
+  {
+    id: "openrouter/openai/gpt-image-1",
+    name: "GPT-Image-1",
+    provider: "OpenRouter",
+    description: "OpenAI's latest image model via OpenRouter. Excellent quality and prompt following.",
+    speed: "medium",
+    status: "available",
+    needsAuth: true,
+  },
+  // ── Google Imagen (free tier: 1500 req/day from aistudio.google.com) ──
   {
     id: "google/imagen-3.0-generate-002",
     name: "Imagen 3",
-    provider: "Google AI",
+    provider: "Google",
     description: "Google Imagen 3 text-to-image. Excellent quality, photorealism, text rendering. Free tier: 1500 req/day.",
     speed: "medium",
     status: "available",
-    recommendedFor: "Photorealism, text in images, free daily quota",
-    needsAuth: ["GEMINI_API_TOKEN"],
+    needsAuth: true,
+    free: true,
+    recommendedFor: "Photorealism, text in images",
+  },
+  // ── Cloudflare Workers AI (free daily quota) ──
+  {
+    id: "@cf/black-forest-labs/flux-1-schnell",
+    name: "FLUX.1 Schnell",
+    provider: "Cloudflare",
+    description: "Fast image generation via Cloudflare Workers AI. Free daily quota.",
+    speed: "fast",
+    status: "available",
+    needsAuth: true,
+    free: true,
+    recommendedFor: "Fast generation, free tier",
+  },
+  {
+    id: "@cf/stabilityai/stable-diffusion-xl-base-1.0",
+    name: "SDXL 1.0",
+    provider: "Cloudflare",
+    description: "Stable Diffusion XL via Cloudflare Workers AI. Free daily quota.",
+    speed: "fast",
+    status: "available",
+    needsAuth: true,
+    free: true,
+    recommendedFor: "General purpose, free tier",
   },
 ];
 
@@ -189,6 +174,8 @@ async function generateImageLocal(
 
     const label = prompt.replace(/'/g, "'\\''").slice(0, 80);
 
+    // Generate a gradient background with the prompt text overlaid
+    // Uses ImageMagick 7's `magick` command
     const palette = [
       '"#1a1a2e,#16213e,#0f3460"',  // Deep ocean
       '"#2d1b2e,#1a0a1e,#3d2b4e"',  // Dark violet
@@ -207,6 +194,7 @@ async function generateImageLocal(
       );
       outputPaths.push(outputPath);
     } catch (e: any) {
+      // Fallback: simpler image if caption fails
       execSync(
         `magick -size ${width}x${height} gradient:"#1a1a2e-#0f3460" -font Helvetica -pointsize 24 -fill "#c9a84c" -gravity center -annotate 0 "${label.slice(0, 40)}" "${outputPath}"`,
         { timeout: 10000 }
@@ -218,20 +206,129 @@ async function generateImageLocal(
   return outputPaths;
 }
 
-// ── Image via OpenRouter API ──
+// ── Image via OpenRouter API (real AI) ──
+// ── Image via Google Imagen API ──
+async function generateImageGoogle(prompt: string, model: string, count: number): Promise<string[]> {
+  if (!GEMINI_KEY) throw new Error("Missing GEMINI_API_TOKEN");
+  await ensureDirs();
+  const results: string[] = [];
+  for (let i = 0; i < count; i++) {
+    const resp = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":predict?key=" + GEMINI_KEY,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ instances: [{ prompt }], parameters: { sampleCount: 1 } }),
+        signal: AbortSignal.timeout(120_000),
+      }
+    );
+    if (!resp.ok) {
+      const e = await resp.text().catch(() => "unknown");
+      throw new Error("Google Imagen API error " + resp.status + ": " + e.slice(0, 300));
+    }
+    const data = (await resp.json()) as any;
+    const base64 = data?.predictions?.[0]?.bytesBase64Encoded;
+    if (!base64) throw new Error("Google Imagen returned no image: " + JSON.stringify(data).slice(0, 300));
+    const hash = createHash("md5").update(prompt + i + Date.now()).digest("hex").slice(0, 8);
+    const slug = prompt.replace(/[^a-zA-Z0-9_ ]/g, "").trim().slice(0, 40).replace(/\s+/g, "-");
+    const filename = "img-" + (slug || "image") + "-google-" + hash + ".png";
+    const outputPath = join(OUTPUT_DIR, "images", filename);
+    await writeFile(outputPath, Buffer.from(base64, "base64"));
+    results.push(outputPath);
+  }
+  return results;
+}
+
+// ── Image via Nvidia NIM (Qwen Image) ──
+async function generateImageNvidiaNIM(prompt: string, model: string, width: number, height: number, count: number): Promise<string[]> {
+  if (!NVIDIA_KEY) throw new Error("Missing NVIDIA_API_KEY from build.nvidia.com");
+  await ensureDirs();
+  const results: string[] = [];
+  for (let i = 0; i < count; i++) {
+    const resp = await fetch(
+      "https://integrate.api.nvidia.com/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": "Bearer " + NVIDIA_KEY,
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: 4096,
+        }),
+        signal: AbortSignal.timeout(120_000),
+      }
+    );
+    if (!resp.ok) {
+      const e = await resp.text().catch(() => "unknown");
+      throw new Error("Nvidia NIM API error " + resp.status + ": " + e.slice(0, 300));
+    }
+    const data = (await resp.json()) as any;
+    const imgUrl = data?.choices?.[0]?.message?.content;
+    if (!imgUrl) throw new Error("Nvidia NIM returned no image URL: " + JSON.stringify(data).slice(0, 300));
+    const imgResp = await fetch(imgUrl, { signal: AbortSignal.timeout(60_000) });
+    const buf = Buffer.from(await imgResp.arrayBuffer());
+    const hash = createHash("md5").update(prompt + i + Date.now()).digest("hex").slice(0, 8);
+    const slug = prompt.replace(/[^a-zA-Z0-9_ ]/g, "").trim().slice(0, 40).replace(/\s+/g, "-");
+    const filename = "img-" + (slug || "image") + "-nvidia-" + hash + ".png";
+    const outputPath = join(OUTPUT_DIR, "images", filename);
+    await writeFile(outputPath, buf);
+    results.push(outputPath);
+  }
+  return results;
+}
+
+// ── Image via Cloudflare Workers AI ──
+async function generateImageCloudflare(prompt: string, model: string, count: number): Promise<string[]> {
+  if (!CF_ACCOUNT_ID || !CF_API_TOKEN) throw new Error("Missing CLOUDFLARE_ACCOUNT_ID or CLOUDFLARE_API_TOKEN");
+  await ensureDirs();
+  const results: string[] = [];
+  for (let i = 0; i < count; i++) {
+    const resp = await fetch(
+      "https://api.cloudflare.com/client/v4/accounts/" + CF_ACCOUNT_ID + "/ai/run/" + model,
+      {
+        method: "POST",
+        headers: { Authorization: "Bearer " + CF_API_TOKEN },
+        body: JSON.stringify({ prompt }),
+        signal: AbortSignal.timeout(120_000),
+      }
+    );
+    if (!resp.ok) {
+      const e = await resp.text().catch(() => "unknown");
+      throw new Error("Cloudflare AI error " + resp.status + ": " + e.slice(0, 300));
+    }
+    const res = (await resp.json()) as any;
+    const imageBase64 = res?.result?.image;
+    if (!imageBase64) throw new Error("Cloudflare AI returned no image: " + JSON.stringify(res).slice(0, 300));
+    const buffer = Buffer.from(imageBase64.replace(/^data:image\/\w+;base64,/, ""), "base64");
+    const hash = createHash("md5").update(prompt + i + Date.now()).digest("hex").slice(0, 8);
+    const slug = prompt.replace(/[^a-zA-Z0-9_ ]/g, "").trim().slice(0, 40).replace(/\s+/g, "-");
+    const filename = "img-" + (slug || "image") + "-cf-" + hash + ".png";
+    const outputPath = join(OUTPUT_DIR, "images", filename);
+    await writeFile(outputPath, buffer);
+    results.push(outputPath);
+  }
+  return results;
+}
+
 async function generateImageOpenRouter(
   prompt: string,
   model: string,
-  width: number,
-  height: number,
-  count: number,
+  width: number = 1024,
+  height: number = 1024,
+  count: number = 1,
   negativePrompt?: string,
 ): Promise<string[]> {
   if (!OPENROUTER_KEY) {
-    throw new Error("OPENROUTER_API_KEY not set. Add it to .env");
+    throw new Error("OPENROUTER_API_KEY not set. Add it to .env or ~/.hermes/.env");
   }
 
   await ensureDirs();
+  const outputPaths: string[] = [];
+
   const results: string[] = [];
 
   for (let i = 0; i < count; i++) {
@@ -245,7 +342,12 @@ async function generateImageOpenRouter(
       },
       body: JSON.stringify({
         model,
-        messages: [{ role: "user", content: prompt }],
+        messages: [
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
         ...(negativePrompt ? { negative_prompt: negativePrompt } : {}),
       }),
       signal: AbortSignal.timeout(120_000),
@@ -257,24 +359,15 @@ async function generateImageOpenRouter(
     }
 
     const data = (await resp.json()) as any;
-    let imageUrl: string | undefined;
-    const content = data?.choices?.[0]?.message?.content;
-    if (typeof content === "string") {
-      imageUrl = content;
-    } else if (Array.isArray(content)) {
-      const imagePart = content.find((p: any) => p?.type === "image_url" || p?.image_url);
-      if (imagePart) {
-        imageUrl = imagePart.image_url?.url || imagePart.image_url;
-      }
-    }
+    const imageUrl = data?.choices?.[0]?.message?.content;
 
-    if (!imageUrl) {
+    if (!imageUrl || typeof imageUrl !== "string") {
       throw new Error(`OpenRouter returned no image URL. Response: ${JSON.stringify(data).slice(0, 300)}`);
     }
 
     const hash = createHash("md5").update(prompt + i + Date.now()).digest("hex").slice(0, 8);
     const slug = prompt.replace(/[^a-zA-Z0-9_ ]/g, "").trim().slice(0, 40).replace(/\s+/g, "-");
-    const filename = `img-${slug || "image"}-or-${hash}.png`;
+    const filename = `img-${slug || "image"}-ai-${hash}.png`;
     const outputPath = join(OUTPUT_DIR, "images", filename);
 
     const imgResp = await fetch(imageUrl, { signal: AbortSignal.timeout(30_000) });
@@ -283,163 +376,6 @@ async function generateImageOpenRouter(
     results.push(outputPath);
   }
 
-  return results;
-}
-
-// ── Image via Nvidia NIM (integrate.api.nvidia.com) ──
-async function generateImageNvidiaNIM(
-  prompt: string,
-  model: string,
-  width: number,
-  height: number,
-  count: number,
-): Promise<string[]> {
-  if (!NVIDIA_KEY) {
-    throw new Error("NVIDIA_API_KEY not set. Get a free key from build.nvidia.com");
-  }
-
-  await ensureDirs();
-  const results: string[] = [];
-
-  for (let i = 0; i < count; i++) {
-    const resp = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${NVIDIA_KEY}`,
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-      },
-      body: JSON.stringify({
-        model,
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: 2048,
-      }),
-      signal: AbortSignal.timeout(120_000),
-    });
-
-    if (!resp.ok) {
-      const errText = await resp.text().catch(() => "unknown error");
-      throw new Error(`Nvidia NIM API error ${resp.status}: ${errText.slice(0, 200)}`);
-    }
-
-    const data = (await resp.json()) as any;
-    let imageUrl: string | undefined;
-    const content = data?.choices?.[0]?.message?.content;
-    if (typeof content === "string") {
-      imageUrl = content;
-    } else if (Array.isArray(content)) {
-      const imagePart = content.find((p: any) => p?.type === "image_url" || p?.image_url);
-      if (imagePart) {
-        imageUrl = imagePart.image_url?.url || imagePart.image_url;
-      }
-    }
-
-    if (!imageUrl) {
-      throw new Error(`Nvidia NIM returned no image URL. Response: ${JSON.stringify(data).slice(0, 300)}`);
-    }
-
-    const hash = createHash("md5").update(prompt + i + Date.now()).digest("hex").slice(0, 8);
-    const slug = prompt.replace(/[^a-zA-Z0-9_ ]/g, "").trim().slice(0, 40).replace(/\s+/g, "-");
-    const filename = `img-${slug || "image"}-nvidia-${hash}.png`;
-    const outputPath = join(OUTPUT_DIR, "images", filename);
-
-    const imgResp = await fetch(imageUrl, { signal: AbortSignal.timeout(30_000) });
-    const buffer = Buffer.from(await imgResp.arrayBuffer());
-    await writeFile(outputPath, buffer);
-    results.push(outputPath);
-  }
-
-  return results;
-}
-
-// ── Image via Cloudflare Workers AI ──
-async function generateImageCloudflare(
-  prompt: string,
-  model: string,
-  count: number,
-): Promise<string[]> {
-  if (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_API_TOKEN) {
-    throw new Error("CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN not set. Get them from dash.cloudflare.com > Workers AI.");
-  }
-
-  await ensureDirs();
-  const results: string[] = [];
-
-  for (let i = 0; i < count; i++) {
-    const resp = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/run/${model}`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${CLOUDFLARE_API_TOKEN}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ prompt }),
-        signal: AbortSignal.timeout(120_000),
-      }
-    );
-
-    if (!resp.ok) {
-      const errText = await resp.text().catch(() => "unknown error");
-      throw new Error(`Cloudflare AI error ${resp.status}: ${errText.slice(0, 200)}`);
-    }
-
-    const data = (await resp.json()) as any;
-
-    // Cloudflare returns: { result: { image: "<base64>" } } for image models
-    // or SFW wrapper with image as base64 string
-    let imageBase64: string | undefined;
-
-    if (data?.result?.image) {
-      imageBase64 = data.result.image;
-    } else if (typeof data?.result === "string") {
-      // Sometimes the image comes as a raw base64 string
-      imageBase64 = data.result;
-    }
-
-    if (!imageBase64) {
-      throw new Error(`Cloudflare AI returned no image. Response: ${JSON.stringify(data).slice(0, 300)}`);
-    }
-
-    const hash = createHash("md5").update(prompt + i + Date.now()).digest("hex").slice(0, 8);
-    const slug = prompt.replace(/[^a-zA-Z0-9_ ]/g, "").trim().slice(0, 40).replace(/\s+/g, "-");
-    const filename = `img-${slug || "image"}-cf-${hash}.png`;
-    const outputPath = join(OUTPUT_DIR, "images", filename);
-
-    // Decode base64 image
-    const buffer = Buffer.from(imageBase64.replace(/^data:image\/\w+;base64,/, ""), "base64");
-    await writeFile(outputPath, buffer);
-    results.push(outputPath);
-  }
-
-  return results;
-}
-
-// ── Image via Google Imagen API ──
-async function generateImageGoogle(prompt: string, model: string, count: number): Promise<string[]> {
-  if (!GEMINI_API_TOKEN) throw new Error("GEMINI_API_TOKEN not set. Get a free key from aistudio.google.com/apikey");
-  await ensureDirs();
-  const results: string[] = [];
-  for (let i = 0; i < count; i++) {
-    const resp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:predict?key=***      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ instances: [{ prompt }], parameters: { sampleCount: 1 } }),
-        signal: AbortSignal.timeout(120_000),
-      }
-    );
-    if (!resp.ok) { const e = await resp.text().catch(() => "unknown"); throw new Error(`Google Imagen API error ${resp.status}: ${e.slice(0, 300)}`); }
-    const data = (await resp.json()) as any;
-    const base64 = data?.predictions?.[0]?.bytesBase64Encoded;
-    if (!base64) throw new Error(`Google Imagen returned no image. Response: ${JSON.stringify(data).slice(0, 300)}`);
-    const hash = createHash("md5").update(prompt + i + Date.now()).digest("hex").slice(0, 8);
-    const slug = prompt.replace(/[^a-zA-Z0-9_ ]/g, "").trim().slice(0, 40).replace(/\s+/g, "-");
-    const filename = `img-${slug || "image"}-google-${hash}.png`;
-    const outputPath = join(OUTPUT_DIR, "images", filename);
-    await writeFile(outputPath, Buffer.from(base64, "base64"));
-    results.push(outputPath);
-  }
   return results;
 }
 
@@ -461,7 +397,7 @@ export const studioRoutes = new Elysia({ prefix: "/api/studio" })
   .get("/models", () => ({
     image: IMAGE_MODELS,
     video: VIDEO_MODELS,
-    note: "Set corresponding API keys in .env to enable AI providers. ImageMagick is always available.",
+    note: "NVIDIA hosted images/generations API deprecated. Using ImageMagick for local generation. For AI image gen, setup ComfyUI or use OpenRouter.",
   }))
 
   // ── TTS ──
@@ -481,30 +417,26 @@ export const studioRoutes = new Elysia({ prefix: "/api/studio" })
     try {
       const numImages = body.numImages || 1;
       const model = body.model || "imagemagick";
+      const isAiModel = model !== "imagemagick";
 
       let outputPaths: string[];
       let method: string;
 
-      if (model === "imagemagick") {
-        // Local
-        outputPaths = await generateImageLocal(body.prompt, body.width ?? 1024, body.height ?? 768, numImages);
+      if (model === "imagemagick" || model === "local") {
+        outputPaths = await generateImageLocal(body.prompt, body.width, body.height, numImages);
         method = "imagemagick";
-      } else if (model.startsWith("@cf/")) {
-        // Cloudflare Workers AI
-        outputPaths = await generateImageCloudflare(body.prompt, model, numImages);
-        method = `cloudflare/${model}`;
-      } else if (model.startsWith("qwen/") || model.startsWith("nvidia/")) {
-        // Nvidia NIM
-        outputPaths = await generateImageNvidiaNIM(body.prompt, model, body.width ?? 1024, body.height ?? 1024, numImages);
-        method = `nvidia/${model}`;
       } else if (model.startsWith("google/")) {
-        // Google Imagen
         outputPaths = await generateImageGoogle(body.prompt, model, numImages);
-        method = `google/${model}`;
+        method = "google/" + model;
+      } else if (model.startsWith("@cf/")) {
+        outputPaths = await generateImageCloudflare(body.prompt, model, numImages);
+        method = "cloudflare/" + model;
+      } else if (model.startsWith("qwen/") || model.startsWith("nvidia/")) {
+        outputPaths = await generateImageNvidiaNIM(body.prompt, model, body.width, body.height, numImages);
+        method = "nvidia/" + model;
       } else {
-        // OpenRouter (everything else)
-        outputPaths = await generateImageOpenRouter(body.prompt, model, body.width ?? 1024, body.height ?? 1024, numImages, body.negativePrompt);
-        method = `openrouter/${model}`;
+        outputPaths = await generateImageOpenRouter(body.prompt, model, body.width, body.height, numImages, body.negativePrompt);
+        method = "openrouter/" + model;
       }
 
       const results = outputPaths.map((p) => {
@@ -540,6 +472,7 @@ export const studioRoutes = new Elysia({ prefix: "/api/studio" })
       const outputPath = join(OUTPUT_DIR, "videos", filename);
       await ensureDirs();
 
+      // Try NVIDIA Cosmos via NVCF — requires authorization
       let videoGenerated = false;
       if (NVIDIA_KEY) {
         try {
