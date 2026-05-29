@@ -140,6 +140,18 @@ export function getOpenRouterKey(): string | null {
   return getApiKey("OPENROUTER_API_KEY");
 }
 
+export function getGeminiKey(): string | null {
+  return getApiKey("GEMINI_API_TOKEN");
+}
+
+export function getCloudflareAccountId(): string | null {
+  return getApiKey("CLOUDFLARE_ACCOUNT_ID");
+}
+
+export function getCloudflareApiToken(): string | null {
+  return getApiKey("CLOUDFLARE_API_TOKEN");
+}
+
 // ── Agent process detection ──
 
 const PROCESS_MAP: Record<string, { pattern: string; detect: "pid" | "proc" | "pgrep" }> = {
