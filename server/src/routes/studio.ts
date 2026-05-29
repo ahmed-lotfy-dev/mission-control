@@ -55,9 +55,14 @@ const ALL_IMAGE_MODELS: ImageModel[] = [
     speed: "fast", status: "available", needsAuth: true, recommendedFor: "Balanced speed and quality",
   },
   {
-    id: "google/imagen-3.0-generate-002", name: "Imagen 3", provider: "Google",
-    description: "Google Imagen 3 text-to-image. Excellent quality, photorealism, text rendering. Free tier: 1500 req/day.",
-    speed: "medium", status: "available", needsAuth: true, free: true, recommendedFor: "Photorealism, text in images",
+    id: "google/gemini-2.0-flash-exp-image-generation", name: "Gemini 2.0 Flash Image", provider: "Google",
+    description: "Google AI Studio — Gemini 2.0 Flash with native image generation. Free tier available, fast and good quality.",
+    speed: "fast", status: "available", needsAuth: true, free: true, recommendedFor: "Best free Google image gen",
+  },
+  {
+    id: "google/gemini-2.0-flash-preview-image-generation", name: "Gemini 2.0 Flash Preview Image", provider: "Google",
+    description: "Google AI Studio — Gemini 2.0 Flash Preview with image generation. Experimental, free tier.",
+    speed: "fast", status: "available", needsAuth: true, free: true, recommendedFor: "Experimental Google image gen",
   },
   {
     id: "@cf/black-forest-labs/flux-1-schnell", name: "FLUX.1 Schnell", provider: "Cloudflare",
@@ -169,44 +174,40 @@ async function generateImageLocal(
   return outputPaths;
 }
 
-// ── Image via OpenRouter API (real AI) ──
+// ── Image via Google AI Studio (Gemini API with native image output) ──
 async function generateImageGoogle(prompt: string, model: string, count: number): Promise<string[]> {
   if (!GEMINI_KEY) throw new Error("Missing GEMINI_API_TOKEN");
   await ensureDirs();
   const results: string[] = [];
   const modelId = model.replace("google/", "");
   for (let i = 0; i < count; i++) {
-    // Try the Gemini API image generation endpoint (Imagen 3)
     const resp = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/" + modelId + ":predict?key=" + GEMINI_KEY,
+      "https://generativelanguage.googleapis.com/v1beta/models/" + modelId + ":generateContent?key=" + GEMINI_KEY,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          instances: [{ content: prompt }],
-          parameters: { sampleCount: count },
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseModalities: ["TEXT", "IMAGE"] },
         }),
         signal: AbortSignal.timeout(120_000),
       }
     );
     if (!resp.ok) {
       const e = await resp.text().catch(() => "unknown");
-      throw new Error("Google Imagen API error " + resp.status + ": " + e.slice(0, 500));
+      throw new Error("Google AI Studio API error " + resp.status + ": " + e.slice(0, 500));
     }
     const data = (await resp.json()) as any;
-    // Response format: predictions[].bytesBase64Encoded or predictions[].content
-    const predictions = data?.predictions;
-    if (!predictions || !predictions.length) {
-      throw new Error("Google Imagen returned no image: " + JSON.stringify(data).slice(0, 500));
-    }
-    for (let j = 0; j < predictions.length; j++) {
-      const base64 = predictions[j]?.bytesBase64Encoded;
-      if (!base64) continue;
+    const parts = data?.candidates?.[0]?.content?.parts;
+    if (!parts) throw new Error("Google AI Studio returned no response: " + JSON.stringify(data).slice(0, 500));
+    for (const part of parts) {
+      const inlineData = part?.inlineData?.data || part?.inline_data?.data;
+      if (!inlineData) continue;
       const hash = createHash("md5").update(prompt + i + Date.now()).digest("hex").slice(0, 8);
       const slug = prompt.replace(/[^a-zA-Z0-9_ ]/g, "").trim().slice(0, 40).replace(/\s+/g, "-");
       const filename = "img-" + (slug || "image") + "-google-" + hash + ".png";
       const outputPath = join(OUTPUT_DIR, "images", filename);
-      await writeFile(outputPath, Buffer.from(base64, "base64"));
+      await writeFile(outputPath, Buffer.from(inlineData, "base64"));
       results.push(outputPath);
     }
   }
