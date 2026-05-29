@@ -55,14 +55,14 @@ const ALL_IMAGE_MODELS: ImageModel[] = [
     speed: "fast", status: "available", needsAuth: true, recommendedFor: "Balanced speed and quality",
   },
   {
-    id: "google/gemini-2.0-flash-exp-image-generation", name: "Gemini 2.0 Flash Image", provider: "Google",
-    description: "Google AI Studio — Gemini 2.0 Flash with native image generation. Free tier available, fast and good quality.",
-    speed: "fast", status: "available", needsAuth: true, free: true, recommendedFor: "Best free Google image gen",
+    id: "google/imagen-4.0-fast-generate-001", name: "Imagen 4 Fast", provider: "Google",
+    description: "Google Imagen 4 Fast via AI Studio. Quick generation, good quality. Free tier: 1500 req/day.",
+    speed: "fast", status: "available", needsAuth: true, free: true, recommendedFor: "Fast, free image gen",
   },
   {
-    id: "google/gemini-2.0-flash-preview-image-generation", name: "Gemini 2.0 Flash Preview Image", provider: "Google",
-    description: "Google AI Studio — Gemini 2.0 Flash Preview with image generation. Experimental, free tier.",
-    speed: "fast", status: "available", needsAuth: true, free: true, recommendedFor: "Experimental Google image gen",
+    id: "google/imagen-4.0-generate-001", name: "Imagen 4", provider: "Google",
+    description: "Google Imagen 4 standard via AI Studio. High quality text-to-image. Free tier: 1500 req/day.",
+    speed: "medium", status: "available", needsAuth: true, free: true, recommendedFor: "Best quality free Google image gen",
   },
   {
     id: "@cf/black-forest-labs/flux-1-schnell", name: "FLUX.1 Schnell", provider: "Cloudflare",
@@ -186,7 +186,7 @@ async function generateImageLocal(
   return outputPaths;
 }
 
-// ── Image via Google AI Studio (Gemini API with native image output) ──
+// ── Image via Google AI Studio (Imagen API) ──
 async function generateImageGoogle(prompt: string, model: string, count: number): Promise<string[]> {
   if (!GEMINI_KEY) throw new Error("Missing GEMINI_API_TOKEN");
   await ensureDirs();
@@ -194,14 +194,11 @@ async function generateImageGoogle(prompt: string, model: string, count: number)
   const modelId = model.replace("google/", "");
   for (let i = 0; i < count; i++) {
     const resp = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/" + modelId + ":generateContent?key=" + GEMINI_KEY,
+      "https://generativelanguage.googleapis.com/v1beta/models/" + modelId + ":predict?key=" + GEMINI_KEY,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { responseModalities: ["TEXT", "IMAGE"] },
-        }),
+        body: JSON.stringify({ instances: [{ content: prompt }] }),
         signal: AbortSignal.timeout(120_000),
       }
     );
@@ -210,16 +207,18 @@ async function generateImageGoogle(prompt: string, model: string, count: number)
       throw new Error("Google AI Studio API error " + resp.status + ": " + e.slice(0, 500));
     }
     const data = (await resp.json()) as any;
-    const parts = data?.candidates?.[0]?.content?.parts;
-    if (!parts) throw new Error("Google AI Studio returned no response: " + JSON.stringify(data).slice(0, 500));
-    for (const part of parts) {
-      const inlineData = part?.inlineData?.data || part?.inline_data?.data;
-      if (!inlineData) continue;
+    const predictions = data?.predictions;
+    if (!predictions || !predictions.length) {
+      throw new Error("Google AI Studio returned no image: " + JSON.stringify(data).slice(0, 500));
+    }
+    for (let j = 0; j < predictions.length; j++) {
+      const base64 = predictions[j]?.bytesBase64Encoded;
+      if (!base64) continue;
       const promptSlug = slugifyPrompt(prompt);
       const modelSlug = modelId.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
       const filename = "img-" + promptSlug + "-" + modelSlug + "-" + (i + 1) + ".png";
       const outputPath = join(OUTPUT_DIR, "images", filename);
-      await writeFile(outputPath, Buffer.from(inlineData, "base64"));
+      await writeFile(outputPath, Buffer.from(base64, "base64"));
       results.push(outputPath);
     }
   }
