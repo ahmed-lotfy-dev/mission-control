@@ -148,8 +148,8 @@ async function generateImageLocal(
   const outputPaths: string[] = [];
 
   for (let i = 0; i < count; i++) {
-    const slug = slugifyPrompt(prompt);
-    const filename = `img-${slug}.png`;
+    const promptSlug = slugifyPrompt(prompt);
+    const filename = "img-" + promptSlug + "-magick-" + (i + 1) + ".png";
     const outputPath = join(OUTPUT_DIR, "images", filename);
 
     const label = prompt.replace(/'/g, "'\\''").slice(0, 80);
@@ -215,8 +215,9 @@ async function generateImageGoogle(prompt: string, model: string, count: number)
     for (const part of parts) {
       const inlineData = part?.inlineData?.data || part?.inline_data?.data;
       if (!inlineData) continue;
-      const slug = slugifyPrompt(prompt);
-      const filename = `img-${slug}.png`;
+      const promptSlug = slugifyPrompt(prompt);
+      const modelSlug = modelId.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
+      const filename = "img-" + promptSlug + "-" + modelSlug + "-" + (i + 1) + ".png";
       const outputPath = join(OUTPUT_DIR, "images", filename);
       await writeFile(outputPath, Buffer.from(inlineData, "base64"));
       results.push(outputPath);
@@ -257,8 +258,9 @@ async function generateImageNvidiaNIM(prompt: string, model: string, width: numb
     if (!imgUrl) throw new Error("Nvidia NIM returned no image URL: " + JSON.stringify(data).slice(0, 300));
     const imgResp = await fetch(imgUrl, { signal: AbortSignal.timeout(60_000) });
     const buf = Buffer.from(await imgResp.arrayBuffer());
-    const slug = slugifyPrompt(prompt);
-    const filename = `img-${slug}.png`;
+    const promptSlug = slugifyPrompt(prompt);
+    const modelSlug = model.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
+    const filename = "img-" + promptSlug + "-" + modelSlug + "-" + (i + 1) + ".png";
     const outputPath = join(OUTPUT_DIR, "images", filename);
     await writeFile(outputPath, buf);
     results.push(outputPath);
@@ -297,8 +299,9 @@ async function generateImageCloudflare(prompt: string, model: string, count: num
       if (!imageBase64) throw new Error("Cloudflare AI returned no image: " + JSON.stringify(res).slice(0, 300));
       buffer = Buffer.from(imageBase64.replace(/^data:image\/\w+;base64,/, ""), "base64");
     }
-    const slug = slugifyPrompt(prompt);
-    const filename = `img-${slug}.png`;
+    const promptSlug = slugifyPrompt(prompt);
+    const modelSlug = model.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
+    const filename = "img-" + promptSlug + "-" + modelSlug + "-" + (i + 1) + ".png";
     const outputPath = join(OUTPUT_DIR, "images", filename);
     await writeFile(outputPath, buffer);
     results.push(outputPath);
@@ -357,8 +360,9 @@ async function generateImageOpenRouter(
       throw new Error(`OpenRouter returned no image URL. Response: ${JSON.stringify(data).slice(0, 300)}`);
     }
 
-    const slug = slugifyPrompt(prompt);
-    const filename = `img-${slug}.png`;
+    const promptSlug = slugifyPrompt(prompt);
+    const modelSlug = model.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
+    const filename = "img-" + promptSlug + "-" + modelSlug + "-" + (i + 1) + ".png";
     const outputPath = join(OUTPUT_DIR, "images", filename);
 
     const imgResp = await fetch(imageUrl, { signal: AbortSignal.timeout(30_000) });
@@ -579,7 +583,7 @@ export const studioRoutes = new Elysia({ prefix: "/api/studio" })
 // ── Static file serving from agent-outputs ──
 
 export const serveRoutes = new Elysia()
-  .get("/api/serve/:type/:filename", async ({ params }) => {
+  .get("/api/serve/:type/:filename", async ({ params, query }) => {
     const safeType = params.type.replace(/[^a-z]/g, "");
     const safeFile = params.filename.replace(/[^a-zA-Z0-9._-]/g, "");
     if (!safeFile) return new Response("Invalid filename", { status: 400 });
@@ -590,7 +594,12 @@ export const serveRoutes = new Elysia()
       const exists = await file.exists();
       if (!exists) return new Response("Not found", { status: 404 });
       const ext = extname(safeFile).toLowerCase();
-      return new Response(file, { headers: { "Content-Type": getMime(ext), "Cache-Control": "public, max-age=3600" } });
+      const headers: Record<string, string> = { "Content-Type": getMime(ext), "Cache-Control": "public, max-age=3600" };
+      if (query.download) {
+        headers["Content-Disposition"] = "attachment; filename=\"" + safeFile + "\"";
+        delete headers["Cache-Control"];
+      }
+      return new Response(file, { headers });
     } catch {
       return new Response("Error", { status: 500 });
     }

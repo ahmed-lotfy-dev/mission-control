@@ -48,7 +48,8 @@ export const workspaceRoutes = new Elysia({ prefix: "/api/workspace" })
       return new Response(file, {
         headers: {
           "Content-Type": mime,
-          "Cache-Control": "public, max-age=3600",
+          "Cache-Control": url.searchParams.has("download") ? "no-store" : "public, max-age=3600",
+          ...(url.searchParams.has("download") ? { "Content-Disposition": "attachment; filename=\"" + resolved.split("/").pop() + "\"" } : {}),
         },
       });
     } catch {
