@@ -56,6 +56,6 @@ export function rateLimit(options: RateLimitOptions) {
 }
 
 // Pre-configured limiters
-export const strictLimiter = rateLimit({ windowMs: 60_000, max: 10 });     // 10 req/min
-export const standardLimiter = rateLimit({ windowMs: 60_000, max: 30 });    // 30 req/min
-export const relaxedLimiter = rateLimit({ windowMs: 60_000, max: 60 });     // 60 req/min
+export const strictLimiter = rateLimit({ windowMs: 60_000, max: 60 });     // 60 req/min — SEO tab needs multiple endpoints on load
+export const standardLimiter = rateLimit({ windowMs: 60_000, max: 120 });   // 120 req/min
+export const relaxedLimiter = rateLimit({ windowMs: 60_000, max: 300 });    // 300 req/min
