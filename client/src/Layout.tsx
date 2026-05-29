@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { path: "/scheduled", icon: "⏰", label: "Scheduled" },
   { path: "/workspace", icon: "📁", label: "Workspace" },
   { path: "/studio", icon: "🎬", label: "Studio" },
+  { path: "/gallery", icon: "🖼️", label: "Gallery" },
   { path: "/seo", icon: "📈", label: "SEO" },
 ];
 

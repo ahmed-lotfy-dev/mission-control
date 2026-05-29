@@ -7,7 +7,7 @@ import { contentRoutes } from "./routes/content";
 import { vaultRoutes } from "./routes/vault";
 import { dashboardRoutes } from "./routes/dashboard";
 import { workspaceRoutes } from "./routes/workspace";
-import { studioRoutes, serveRoutes } from "./routes/studio";
+import { studioRoutes, serveRoutes, r2Routes } from "./routes/studio";
 import { seoRoutes } from "./routes/seo";
 import { handleWsUpgrade } from "./routes/ws";
 
@@ -36,6 +36,7 @@ const app = new Elysia()
   .use(workspaceRoutes)
   .use(studioRoutes)
   .use(serveRoutes)
+  .use(r2Routes)
   .use(seoRoutes)
   // Serve React build
   .get("/assets/*", ({ path }) => {
