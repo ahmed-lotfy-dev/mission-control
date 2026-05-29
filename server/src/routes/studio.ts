@@ -55,15 +55,11 @@ const ALL_IMAGE_MODELS: ImageModel[] = [
     speed: "fast", status: "available", needsAuth: true, recommendedFor: "Balanced speed and quality",
   },
   {
-    id: "google/imagen-4.0-fast-generate-001", name: "Imagen 4 Fast", provider: "Google",
-    description: "Google Imagen 4 Fast via AI Studio. Quick generation, good quality. Free tier: 1500 req/day.",
-    speed: "fast", status: "available", needsAuth: true, free: true, recommendedFor: "Fast, free image gen",
+    id: "openrouter/google/gemini-2.5-flash-image", name: "Gemini 2.5 Flash Image", provider: "OpenRouter",
+    description: "Google Gemini 2.5 Flash Image via OpenRouter. Good quality, fast generation.",
+    speed: "fast", status: "available", needsAuth: true, recommendedFor: "Balanced speed and quality",
   },
-  {
-    id: "google/imagen-4.0-generate-001", name: "Imagen 4", provider: "Google",
-    description: "Google Imagen 4 standard via AI Studio. High quality text-to-image. Free tier: 1500 req/day.",
-    speed: "medium", status: "available", needsAuth: true, free: true, recommendedFor: "Best quality free Google image gen",
-  },
+
   {
     id: "@cf/black-forest-labs/flux-1-schnell", name: "FLUX.1 Schnell", provider: "Cloudflare",
     description: "Fast image generation via Cloudflare Workers AI. Free daily quota.",
