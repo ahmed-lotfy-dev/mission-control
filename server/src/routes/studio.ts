@@ -45,9 +45,14 @@ const ALL_IMAGE_MODELS: ImageModel[] = [
     speed: "fast", status: "available", recommendedFor: "Always available, quick mockups",
   },
   {
-    id: "openrouter/openai/gpt-image-1", name: "GPT-Image-1", provider: "OpenRouter",
-    description: "OpenAI's latest image model via OpenRouter. Excellent quality and prompt following.",
-    speed: "medium", status: "available", needsAuth: true, recommendedFor: "High quality, prompt accuracy",
+    id: "openrouter/openai/gpt-5-image-mini", name: "GPT-5 Image Mini", provider: "OpenRouter",
+    description: "OpenAI GPT-5 Image Mini via OpenRouter. Fast, good quality image generation.",
+    speed: "fast", status: "available", needsAuth: true, recommendedFor: "Fast, affordable image gen",
+  },
+  {
+    id: "openrouter/google/gemini-2.5-flash-image", name: "Gemini 2.5 Flash Image", provider: "OpenRouter",
+    description: "Google Gemini 2.5 Flash Image via OpenRouter. Good quality, fast generation.",
+    speed: "fast", status: "available", needsAuth: true, recommendedFor: "Balanced speed and quality",
   },
   {
     id: "google/imagen-3.0-generate-002", name: "Imagen 3", provider: "Google",
@@ -165,34 +170,45 @@ async function generateImageLocal(
 }
 
 // ── Image via OpenRouter API (real AI) ──
-// ── Image via Google Imagen API ──
 async function generateImageGoogle(prompt: string, model: string, count: number): Promise<string[]> {
   if (!GEMINI_KEY) throw new Error("Missing GEMINI_API_TOKEN");
   await ensureDirs();
   const results: string[] = [];
+  const modelId = model.replace("google/", "");
   for (let i = 0; i < count; i++) {
+    // Try the Gemini API image generation endpoint (Imagen 3)
     const resp = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":predict?key=" + GEMINI_KEY,
+      "https://generativelanguage.googleapis.com/v1beta/models/" + modelId + ":predict?key=" + GEMINI_KEY,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ instances: [{ prompt }], parameters: { sampleCount: 1 } }),
+        body: JSON.stringify({
+          instances: [{ content: prompt }],
+          parameters: { sampleCount: count },
+        }),
         signal: AbortSignal.timeout(120_000),
       }
     );
     if (!resp.ok) {
       const e = await resp.text().catch(() => "unknown");
-      throw new Error("Google Imagen API error " + resp.status + ": " + e.slice(0, 300));
+      throw new Error("Google Imagen API error " + resp.status + ": " + e.slice(0, 500));
     }
     const data = (await resp.json()) as any;
-    const base64 = data?.predictions?.[0]?.bytesBase64Encoded;
-    if (!base64) throw new Error("Google Imagen returned no image: " + JSON.stringify(data).slice(0, 300));
-    const hash = createHash("md5").update(prompt + i + Date.now()).digest("hex").slice(0, 8);
-    const slug = prompt.replace(/[^a-zA-Z0-9_ ]/g, "").trim().slice(0, 40).replace(/\s+/g, "-");
-    const filename = "img-" + (slug || "image") + "-google-" + hash + ".png";
-    const outputPath = join(OUTPUT_DIR, "images", filename);
-    await writeFile(outputPath, Buffer.from(base64, "base64"));
-    results.push(outputPath);
+    // Response format: predictions[].bytesBase64Encoded or predictions[].content
+    const predictions = data?.predictions;
+    if (!predictions || !predictions.length) {
+      throw new Error("Google Imagen returned no image: " + JSON.stringify(data).slice(0, 500));
+    }
+    for (let j = 0; j < predictions.length; j++) {
+      const base64 = predictions[j]?.bytesBase64Encoded;
+      if (!base64) continue;
+      const hash = createHash("md5").update(prompt + i + Date.now()).digest("hex").slice(0, 8);
+      const slug = prompt.replace(/[^a-zA-Z0-9_ ]/g, "").trim().slice(0, 40).replace(/\s+/g, "-");
+      const filename = "img-" + (slug || "image") + "-google-" + hash + ".png";
+      const outputPath = join(OUTPUT_DIR, "images", filename);
+      await writeFile(outputPath, Buffer.from(base64, "base64"));
+      results.push(outputPath);
+    }
   }
   return results;
 }
@@ -307,7 +323,7 @@ async function generateImageOpenRouter(
         "X-Title": "Mission Control Studio",
       },
       body: JSON.stringify({
-        model,
+        model: model.replace("openrouter/", ""),
         messages: [
           {
             role: "user",
