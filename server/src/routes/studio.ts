@@ -120,6 +120,19 @@ export const IMAGE_MODELS: ImageModel[] = [
     recommendedFor: "Classic SDXL quality, free tier",
     needsAuth: ["CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_API_TOKEN"],
   },
+,
+
+  // ── Google Imagen (needs GEMINI_API_TOKEN from aistudio.google.com) ──
+  {
+    id: "google/imagen-3.0-generate-002",
+    name: "Imagen 3",
+    provider: "Google AI",
+    description: "Google Imagen 3 text-to-image. Excellent quality, photorealism, text rendering. Free tier: 1500 req/day.",
+    speed: "medium",
+    status: "available",
+    recommendedFor: "Photorealism, text in images, free daily quota",
+    needsAuth: ["GEMINI_API_TOKEN"],
+  },
 ];
 
 export interface VideoModel {
@@ -402,6 +415,34 @@ async function generateImageCloudflare(
   return results;
 }
 
+// ── Image via Google Imagen API ──
+async function generateImageGoogle(prompt: string, model: string, count: number): Promise<string[]> {
+  if (!GEMINI_API_TOKEN) throw new Error("GEMINI_API_TOKEN not set. Get a free key from aistudio.google.com/apikey");
+  await ensureDirs();
+  const results: string[] = [];
+  for (let i = 0; i < count; i++) {
+    const resp = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:predict?key=***      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ instances: [{ prompt }], parameters: { sampleCount: 1 } }),
+        signal: AbortSignal.timeout(120_000),
+      }
+    );
+    if (!resp.ok) { const e = await resp.text().catch(() => "unknown"); throw new Error(`Google Imagen API error ${resp.status}: ${e.slice(0, 300)}`); }
+    const data = (await resp.json()) as any;
+    const base64 = data?.predictions?.[0]?.bytesBase64Encoded;
+    if (!base64) throw new Error(`Google Imagen returned no image. Response: ${JSON.stringify(data).slice(0, 300)}`);
+    const hash = createHash("md5").update(prompt + i + Date.now()).digest("hex").slice(0, 8);
+    const slug = prompt.replace(/[^a-zA-Z0-9_ ]/g, "").trim().slice(0, 40).replace(/\s+/g, "-");
+    const filename = `img-${slug || "image"}-google-${hash}.png`;
+    const outputPath = join(OUTPUT_DIR, "images", filename);
+    await writeFile(outputPath, Buffer.from(base64, "base64"));
+    results.push(outputPath);
+  }
+  return results;
+}
+
 // ── Track in content_assets ──
 function trackAsset(type: string, title: string, prompt: string, filePath: string, status: string, metadata: Record<string, any> = {}) {
   const now = new Date().toISOString();
@@ -446,7 +487,7 @@ export const studioRoutes = new Elysia({ prefix: "/api/studio" })
 
       if (model === "imagemagick") {
         // Local
-        outputPaths = await generateImageLocal(body.prompt, body.width, body.height, numImages);
+        outputPaths = await generateImageLocal(body.prompt, body.width ?? 1024, body.height ?? 768, numImages);
         method = "imagemagick";
       } else if (model.startsWith("@cf/")) {
         // Cloudflare Workers AI
@@ -454,11 +495,15 @@ export const studioRoutes = new Elysia({ prefix: "/api/studio" })
         method = `cloudflare/${model}`;
       } else if (model.startsWith("qwen/") || model.startsWith("nvidia/")) {
         // Nvidia NIM
-        outputPaths = await generateImageNvidiaNIM(body.prompt, model, body.width, body.height, numImages);
+        outputPaths = await generateImageNvidiaNIM(body.prompt, model, body.width ?? 1024, body.height ?? 1024, numImages);
         method = `nvidia/${model}`;
+      } else if (model.startsWith("google/")) {
+        // Google Imagen
+        outputPaths = await generateImageGoogle(body.prompt, model, numImages);
+        method = `google/${model}`;
       } else {
         // OpenRouter (everything else)
-        outputPaths = await generateImageOpenRouter(body.prompt, model, body.width, body.height, numImages, body.negativePrompt);
+        outputPaths = await generateImageOpenRouter(body.prompt, model, body.width ?? 1024, body.height ?? 1024, numImages, body.negativePrompt);
         method = `openrouter/${model}`;
       }
 
