@@ -46,7 +46,7 @@ var __export = (target, all) => {
 var __esm = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
 var __require = import.meta.require;
 
-// ../node_modules/fast-decode-uri-component/index.js
+// node_modules/fast-decode-uri-component/index.js
 var require_fast_decode_uri_component = __commonJS((exports, module) => {
   var UTF8_ACCEPT = 12;
   var UTF8_REJECT = 0;
@@ -493,12 +493,12 @@ var require_fast_decode_uri_component = __commonJS((exports, module) => {
   module.exports = decodeURIComponent2;
 });
 
-// ../node_modules/ieee754/index.js
+// node_modules/ieee754/index.js
 var init_ieee754 = __esm(() => {
   /*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
 });
 
-// ../node_modules/@borewit/text-codec/lib/index.js
+// node_modules/@borewit/text-codec/lib/index.js
 function utf8Decoder() {
   if (typeof globalThis.TextDecoder === "undefined")
     return;
@@ -734,7 +734,7 @@ var init_lib = __esm(() => {
   CHUNK = 32 * 1024;
 });
 
-// ../node_modules/token-types/lib/index.js
+// node_modules/token-types/lib/index.js
 function dv(array) {
   return new DataView(array.buffer, array.byteOffset);
 }
@@ -825,7 +825,7 @@ var init_lib2 = __esm(() => {
   };
 });
 
-// ../node_modules/strtok3/lib/stream/Errors.js
+// node_modules/strtok3/lib/stream/Errors.js
 var defaultMessages = "End-Of-Stream", EndOfStreamError, AbortError;
 var init_Errors = __esm(() => {
   EndOfStreamError = class EndOfStreamError extends Error {
@@ -841,7 +841,7 @@ var init_Errors = __esm(() => {
     }
   };
 });
-// ../node_modules/strtok3/lib/stream/AbstractStreamReader.js
+// node_modules/strtok3/lib/stream/AbstractStreamReader.js
 class AbstractStreamReader {
   constructor() {
     this.endOfStream = false;
@@ -904,13 +904,13 @@ var init_AbstractStreamReader = __esm(() => {
   init_Errors();
 });
 
-// ../node_modules/strtok3/lib/stream/StreamReader.js
+// node_modules/strtok3/lib/stream/StreamReader.js
 var init_StreamReader = __esm(() => {
   init_Errors();
   init_AbstractStreamReader();
 });
 
-// ../node_modules/strtok3/lib/stream/WebStreamReader.js
+// node_modules/strtok3/lib/stream/WebStreamReader.js
 var WebStreamReader;
 var init_WebStreamReader = __esm(() => {
   init_AbstractStreamReader();
@@ -928,7 +928,7 @@ var init_WebStreamReader = __esm(() => {
   };
 });
 
-// ../node_modules/strtok3/lib/stream/WebStreamByobReader.js
+// node_modules/strtok3/lib/stream/WebStreamByobReader.js
 var WebStreamByobReader;
 var init_WebStreamByobReader = __esm(() => {
   init_WebStreamReader();
@@ -949,7 +949,7 @@ var init_WebStreamByobReader = __esm(() => {
   };
 });
 
-// ../node_modules/strtok3/lib/stream/WebStreamDefaultReader.js
+// node_modules/strtok3/lib/stream/WebStreamDefaultReader.js
 var WebStreamDefaultReader;
 var init_WebStreamDefaultReader = __esm(() => {
   init_Errors();
@@ -1003,7 +1003,7 @@ var init_WebStreamDefaultReader = __esm(() => {
   };
 });
 
-// ../node_modules/strtok3/lib/stream/WebStreamReaderFactory.js
+// node_modules/strtok3/lib/stream/WebStreamReaderFactory.js
 function makeWebStreamReader(stream) {
   try {
     const reader = stream.getReader({ mode: "byob" });
@@ -1023,7 +1023,7 @@ var init_WebStreamReaderFactory = __esm(() => {
   init_WebStreamDefaultReader();
 });
 
-// ../node_modules/strtok3/lib/stream/index.js
+// node_modules/strtok3/lib/stream/index.js
 var init_stream = __esm(() => {
   init_Errors();
   init_StreamReader();
@@ -1032,7 +1032,7 @@ var init_stream = __esm(() => {
   init_WebStreamReaderFactory();
 });
 
-// ../node_modules/strtok3/lib/AbstractTokenizer.js
+// node_modules/strtok3/lib/AbstractTokenizer.js
 class AbstractTokenizer {
   constructor(options) {
     this.numBuffer = new Uint8Array(8);
@@ -1110,7 +1110,7 @@ var init_AbstractTokenizer = __esm(() => {
   init_stream();
 });
 
-// ../node_modules/strtok3/lib/ReadStreamTokenizer.js
+// node_modules/strtok3/lib/ReadStreamTokenizer.js
 var maxBufferSize = 256000, ReadStreamTokenizer;
 var init_ReadStreamTokenizer = __esm(() => {
   init_AbstractTokenizer();
@@ -1200,7 +1200,7 @@ var init_ReadStreamTokenizer = __esm(() => {
   };
 });
 
-// ../node_modules/strtok3/lib/BufferTokenizer.js
+// node_modules/strtok3/lib/BufferTokenizer.js
 var BufferTokenizer;
 var init_BufferTokenizer = __esm(() => {
   init_stream();
@@ -1240,7 +1240,7 @@ var init_BufferTokenizer = __esm(() => {
   };
 });
 
-// ../node_modules/strtok3/lib/BlobTokenizer.js
+// node_modules/strtok3/lib/BlobTokenizer.js
 var BlobTokenizer;
 var init_BlobTokenizer = __esm(() => {
   init_stream();
@@ -1281,7 +1281,7 @@ var init_BlobTokenizer = __esm(() => {
   };
 });
 
-// ../node_modules/strtok3/lib/core.js
+// node_modules/strtok3/lib/core.js
 function fromWebStream(webStream, options) {
   const webStreamReader = makeWebStreamReader(webStream);
   const _options = options ?? {};
@@ -1309,7 +1309,7 @@ var init_core = __esm(() => {
   init_AbstractTokenizer();
 });
 
-// ../node_modules/ms/index.js
+// node_modules/ms/index.js
 var require_ms = __commonJS((exports, module) => {
   var s = 1000;
   var m = s * 60;
@@ -1419,7 +1419,7 @@ var require_ms = __commonJS((exports, module) => {
   }
 });
 
-// ../node_modules/debug/src/common.js
+// node_modules/debug/src/common.js
 var require_common = __commonJS((exports, module) => {
   function setup(env2) {
     createDebug.debug = createDebug;
@@ -1594,7 +1594,7 @@ var require_common = __commonJS((exports, module) => {
   module.exports = setup;
 });
 
-// ../node_modules/debug/src/browser.js
+// node_modules/debug/src/browser.js
 var require_browser = __commonJS((exports, module) => {
   exports.formatArgs = formatArgs;
   exports.save = save;
@@ -1754,7 +1754,7 @@ var require_browser = __commonJS((exports, module) => {
   };
 });
 
-// ../node_modules/debug/src/node.js
+// node_modules/debug/src/node.js
 var require_node = __commonJS((exports, module) => {
   var tty = __require("tty");
   var util = __require("util");
@@ -1925,7 +1925,7 @@ var require_node = __commonJS((exports, module) => {
   };
 });
 
-// ../node_modules/debug/src/index.js
+// node_modules/debug/src/index.js
 var require_src = __commonJS((exports, module) => {
   if (typeof process === "undefined" || process.type === "renderer" || false || process.__nwjs) {
     module.exports = require_browser();
@@ -1934,7 +1934,7 @@ var require_src = __commonJS((exports, module) => {
   }
 });
 
-// ../node_modules/@tokenizer/inflate/lib/ZipToken.js
+// node_modules/@tokenizer/inflate/lib/ZipToken.js
 var Signature, DataDescriptor, LocalFileHeaderToken, EndOfCentralDirectoryRecordToken, FileHeader;
 var init_ZipToken = __esm(() => {
   init_lib2();
@@ -2007,7 +2007,7 @@ var init_ZipToken = __esm(() => {
   };
 });
 
-// ../node_modules/@tokenizer/inflate/lib/ZipHandler.js
+// node_modules/@tokenizer/inflate/lib/ZipHandler.js
 function signatureToArray(signature) {
   const signatureBytes = new Uint8Array(UINT32_LE.len);
   UINT32_LE.put(signatureBytes, 0, signature);
@@ -2223,7 +2223,7 @@ var init_ZipHandler = __esm(() => {
   eocdSignatureBytes = signatureToArray(Signature.EndOfCentralDirectory);
 });
 
-// ../node_modules/@tokenizer/inflate/lib/GzipHandler.js
+// node_modules/@tokenizer/inflate/lib/GzipHandler.js
 class GzipHandler {
   constructor(tokenizer) {
     this.tokenizer = tokenizer;
@@ -2244,12 +2244,12 @@ class GzipHandler {
   }
 }
 
-// ../node_modules/@tokenizer/inflate/lib/index.js
+// node_modules/@tokenizer/inflate/lib/index.js
 var init_lib3 = __esm(() => {
   init_ZipHandler();
 });
 
-// ../node_modules/uint8array-extras/index.js
+// node_modules/uint8array-extras/index.js
 function isType(value, typeConstructor, typeStringified) {
   if (!value) {
     return false;
@@ -2312,7 +2312,7 @@ var init_uint8array_extras = __esm(() => {
   byteToHexLookupTable = Array.from({ length: 256 }, (_2, index) => index.toString(16).padStart(2, "0"));
 });
 
-// ../node_modules/file-type/source/tokens.js
+// node_modules/file-type/source/tokens.js
 function stringToBytes(string, encoding) {
   if (encoding === "utf-16le") {
     const bytes = [];
@@ -2355,7 +2355,7 @@ var init_tokens = __esm(() => {
   };
 });
 
-// ../node_modules/file-type/source/supported.js
+// node_modules/file-type/source/supported.js
 var extensions, mimeTypes;
 var init_supported = __esm(() => {
   extensions = [
@@ -2725,7 +2725,7 @@ var init_supported = __esm(() => {
   ];
 });
 
-// ../node_modules/file-type/source/parser.js
+// node_modules/file-type/source/parser.js
 function getSafeBound(value, maximum, reason) {
   if (!Number.isFinite(value) || value < 0 || value > maximum) {
     throw new ParserHardLimitError(`${reason} has invalid size ${value} (maximum ${maximum} bytes)`);
@@ -2774,7 +2774,7 @@ var init_parser = __esm(() => {
   };
 });
 
-// ../node_modules/file-type/source/detectors/zip.js
+// node_modules/file-type/source/detectors/zip.js
 async function decompressDeflateRawWithLimit(data, { maximumLength = maximumZipEntrySizeInBytes } = {}) {
   const input = new ReadableStream({
     start(controller) {
@@ -3268,7 +3268,7 @@ var init_zip = __esm(() => {
   };
 });
 
-// ../node_modules/file-type/source/detectors/ebml.js
+// node_modules/file-type/source/detectors/ebml.js
 async function detectEbml(tokenizer) {
   async function readField() {
     const msb = await tokenizer.peekNumber(UINT8);
@@ -3355,7 +3355,7 @@ var init_ebml = __esm(() => {
   maximumEbmlElementPayloadSizeInBytes = 1024 * 1024;
 });
 
-// ../node_modules/file-type/source/detectors/png.js
+// node_modules/file-type/source/detectors/png.js
 function isPngAncillaryChunk(type) {
   return (type.codePointAt(0) & 32) !== 0;
 }
@@ -3437,7 +3437,7 @@ var init_png = __esm(() => {
   maximumPngChunkSizeInBytes = 1024 * 1024;
 });
 
-// ../node_modules/file-type/source/detectors/asf.js
+// node_modules/file-type/source/detectors/asf.js
 async function detectAsf(tokenizer) {
   let isMalformedAsf = false;
   try {
@@ -3532,7 +3532,7 @@ var init_asf = __esm(() => {
   maximumAsfHeaderPayloadSizeInBytes = 1024 * 1024;
 });
 
-// ../node_modules/file-type/source/index.js
+// node_modules/file-type/source/index.js
 var exports_source = {};
 __export(exports_source, {
   supportedMimeTypes: () => supportedMimeTypes,
@@ -4986,7 +4986,7 @@ var init_source = __esm(() => {
   supportedMimeTypes = new Set(mimeTypes);
 });
 
-// ../node_modules/cookie/dist/index.js
+// node_modules/cookie/dist/index.js
 var require_dist = __commonJS((exports) => {
   Object.defineProperty(exports, "__esModule", { value: true });
   exports.parseCookie = parseCookie;
@@ -5231,7 +5231,7 @@ var require_dist = __commonJS((exports) => {
   }
 });
 
-// ../node_modules/memoirist/dist/bun/index.js
+// node_modules/memoirist/dist/bun/index.js
 var Y = (v, b) => {
   let A = b?.length ? {} : null;
   if (A)
@@ -5443,7 +5443,7 @@ var $ = (v, b, A, Q, O) => {
   return null;
 };
 
-// ../node_modules/@sinclair/typebox/build/esm/type/guard/value.mjs
+// node_modules/@sinclair/typebox/build/esm/type/guard/value.mjs
 var exports_value = {};
 __export(exports_value, {
   IsUndefined: () => IsUndefined,
@@ -5512,7 +5512,7 @@ function IsUndefined(value) {
   return value === undefined;
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/clone/value.mjs
+// node_modules/@sinclair/typebox/build/esm/type/clone/value.mjs
 function ArrayType(value) {
   return value.map((value2) => Visit(value2));
 }
@@ -5542,12 +5542,12 @@ function Clone(value) {
   return Visit(value);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/clone/type.mjs
+// node_modules/@sinclair/typebox/build/esm/type/clone/type.mjs
 function CloneType(schema, options) {
   return options === undefined ? Clone(schema) : Clone({ ...options, ...schema });
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/value/guard/guard.mjs
+// node_modules/@sinclair/typebox/build/esm/value/guard/guard.mjs
 function IsAsyncIterator2(value) {
   return IsObject2(value) && globalThis.Symbol.asyncIterator in value;
 }
@@ -5615,7 +5615,7 @@ function IsValueType(value) {
   return IsBigInt2(value) || IsBoolean2(value) || IsNull2(value) || IsNumber2(value) || IsString2(value) || IsSymbol2(value) || IsUndefined2(value);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/system/policy.mjs
+// node_modules/@sinclair/typebox/build/esm/system/policy.mjs
 var TypeSystemPolicy;
 (function(TypeSystemPolicy2) {
   TypeSystemPolicy2.InstanceMode = "default";
@@ -5647,7 +5647,7 @@ var TypeSystemPolicy;
   TypeSystemPolicy2.IsVoidLike = IsVoidLike;
 })(TypeSystemPolicy || (TypeSystemPolicy = {}));
 
-// ../node_modules/@sinclair/typebox/build/esm/type/create/immutable.mjs
+// node_modules/@sinclair/typebox/build/esm/type/create/immutable.mjs
 function ImmutableArray(value) {
   return globalThis.Object.freeze(value).map((value2) => Immutable(value2));
 }
@@ -5674,7 +5674,7 @@ function Immutable(value) {
   return IsArray(value) ? ImmutableArray(value) : IsDate(value) ? ImmutableDate(value) : IsUint8Array(value) ? ImmutableUint8Array(value) : IsRegExp(value) ? ImmutableRegExp(value) : IsObject(value) ? ImmutableObject(value) : value;
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/create/type.mjs
+// node_modules/@sinclair/typebox/build/esm/type/create/type.mjs
 function CreateType(schema, options) {
   const result = options !== undefined ? { ...options, ...schema } : schema;
   switch (TypeSystemPolicy.InstanceMode) {
@@ -5687,21 +5687,21 @@ function CreateType(schema, options) {
   }
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/error/error.mjs
+// node_modules/@sinclair/typebox/build/esm/type/error/error.mjs
 class TypeBoxError extends Error {
   constructor(message) {
     super(message);
   }
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/symbols/symbols.mjs
+// node_modules/@sinclair/typebox/build/esm/type/symbols/symbols.mjs
 var TransformKind = Symbol.for("TypeBox.Transform");
 var ReadonlyKind = Symbol.for("TypeBox.Readonly");
 var OptionalKind = Symbol.for("TypeBox.Optional");
 var Hint = Symbol.for("TypeBox.Hint");
 var Kind = Symbol.for("TypeBox.Kind");
 
-// ../node_modules/@sinclair/typebox/build/esm/type/guard/kind.mjs
+// node_modules/@sinclair/typebox/build/esm/type/guard/kind.mjs
 function IsReadonly(value) {
   return IsObject(value) && value[ReadonlyKind] === "Readonly";
 }
@@ -5831,7 +5831,7 @@ function IsKind(value) {
 function IsSchema(value) {
   return IsAny(value) || IsArgument(value) || IsArray3(value) || IsBoolean3(value) || IsBigInt3(value) || IsAsyncIterator3(value) || IsComputed(value) || IsConstructor(value) || IsDate3(value) || IsFunction3(value) || IsInteger2(value) || IsIntersect(value) || IsIterator3(value) || IsLiteral(value) || IsMappedKey(value) || IsMappedResult(value) || IsNever(value) || IsNot(value) || IsNull3(value) || IsNumber3(value) || IsObject3(value) || IsPromise2(value) || IsRecord(value) || IsRef(value) || IsRegExp2(value) || IsString3(value) || IsSymbol3(value) || IsTemplateLiteral(value) || IsThis(value) || IsTuple(value) || IsUndefined3(value) || IsUnion(value) || IsUint8Array3(value) || IsUnknown(value) || IsUnsafe(value) || IsVoid(value) || IsKind(value);
 }
-// ../node_modules/@sinclair/typebox/build/esm/type/guard/type.mjs
+// node_modules/@sinclair/typebox/build/esm/type/guard/type.mjs
 var exports_type = {};
 __export(exports_type, {
   TypeGuardUnknownTypeError: () => TypeGuardUnknownTypeError,
@@ -6121,7 +6121,7 @@ function IsKind2(value) {
 function IsSchema2(value) {
   return IsObject(value) && (IsAny2(value) || IsArgument2(value) || IsArray4(value) || IsBoolean4(value) || IsBigInt4(value) || IsAsyncIterator4(value) || IsComputed2(value) || IsConstructor2(value) || IsDate4(value) || IsFunction4(value) || IsInteger3(value) || IsIntersect2(value) || IsIterator4(value) || IsLiteral2(value) || IsMappedKey2(value) || IsMappedResult2(value) || IsNever2(value) || IsNot2(value) || IsNull4(value) || IsNumber4(value) || IsObject4(value) || IsPromise3(value) || IsRecord2(value) || IsRef2(value) || IsRegExp3(value) || IsString4(value) || IsSymbol4(value) || IsTemplateLiteral2(value) || IsThis2(value) || IsTuple2(value) || IsUndefined4(value) || IsUnion2(value) || IsUint8Array4(value) || IsUnknown2(value) || IsUnsafe2(value) || IsVoid2(value) || IsKind2(value));
 }
-// ../node_modules/@sinclair/typebox/build/esm/type/patterns/patterns.mjs
+// node_modules/@sinclair/typebox/build/esm/type/patterns/patterns.mjs
 var PatternBoolean = "(true|false)";
 var PatternNumber = "(0|[1-9][0-9]*)";
 var PatternString = "(.*)";
@@ -6131,7 +6131,7 @@ var PatternNumberExact = `^${PatternNumber}$`;
 var PatternStringExact = `^${PatternString}$`;
 var PatternNeverExact = `^${PatternNever}$`;
 
-// ../node_modules/@sinclair/typebox/build/esm/type/registry/format.mjs
+// node_modules/@sinclair/typebox/build/esm/type/registry/format.mjs
 var exports_format = {};
 __export(exports_format, {
   Set: () => Set2,
@@ -6160,7 +6160,7 @@ function Set2(format, func) {
 function Get(format) {
   return map.get(format);
 }
-// ../node_modules/@sinclair/typebox/build/esm/type/registry/type.mjs
+// node_modules/@sinclair/typebox/build/esm/type/registry/type.mjs
 var exports_type2 = {};
 __export(exports_type2, {
   Set: () => Set3,
@@ -6189,7 +6189,7 @@ function Set3(kind, func) {
 function Get2(kind) {
   return map2.get(kind);
 }
-// ../node_modules/@sinclair/typebox/build/esm/type/sets/set.mjs
+// node_modules/@sinclair/typebox/build/esm/type/sets/set.mjs
 function SetIncludes(T2, S) {
   return T2.includes(S);
 }
@@ -6214,32 +6214,32 @@ function SetUnionMany(T2) {
   return Acc;
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/any/any.mjs
+// node_modules/@sinclair/typebox/build/esm/type/any/any.mjs
 function Any(options) {
   return CreateType({ [Kind]: "Any" }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/array/array.mjs
+// node_modules/@sinclair/typebox/build/esm/type/array/array.mjs
 function Array2(items, options) {
   return CreateType({ [Kind]: "Array", type: "array", items }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/argument/argument.mjs
+// node_modules/@sinclair/typebox/build/esm/type/argument/argument.mjs
 function Argument(index) {
   return CreateType({ [Kind]: "Argument", index });
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/async-iterator/async-iterator.mjs
+// node_modules/@sinclair/typebox/build/esm/type/async-iterator/async-iterator.mjs
 function AsyncIterator(items, options) {
   return CreateType({ [Kind]: "AsyncIterator", type: "AsyncIterator", items }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/computed/computed.mjs
+// node_modules/@sinclair/typebox/build/esm/type/computed/computed.mjs
 function Computed(target, parameters, options) {
   return CreateType({ [Kind]: "Computed", target, parameters }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/discard/discard.mjs
+// node_modules/@sinclair/typebox/build/esm/type/discard/discard.mjs
 function DiscardKey(value, key) {
   const { [key]: _2, ...rest } = value;
   return rest;
@@ -6248,12 +6248,12 @@ function Discard(value, keys) {
   return keys.reduce((acc, key) => DiscardKey(acc, key), value);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/never/never.mjs
+// node_modules/@sinclair/typebox/build/esm/type/never/never.mjs
 function Never(options) {
   return CreateType({ [Kind]: "Never", not: {} }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/mapped/mapped-result.mjs
+// node_modules/@sinclair/typebox/build/esm/type/mapped/mapped-result.mjs
 function MappedResult(properties) {
   return CreateType({
     [Kind]: "MappedResult",
@@ -6261,22 +6261,22 @@ function MappedResult(properties) {
   });
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/constructor/constructor.mjs
+// node_modules/@sinclair/typebox/build/esm/type/constructor/constructor.mjs
 function Constructor(parameters, returns, options) {
   return CreateType({ [Kind]: "Constructor", type: "Constructor", parameters, returns }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/function/function.mjs
+// node_modules/@sinclair/typebox/build/esm/type/function/function.mjs
 function Function2(parameters, returns, options) {
   return CreateType({ [Kind]: "Function", type: "Function", parameters, returns }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/union/union-create.mjs
+// node_modules/@sinclair/typebox/build/esm/type/union/union-create.mjs
 function UnionCreate(T2, options) {
   return CreateType({ [Kind]: "Union", anyOf: T2 }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/union/union-evaluated.mjs
+// node_modules/@sinclair/typebox/build/esm/type/union/union-evaluated.mjs
 function IsUnionOptional(types) {
   return types.some((type) => IsOptional(type));
 }
@@ -6294,12 +6294,12 @@ function UnionEvaluated(T2, options) {
   return T2.length === 1 ? CreateType(T2[0], options) : T2.length === 0 ? Never(options) : ResolveUnion(T2, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/union/union.mjs
+// node_modules/@sinclair/typebox/build/esm/type/union/union.mjs
 function Union(types, options) {
   return types.length === 0 ? Never(options) : types.length === 1 ? CreateType(types[0], options) : UnionCreate(types, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/template-literal/parse.mjs
+// node_modules/@sinclair/typebox/build/esm/type/template-literal/parse.mjs
 class TemplateLiteralParserError extends TypeBoxError {
 }
 function Unescape(pattern) {
@@ -6423,7 +6423,7 @@ function TemplateLiteralParseExact(pattern) {
   return TemplateLiteralParse(pattern.slice(1, pattern.length - 1));
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/template-literal/finite.mjs
+// node_modules/@sinclair/typebox/build/esm/type/template-literal/finite.mjs
 class TemplateLiteralFiniteError extends TypeBoxError {
 }
 function IsNumberExpression(expression) {
@@ -6445,7 +6445,7 @@ function IsTemplateLiteralFinite(schema) {
   return IsTemplateLiteralExpressionFinite(expression);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/template-literal/generate.mjs
+// node_modules/@sinclair/typebox/build/esm/type/template-literal/generate.mjs
 class TemplateLiteralGenerateError extends TypeBoxError {
 }
 function* GenerateReduce(buffer) {
@@ -6477,7 +6477,7 @@ function TemplateLiteralGenerate(schema) {
   return IsTemplateLiteralExpressionFinite(expression) ? [...TemplateLiteralExpressionGenerate(expression)] : [];
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/literal/literal.mjs
+// node_modules/@sinclair/typebox/build/esm/type/literal/literal.mjs
 function Literal(value, options) {
   return CreateType({
     [Kind]: "Literal",
@@ -6486,27 +6486,27 @@ function Literal(value, options) {
   }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/boolean/boolean.mjs
+// node_modules/@sinclair/typebox/build/esm/type/boolean/boolean.mjs
 function Boolean2(options) {
   return CreateType({ [Kind]: "Boolean", type: "boolean" }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/bigint/bigint.mjs
+// node_modules/@sinclair/typebox/build/esm/type/bigint/bigint.mjs
 function BigInt2(options) {
   return CreateType({ [Kind]: "BigInt", type: "bigint" }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/number/number.mjs
+// node_modules/@sinclair/typebox/build/esm/type/number/number.mjs
 function Number2(options) {
   return CreateType({ [Kind]: "Number", type: "number" }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/string/string.mjs
+// node_modules/@sinclair/typebox/build/esm/type/string/string.mjs
 function String2(options) {
   return CreateType({ [Kind]: "String", type: "string" }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/template-literal/syntax.mjs
+// node_modules/@sinclair/typebox/build/esm/type/template-literal/syntax.mjs
 function* FromUnion(syntax) {
   const trim = syntax.trim().replace(/"|'/g, "");
   return trim === "boolean" ? yield Boolean2() : trim === "number" ? yield Number2() : trim === "bigint" ? yield BigInt2() : trim === "string" ? yield String2() : yield (() => {
@@ -6543,7 +6543,7 @@ function TemplateLiteralSyntax(syntax) {
   return [...FromSyntax(syntax)];
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/template-literal/pattern.mjs
+// node_modules/@sinclair/typebox/build/esm/type/template-literal/pattern.mjs
 class TemplateLiteralPatternError extends TypeBoxError {
 }
 function Escape(value) {
@@ -6558,20 +6558,20 @@ function TemplateLiteralPattern(kinds) {
   return `^${kinds.map((schema) => Visit2(schema, "")).join("")}$`;
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/template-literal/union.mjs
+// node_modules/@sinclair/typebox/build/esm/type/template-literal/union.mjs
 function TemplateLiteralToUnion(schema) {
   const R = TemplateLiteralGenerate(schema);
   const L = R.map((S) => Literal(S));
   return UnionEvaluated(L);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/template-literal/template-literal.mjs
+// node_modules/@sinclair/typebox/build/esm/type/template-literal/template-literal.mjs
 function TemplateLiteral(unresolved, options) {
   const pattern = IsString(unresolved) ? TemplateLiteralPattern(TemplateLiteralSyntax(unresolved)) : TemplateLiteralPattern(unresolved);
   return CreateType({ [Kind]: "TemplateLiteral", type: "string", pattern }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/indexed/indexed-property-keys.mjs
+// node_modules/@sinclair/typebox/build/esm/type/indexed/indexed-property-keys.mjs
 function FromTemplateLiteral(templateLiteral) {
   const keys = TemplateLiteralGenerate(templateLiteral);
   return keys.map((key) => key.toString());
@@ -6589,7 +6589,7 @@ function IndexPropertyKeys(type) {
   return [...new Set(IsTemplateLiteral(type) ? FromTemplateLiteral(type) : IsUnion(type) ? FromUnion2(type.anyOf) : IsLiteral(type) ? FromLiteral(type.const) : IsNumber3(type) ? ["[number]"] : IsInteger2(type) ? ["[number]"] : [])];
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/indexed/indexed-from-mapped-result.mjs
+// node_modules/@sinclair/typebox/build/esm/type/indexed/indexed-from-mapped-result.mjs
 function FromProperties(type, properties, options) {
   const result = {};
   for (const K2 of Object.getOwnPropertyNames(properties)) {
@@ -6605,7 +6605,7 @@ function IndexFromMappedResult(type, mappedResult, options) {
   return MappedResult(properties);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/indexed/indexed.mjs
+// node_modules/@sinclair/typebox/build/esm/type/indexed/indexed.mjs
 function FromRest(types, key) {
   return types.map((type) => IndexFromPropertyKey(type, key));
 }
@@ -6653,7 +6653,7 @@ function Index(type, key, options) {
   return CreateType(IsSchema(key) ? FromSchema(type, IndexPropertyKeys(key)) : FromSchema(type, key), options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/indexed/indexed-from-mapped-key.mjs
+// node_modules/@sinclair/typebox/build/esm/type/indexed/indexed-from-mapped-key.mjs
 function MappedIndexPropertyKey(type, key, options) {
   return { [key]: Index(type, [key], Clone(options)) };
 }
@@ -6670,12 +6670,12 @@ function IndexFromMappedKey(type, mappedKey, options) {
   return MappedResult(properties);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/iterator/iterator.mjs
+// node_modules/@sinclair/typebox/build/esm/type/iterator/iterator.mjs
 function Iterator(items, options) {
   return CreateType({ [Kind]: "Iterator", type: "Iterator", items }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/object/object.mjs
+// node_modules/@sinclair/typebox/build/esm/type/object/object.mjs
 function RequiredArray(properties) {
   return globalThis.Object.keys(properties).filter((key) => !IsOptional(properties[key]));
 }
@@ -6686,12 +6686,12 @@ function _Object(properties, options) {
 }
 var Object2 = _Object;
 
-// ../node_modules/@sinclair/typebox/build/esm/type/promise/promise.mjs
+// node_modules/@sinclair/typebox/build/esm/type/promise/promise.mjs
 function Promise2(item, options) {
   return CreateType({ [Kind]: "Promise", type: "Promise", item }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/readonly/readonly.mjs
+// node_modules/@sinclair/typebox/build/esm/type/readonly/readonly.mjs
 function RemoveReadonly(schema) {
   return CreateType(Discard(schema, [ReadonlyKind]));
 }
@@ -6706,7 +6706,7 @@ function Readonly(schema, enable) {
   return IsMappedResult(schema) ? ReadonlyFromMappedResult(schema, F) : ReadonlyWithFlag(schema, F);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/readonly/readonly-from-mapped-result.mjs
+// node_modules/@sinclair/typebox/build/esm/type/readonly/readonly-from-mapped-result.mjs
 function FromProperties2(K, F) {
   const Acc = {};
   for (const K2 of globalThis.Object.getOwnPropertyNames(K))
@@ -6721,12 +6721,12 @@ function ReadonlyFromMappedResult(R, F) {
   return MappedResult(P);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/tuple/tuple.mjs
+// node_modules/@sinclair/typebox/build/esm/type/tuple/tuple.mjs
 function Tuple(types, options) {
   return CreateType(types.length > 0 ? { [Kind]: "Tuple", type: "array", items: types, additionalItems: false, minItems: types.length, maxItems: types.length } : { [Kind]: "Tuple", type: "array", minItems: types.length, maxItems: types.length }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/mapped/mapped.mjs
+// node_modules/@sinclair/typebox/build/esm/type/mapped/mapped.mjs
 function FromMappedResult3(K, P) {
   return K in P ? FromSchemaType(K, P[K]) : MappedResult(P);
 }
@@ -6772,7 +6772,7 @@ function Mapped(key, map3, options) {
   return Object2(R, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/optional/optional.mjs
+// node_modules/@sinclair/typebox/build/esm/type/optional/optional.mjs
 function RemoveOptional(schema) {
   return CreateType(Discard(schema, [OptionalKind]));
 }
@@ -6787,7 +6787,7 @@ function Optional(schema, enable) {
   return IsMappedResult(schema) ? OptionalFromMappedResult(schema, F) : OptionalWithFlag(schema, F);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/optional/optional-from-mapped-result.mjs
+// node_modules/@sinclair/typebox/build/esm/type/optional/optional-from-mapped-result.mjs
 function FromProperties4(P, F) {
   const Acc = {};
   for (const K2 of globalThis.Object.getOwnPropertyNames(P))
@@ -6802,14 +6802,14 @@ function OptionalFromMappedResult(R, F) {
   return MappedResult(P);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/intersect/intersect-create.mjs
+// node_modules/@sinclair/typebox/build/esm/type/intersect/intersect-create.mjs
 function IntersectCreate(T2, options = {}) {
   const allObjects = T2.every((schema) => IsObject3(schema));
   const clonedUnevaluatedProperties = IsSchema(options.unevaluatedProperties) ? { unevaluatedProperties: options.unevaluatedProperties } : {};
   return CreateType(options.unevaluatedProperties === false || IsSchema(options.unevaluatedProperties) || allObjects ? { ...clonedUnevaluatedProperties, [Kind]: "Intersect", type: "object", allOf: T2 } : { ...clonedUnevaluatedProperties, [Kind]: "Intersect", allOf: T2 }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/intersect/intersect-evaluated.mjs
+// node_modules/@sinclair/typebox/build/esm/type/intersect/intersect-evaluated.mjs
 function IsIntersectOptional(types) {
   return types.every((left) => IsOptional(left));
 }
@@ -6832,7 +6832,7 @@ function IntersectEvaluated(types, options = {}) {
   return ResolveIntersect(types, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/intersect/intersect.mjs
+// node_modules/@sinclair/typebox/build/esm/type/intersect/intersect.mjs
 function Intersect(types, options) {
   if (types.length === 1)
     return CreateType(types[0], options);
@@ -6843,7 +6843,7 @@ function Intersect(types, options) {
   return IntersectCreate(types, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/ref/ref.mjs
+// node_modules/@sinclair/typebox/build/esm/type/ref/ref.mjs
 function Ref(...args) {
   const [$ref, options] = typeof args[0] === "string" ? [args[0], args[1]] : [args[0].$id, args[1]];
   if (typeof $ref !== "string")
@@ -6851,7 +6851,7 @@ function Ref(...args) {
   return CreateType({ [Kind]: "Ref", $ref }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/awaited/awaited.mjs
+// node_modules/@sinclair/typebox/build/esm/type/awaited/awaited.mjs
 function FromComputed(target, parameters) {
   return Computed("Awaited", [Computed(target, parameters)]);
 }
@@ -6874,7 +6874,7 @@ function Awaited(type, options) {
   return CreateType(IsComputed(type) ? FromComputed(type.target, type.parameters) : IsIntersect(type) ? FromIntersect2(type.allOf) : IsUnion(type) ? FromUnion4(type.anyOf) : IsPromise2(type) ? FromPromise(type.item) : IsRef(type) ? FromRef(type.$ref) : type, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/keyof/keyof-property-keys.mjs
+// node_modules/@sinclair/typebox/build/esm/type/keyof/keyof-property-keys.mjs
 function FromRest4(types) {
   const result = [];
   for (const L of types)
@@ -6920,7 +6920,7 @@ function KeyOfPattern(schema) {
   return `^(${pattern.join("|")})$`;
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/keyof/keyof.mjs
+// node_modules/@sinclair/typebox/build/esm/type/keyof/keyof.mjs
 function FromComputed2(target, parameters) {
   return Computed("KeyOf", [Computed(target, parameters)]);
 }
@@ -6940,7 +6940,7 @@ function KeyOf(type, options) {
   return IsComputed(type) ? FromComputed2(type.target, type.parameters) : IsRef(type) ? FromRef2(type.$ref) : IsMappedResult(type) ? KeyOfFromMappedResult(type, options) : KeyOfFromType(type, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/keyof/keyof-from-mapped-result.mjs
+// node_modules/@sinclair/typebox/build/esm/type/keyof/keyof-from-mapped-result.mjs
 function FromProperties6(properties, options) {
   const result = {};
   for (const K2 of globalThis.Object.getOwnPropertyNames(properties))
@@ -6955,14 +6955,14 @@ function KeyOfFromMappedResult(mappedResult, options) {
   return MappedResult(properties);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/keyof/keyof-property-entries.mjs
+// node_modules/@sinclair/typebox/build/esm/type/keyof/keyof-property-entries.mjs
 function KeyOfPropertyEntries(schema) {
   const keys = KeyOfPropertyKeys(schema);
   const schemas = IndexFromPropertyKeys(schema, keys);
   return keys.map((_2, index) => [keys[index], schemas[index]]);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/composite/composite.mjs
+// node_modules/@sinclair/typebox/build/esm/type/composite/composite.mjs
 function CompositeKeys(T2) {
   const Acc = [];
   for (const L of T2)
@@ -6992,37 +6992,37 @@ function Composite(T2, options) {
   return R;
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/date/date.mjs
+// node_modules/@sinclair/typebox/build/esm/type/date/date.mjs
 function Date2(options) {
   return CreateType({ [Kind]: "Date", type: "Date" }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/null/null.mjs
+// node_modules/@sinclair/typebox/build/esm/type/null/null.mjs
 function Null(options) {
   return CreateType({ [Kind]: "Null", type: "null" }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/symbol/symbol.mjs
+// node_modules/@sinclair/typebox/build/esm/type/symbol/symbol.mjs
 function Symbol2(options) {
   return CreateType({ [Kind]: "Symbol", type: "symbol" }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/undefined/undefined.mjs
+// node_modules/@sinclair/typebox/build/esm/type/undefined/undefined.mjs
 function Undefined(options) {
   return CreateType({ [Kind]: "Undefined", type: "undefined" }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/uint8array/uint8array.mjs
+// node_modules/@sinclair/typebox/build/esm/type/uint8array/uint8array.mjs
 function Uint8Array2(options) {
   return CreateType({ [Kind]: "Uint8Array", type: "Uint8Array" }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/unknown/unknown.mjs
+// node_modules/@sinclair/typebox/build/esm/type/unknown/unknown.mjs
 function Unknown(options) {
   return CreateType({ [Kind]: "Unknown" }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/const/const.mjs
+// node_modules/@sinclair/typebox/build/esm/type/const/const.mjs
 function FromArray3(T2) {
   return T2.map((L) => FromValue(L, false));
 }
@@ -7042,12 +7042,12 @@ function Const(T2, options) {
   return CreateType(FromValue(T2, true), options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/constructor-parameters/constructor-parameters.mjs
+// node_modules/@sinclair/typebox/build/esm/type/constructor-parameters/constructor-parameters.mjs
 function ConstructorParameters(schema, options) {
   return IsConstructor(schema) ? Tuple(schema.parameters, options) : Never(options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/enum/enum.mjs
+// node_modules/@sinclair/typebox/build/esm/type/enum/enum.mjs
 function Enum(item, options) {
   if (IsUndefined(item))
     throw new Error("Enum undefined or empty");
@@ -7057,7 +7057,7 @@ function Enum(item, options) {
   return Union(anyOf, { ...options, [Hint]: "Enum" });
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/extends/extends-check.mjs
+// node_modules/@sinclair/typebox/build/esm/type/extends/extends-check.mjs
 class ExtendsResolverError extends TypeBoxError {
 }
 var ExtendsResult;
@@ -7302,7 +7302,7 @@ function ExtendsCheck(left, right) {
   return Visit3(left, right);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/extends/extends-from-mapped-result.mjs
+// node_modules/@sinclair/typebox/build/esm/type/extends/extends-from-mapped-result.mjs
 function FromProperties8(P, Right, True, False, options) {
   const Acc = {};
   for (const K2 of globalThis.Object.getOwnPropertyNames(P))
@@ -7317,7 +7317,7 @@ function ExtendsFromMappedResult(Left, Right, True, False, options) {
   return MappedResult(P);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/extends/extends.mjs
+// node_modules/@sinclair/typebox/build/esm/type/extends/extends.mjs
 function ExtendsResolve(left, right, trueType, falseType) {
   const R = ExtendsCheck(left, right);
   return R === ExtendsResult.Union ? Union([trueType, falseType]) : R === ExtendsResult.True ? trueType : falseType;
@@ -7326,7 +7326,7 @@ function Extends(L, R, T2, F, options) {
   return IsMappedResult(L) ? ExtendsFromMappedResult(L, R, T2, F, options) : IsMappedKey(L) ? CreateType(ExtendsFromMappedKey(L, R, T2, F, options)) : CreateType(ExtendsResolve(L, R, T2, F), options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/extends/extends-from-mapped-key.mjs
+// node_modules/@sinclair/typebox/build/esm/type/extends/extends-from-mapped-key.mjs
 function FromPropertyKey(K, U, L, R, options) {
   return {
     [K]: Extends(Literal(K), U, L, R, Clone(options))
@@ -7345,7 +7345,7 @@ function ExtendsFromMappedKey(T2, U, L, R, options) {
   return MappedResult(P);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/extends/extends-undefined.mjs
+// node_modules/@sinclair/typebox/build/esm/type/extends/extends-undefined.mjs
 function Intersect2(schema) {
   return schema.allOf.every((schema2) => ExtendsUndefinedCheck(schema2));
 }
@@ -7359,12 +7359,12 @@ function ExtendsUndefinedCheck(schema) {
   return schema[Kind] === "Intersect" ? Intersect2(schema) : schema[Kind] === "Union" ? Union2(schema) : schema[Kind] === "Not" ? Not(schema) : schema[Kind] === "Undefined" ? true : false;
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/exclude/exclude-from-template-literal.mjs
+// node_modules/@sinclair/typebox/build/esm/type/exclude/exclude-from-template-literal.mjs
 function ExcludeFromTemplateLiteral(L, R) {
   return Exclude(TemplateLiteralToUnion(L), R);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/exclude/exclude.mjs
+// node_modules/@sinclair/typebox/build/esm/type/exclude/exclude.mjs
 function ExcludeRest(L, R) {
   const excluded = L.filter((inner) => ExtendsCheck(inner, R) === ExtendsResult.False);
   return excluded.length === 1 ? excluded[0] : Union(excluded);
@@ -7377,7 +7377,7 @@ function Exclude(L, R, options = {}) {
   return CreateType(IsUnion(L) ? ExcludeRest(L.anyOf, R) : ExtendsCheck(L, R) !== ExtendsResult.False ? Never() : L, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/exclude/exclude-from-mapped-result.mjs
+// node_modules/@sinclair/typebox/build/esm/type/exclude/exclude-from-mapped-result.mjs
 function FromProperties9(P, U) {
   const Acc = {};
   for (const K2 of globalThis.Object.getOwnPropertyNames(P))
@@ -7392,12 +7392,12 @@ function ExcludeFromMappedResult(R, T2) {
   return MappedResult(P);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/extract/extract-from-template-literal.mjs
+// node_modules/@sinclair/typebox/build/esm/type/extract/extract-from-template-literal.mjs
 function ExtractFromTemplateLiteral(L, R) {
   return Extract(TemplateLiteralToUnion(L), R);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/extract/extract.mjs
+// node_modules/@sinclair/typebox/build/esm/type/extract/extract.mjs
 function ExtractRest(L, R) {
   const extracted = L.filter((inner) => ExtendsCheck(inner, R) !== ExtendsResult.False);
   return extracted.length === 1 ? extracted[0] : Union(extracted);
@@ -7410,7 +7410,7 @@ function Extract(L, R, options) {
   return CreateType(IsUnion(L) ? ExtractRest(L.anyOf, R) : ExtendsCheck(L, R) !== ExtendsResult.False ? L : Never(), options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/extract/extract-from-mapped-result.mjs
+// node_modules/@sinclair/typebox/build/esm/type/extract/extract-from-mapped-result.mjs
 function FromProperties10(P, T2) {
   const Acc = {};
   for (const K2 of globalThis.Object.getOwnPropertyNames(P))
@@ -7425,17 +7425,17 @@ function ExtractFromMappedResult(R, T2) {
   return MappedResult(P);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/instance-type/instance-type.mjs
+// node_modules/@sinclair/typebox/build/esm/type/instance-type/instance-type.mjs
 function InstanceType(schema, options) {
   return IsConstructor(schema) ? CreateType(schema.returns, options) : Never(options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/readonly-optional/readonly-optional.mjs
+// node_modules/@sinclair/typebox/build/esm/type/readonly-optional/readonly-optional.mjs
 function ReadonlyOptional(schema) {
   return Readonly(Optional(schema));
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/record/record.mjs
+// node_modules/@sinclair/typebox/build/esm/type/record/record.mjs
 function RecordCreateFromPattern(pattern, T2, options) {
   return CreateType({ [Kind]: "Record", type: "object", patternProperties: { [pattern]: T2 } }, options);
 }
@@ -7490,7 +7490,7 @@ function RecordValue2(type) {
   return type.patternProperties[RecordPattern(type)];
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/instantiate/instantiate.mjs
+// node_modules/@sinclair/typebox/build/esm/type/instantiate/instantiate.mjs
 function FromConstructor2(args, type) {
   type.parameters = FromTypes(args, type.parameters);
   type.returns = FromType(args, type.returns);
@@ -7565,12 +7565,12 @@ function Instantiate(type, args) {
   return FromType(args, CloneType(type));
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/integer/integer.mjs
+// node_modules/@sinclair/typebox/build/esm/type/integer/integer.mjs
 function Integer(options) {
   return CreateType({ [Kind]: "Integer", type: "integer" }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/intrinsic/intrinsic-from-mapped-key.mjs
+// node_modules/@sinclair/typebox/build/esm/type/intrinsic/intrinsic-from-mapped-key.mjs
 function MappedIntrinsicPropertyKey(K, M, options) {
   return {
     [K]: Intrinsic(Literal(K), M, Clone(options))
@@ -7590,7 +7590,7 @@ function IntrinsicFromMappedKey(T2, M, options) {
   return MappedResult(P);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/intrinsic/intrinsic.mjs
+// node_modules/@sinclair/typebox/build/esm/type/intrinsic/intrinsic.mjs
 function ApplyUncapitalize(value) {
   const [first, rest] = [value.slice(0, 1), value.slice(1)];
   return [first.toLowerCase(), rest].join("");
@@ -7626,27 +7626,27 @@ function Intrinsic(schema, mode, options = {}) {
   return IsMappedKey(schema) ? IntrinsicFromMappedKey(schema, mode, options) : IsTemplateLiteral(schema) ? FromTemplateLiteral3(schema, mode, options) : IsUnion(schema) ? Union(FromRest5(schema.anyOf, mode), options) : IsLiteral(schema) ? Literal(FromLiteralValue(schema.const, mode), options) : CreateType(schema, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/intrinsic/capitalize.mjs
+// node_modules/@sinclair/typebox/build/esm/type/intrinsic/capitalize.mjs
 function Capitalize(T2, options = {}) {
   return Intrinsic(T2, "Capitalize", options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/intrinsic/lowercase.mjs
+// node_modules/@sinclair/typebox/build/esm/type/intrinsic/lowercase.mjs
 function Lowercase(T2, options = {}) {
   return Intrinsic(T2, "Lowercase", options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/intrinsic/uncapitalize.mjs
+// node_modules/@sinclair/typebox/build/esm/type/intrinsic/uncapitalize.mjs
 function Uncapitalize(T2, options = {}) {
   return Intrinsic(T2, "Uncapitalize", options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/intrinsic/uppercase.mjs
+// node_modules/@sinclair/typebox/build/esm/type/intrinsic/uppercase.mjs
 function Uppercase(T2, options = {}) {
   return Intrinsic(T2, "Uppercase", options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/omit/omit-from-mapped-result.mjs
+// node_modules/@sinclair/typebox/build/esm/type/omit/omit-from-mapped-result.mjs
 function FromProperties12(properties, propertyKeys, options) {
   const result = {};
   for (const K2 of globalThis.Object.getOwnPropertyNames(properties))
@@ -7661,7 +7661,7 @@ function OmitFromMappedResult(mappedResult, propertyKeys, options) {
   return MappedResult(properties);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/omit/omit.mjs
+// node_modules/@sinclair/typebox/build/esm/type/omit/omit.mjs
 function FromIntersect6(types, propertyKeys) {
   return types.map((type) => OmitResolve(type, propertyKeys));
 }
@@ -7695,7 +7695,7 @@ function Omit(type, key, options) {
   return IsMappedResult(type) ? OmitFromMappedResult(type, propertyKeys, options) : IsMappedKey(key) ? OmitFromMappedKey(type, key, options) : isTypeRef && isKeyRef ? Computed("Omit", [type, typeKey], options) : !isTypeRef && isKeyRef ? Computed("Omit", [type, typeKey], options) : isTypeRef && !isKeyRef ? Computed("Omit", [type, typeKey], options) : CreateType({ ...OmitResolve(type, propertyKeys), ...options });
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/omit/omit-from-mapped-key.mjs
+// node_modules/@sinclair/typebox/build/esm/type/omit/omit-from-mapped-key.mjs
 function FromPropertyKey2(type, key, options) {
   return { [key]: Omit(type, [key], Clone(options)) };
 }
@@ -7712,7 +7712,7 @@ function OmitFromMappedKey(type, mappedKey, options) {
   return MappedResult(properties);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/pick/pick-from-mapped-result.mjs
+// node_modules/@sinclair/typebox/build/esm/type/pick/pick-from-mapped-result.mjs
 function FromProperties14(properties, propertyKeys, options) {
   const result = {};
   for (const K2 of globalThis.Object.getOwnPropertyNames(properties))
@@ -7727,7 +7727,7 @@ function PickFromMappedResult(mappedResult, propertyKeys, options) {
   return MappedResult(properties);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/pick/pick.mjs
+// node_modules/@sinclair/typebox/build/esm/type/pick/pick.mjs
 function FromIntersect7(types, propertyKeys) {
   return types.map((type) => PickResolve(type, propertyKeys));
 }
@@ -7761,7 +7761,7 @@ function Pick(type, key, options) {
   return IsMappedResult(type) ? PickFromMappedResult(type, propertyKeys, options) : IsMappedKey(key) ? PickFromMappedKey(type, key, options) : isTypeRef && isKeyRef ? Computed("Pick", [type, typeKey], options) : !isTypeRef && isKeyRef ? Computed("Pick", [type, typeKey], options) : isTypeRef && !isKeyRef ? Computed("Pick", [type, typeKey], options) : CreateType({ ...PickResolve(type, propertyKeys), ...options });
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/pick/pick-from-mapped-key.mjs
+// node_modules/@sinclair/typebox/build/esm/type/pick/pick-from-mapped-key.mjs
 function FromPropertyKey3(type, key, options) {
   return {
     [key]: Pick(type, [key], Clone(options))
@@ -7780,7 +7780,7 @@ function PickFromMappedKey(type, mappedKey, options) {
   return MappedResult(properties);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/partial/partial.mjs
+// node_modules/@sinclair/typebox/build/esm/type/partial/partial.mjs
 function FromComputed3(target, parameters) {
   return Computed("Partial", [Computed(target, parameters)]);
 }
@@ -7812,7 +7812,7 @@ function Partial(type, options) {
   }
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/partial/partial-from-mapped-result.mjs
+// node_modules/@sinclair/typebox/build/esm/type/partial/partial-from-mapped-result.mjs
 function FromProperties17(K, options) {
   const Acc = {};
   for (const K2 of globalThis.Object.getOwnPropertyNames(K))
@@ -7827,7 +7827,7 @@ function PartialFromMappedResult(R, options) {
   return MappedResult(P);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/required/required.mjs
+// node_modules/@sinclair/typebox/build/esm/type/required/required.mjs
 function FromComputed4(target, parameters) {
   return Computed("Required", [Computed(target, parameters)]);
 }
@@ -7859,7 +7859,7 @@ function Required(type, options) {
   }
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/required/required-from-mapped-result.mjs
+// node_modules/@sinclair/typebox/build/esm/type/required/required-from-mapped-result.mjs
 function FromProperties19(P, options) {
   const Acc = {};
   for (const K2 of globalThis.Object.getOwnPropertyNames(P))
@@ -7874,7 +7874,7 @@ function RequiredFromMappedResult(R, options) {
   return MappedResult(P);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/module/compute.mjs
+// node_modules/@sinclair/typebox/build/esm/type/module/compute.mjs
 function DereferenceParameters(moduleProperties, types) {
   return types.map((type) => {
     return IsRef(type) ? Dereference(moduleProperties, type.$ref) : FromType2(moduleProperties, type);
@@ -7961,7 +7961,7 @@ function ComputeModuleProperties(moduleProperties) {
   }, {});
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/module/module.mjs
+// node_modules/@sinclair/typebox/build/esm/type/module/module.mjs
 class TModule {
   constructor($defs) {
     const computed = ComputeModuleProperties($defs);
@@ -7982,17 +7982,17 @@ function Module(properties) {
   return new TModule(properties);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/not/not.mjs
+// node_modules/@sinclair/typebox/build/esm/type/not/not.mjs
 function Not2(type, options) {
   return CreateType({ [Kind]: "Not", not: type }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/parameters/parameters.mjs
+// node_modules/@sinclair/typebox/build/esm/type/parameters/parameters.mjs
 function Parameters(schema, options) {
   return IsFunction3(schema) ? Tuple(schema.parameters, options) : Never();
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/recursive/recursive.mjs
+// node_modules/@sinclair/typebox/build/esm/type/recursive/recursive.mjs
 var Ordinal = 0;
 function Recursive(callback, options = {}) {
   if (IsUndefined(options.$id))
@@ -8002,13 +8002,13 @@ function Recursive(callback, options = {}) {
   return CreateType({ [Hint]: "Recursive", ...thisType }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/regexp/regexp.mjs
+// node_modules/@sinclair/typebox/build/esm/type/regexp/regexp.mjs
 function RegExp2(unresolved, options) {
   const expr = IsString(unresolved) ? new globalThis.RegExp(unresolved) : unresolved;
   return CreateType({ [Kind]: "RegExp", type: "RegExp", source: expr.source, flags: expr.flags }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/rest/rest.mjs
+// node_modules/@sinclair/typebox/build/esm/type/rest/rest.mjs
 function RestResolve(T2) {
   return IsIntersect(T2) ? T2.allOf : IsUnion(T2) ? T2.anyOf : IsTuple(T2) ? T2.items ?? [] : [];
 }
@@ -8016,12 +8016,12 @@ function Rest(T2) {
   return RestResolve(T2);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/return-type/return-type.mjs
+// node_modules/@sinclair/typebox/build/esm/type/return-type/return-type.mjs
 function ReturnType(schema, options) {
   return IsFunction3(schema) ? CreateType(schema.returns, options) : Never(options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/transform/transform.mjs
+// node_modules/@sinclair/typebox/build/esm/type/transform/transform.mjs
 class TransformDecodeBuilder {
   constructor(schema) {
     this.schema = schema;
@@ -8054,17 +8054,17 @@ function Transform(schema) {
   return new TransformDecodeBuilder(schema);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/unsafe/unsafe.mjs
+// node_modules/@sinclair/typebox/build/esm/type/unsafe/unsafe.mjs
 function Unsafe(options = {}) {
   return CreateType({ [Kind]: options[Kind] ?? "Unsafe" }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/void/void.mjs
+// node_modules/@sinclair/typebox/build/esm/type/void/void.mjs
 function Void(options) {
   return CreateType({ [Kind]: "Void", type: "void" }, options);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/type/type/type.mjs
+// node_modules/@sinclair/typebox/build/esm/type/type/type.mjs
 var exports_type3 = {};
 __export(exports_type3, {
   Void: () => Void,
@@ -8131,12 +8131,12 @@ __export(exports_type3, {
   Any: () => Any
 });
 
-// ../node_modules/@sinclair/typebox/build/esm/type/type/index.mjs
+// node_modules/@sinclair/typebox/build/esm/type/type/index.mjs
 var Type = exports_type3;
 
-// ../node_modules/elysia/dist/index.mjs
+// node_modules/elysia/dist/index.mjs
 var import_fast_decode_uri_component4 = __toESM(require_fast_decode_uri_component(), 1);
-// ../node_modules/@sinclair/typebox/build/esm/errors/function.mjs
+// node_modules/@sinclair/typebox/build/esm/errors/function.mjs
 function DefaultErrorFunction(error) {
   switch (error.errorType) {
     case ValueErrorType.ArrayContains:
@@ -8276,7 +8276,7 @@ function GetErrorFunction() {
   return errorFunction;
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/value/deref/deref.mjs
+// node_modules/@sinclair/typebox/build/esm/value/deref/deref.mjs
 class TypeDereferenceError extends TypeBoxError {
   constructor(schema) {
     super(`Unable to dereference schema with $id '${schema.$ref}'`);
@@ -8299,7 +8299,7 @@ function Deref(schema, references) {
   return schema[Kind] === "This" || schema[Kind] === "Ref" ? Resolve(schema, references) : schema;
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/value/hash/hash.mjs
+// node_modules/@sinclair/typebox/build/esm/value/hash/hash.mjs
 class ValueHashError extends TypeBoxError {
   constructor(value) {
     super(`Unable to hash value`);
@@ -8426,7 +8426,7 @@ function Hash(value) {
   return Accumulator;
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/value/check/check.mjs
+// node_modules/@sinclair/typebox/build/esm/value/check/check.mjs
 class ValueCheckUnknownTypeError extends TypeBoxError {
   constructor(schema) {
     super(`Unknown type`);
@@ -8858,7 +8858,7 @@ function Check(...args) {
   return args.length === 3 ? Visit5(args[0], args[1], args[2]) : Visit5(args[0], [], args[1]);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/errors/errors.mjs
+// node_modules/@sinclair/typebox/build/esm/errors/errors.mjs
 var ValueErrorType;
 (function(ValueErrorType2) {
   ValueErrorType2[ValueErrorType2["ArrayContains"] = 0] = "ArrayContains";
@@ -9414,7 +9414,7 @@ function Errors(...args) {
   return new ValueErrorIterator(iterator);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/value/assert/assert.mjs
+// node_modules/@sinclair/typebox/build/esm/value/assert/assert.mjs
 var __classPrivateFieldSet = function(receiver, state, value, kind, f) {
   if (kind === "m")
     throw new TypeError("Private method is not writable");
@@ -9461,7 +9461,7 @@ function AssertValue(schema, references, value) {
 function Assert(...args) {
   return args.length === 3 ? AssertValue(args[0], args[1], args[2]) : AssertValue(args[0], [], args[1]);
 }
-// ../node_modules/@sinclair/typebox/build/esm/value/clone/clone.mjs
+// node_modules/@sinclair/typebox/build/esm/value/clone/clone.mjs
 function FromObject10(value) {
   const Acc = {};
   for (const key of Object.getOwnPropertyNames(value)) {
@@ -9508,7 +9508,7 @@ function Clone2(value) {
   throw new Error("ValueClone: Unable to clone value");
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/value/create/create.mjs
+// node_modules/@sinclair/typebox/build/esm/value/create/create.mjs
 class ValueCreateError extends TypeBoxError {
   constructor(schema, message) {
     super(message);
@@ -9902,7 +9902,7 @@ function Create2(...args) {
   return args.length === 2 ? Visit7(args[0], args[1]) : Visit7(args[0], []);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/value/cast/cast.mjs
+// node_modules/@sinclair/typebox/build/esm/value/cast/cast.mjs
 class ValueCastError extends TypeBoxError {
   constructor(schema, message) {
     super(message);
@@ -10095,7 +10095,7 @@ function Visit8(schema, references, value) {
 function Cast(...args) {
   return args.length === 3 ? Visit8(args[0], args[1], args[2]) : Visit8(args[0], [], args[1]);
 }
-// ../node_modules/@sinclair/typebox/build/esm/value/clean/clean.mjs
+// node_modules/@sinclair/typebox/build/esm/value/clean/clean.mjs
 function IsCheckable(schema) {
   return IsKind(schema) && schema[Kind] !== "Unsafe";
 }
@@ -10216,7 +10216,7 @@ function Visit9(schema, references, value) {
 function Clean(...args) {
   return args.length === 3 ? Visit9(args[0], args[1], args[2]) : Visit9(args[0], [], args[1]);
 }
-// ../node_modules/@sinclair/typebox/build/esm/value/convert/convert.mjs
+// node_modules/@sinclair/typebox/build/esm/value/convert/convert.mjs
 function IsStringNumeric(value) {
   return IsString2(value) && !isNaN(value) && !isNaN(parseFloat(value));
 }
@@ -10427,7 +10427,7 @@ function Visit10(schema, references, value) {
 function Convert(...args) {
   return args.length === 3 ? Visit10(args[0], args[1], args[2]) : Visit10(args[0], [], args[1]);
 }
-// ../node_modules/@sinclair/typebox/build/esm/value/transform/decode.mjs
+// node_modules/@sinclair/typebox/build/esm/value/transform/decode.mjs
 class TransformDecodeCheckError extends TypeBoxError {
   constructor(schema, value, error) {
     super(`Unable to decode value as it does not match the expected schema`);
@@ -10587,7 +10587,7 @@ function TransformDecode(schema, references, value) {
   return Visit11(schema, references, "", value);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/value/transform/encode.mjs
+// node_modules/@sinclair/typebox/build/esm/value/transform/encode.mjs
 class TransformEncodeCheckError extends TypeBoxError {
   constructor(schema, value, error) {
     super(`The encoded value does not match the expected schema`);
@@ -10758,7 +10758,7 @@ function TransformEncode(schema, references, value) {
   return Visit12(schema, references, "", value);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/value/transform/has.mjs
+// node_modules/@sinclair/typebox/build/esm/value/transform/has.mjs
 function FromArray16(schema, references) {
   return IsTransform(schema) || Visit13(schema.items, references);
 }
@@ -10860,14 +10860,14 @@ function HasTransform(schema, references) {
   return Visit13(schema, references);
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/value/decode/decode.mjs
+// node_modules/@sinclair/typebox/build/esm/value/decode/decode.mjs
 function Decode(...args) {
   const [schema, references, value] = args.length === 3 ? [args[0], args[1], args[2]] : [args[0], [], args[1]];
   if (!Check(schema, references, value))
     throw new TransformDecodeCheckError(schema, value, Errors(schema, references, value).First());
   return HasTransform(schema, references) ? TransformDecode(schema, references, value) : value;
 }
-// ../node_modules/@sinclair/typebox/build/esm/value/default/default.mjs
+// node_modules/@sinclair/typebox/build/esm/value/default/default.mjs
 function ValueOrDefault(schema, value) {
   const defaultValue = HasPropertyKey2(schema, "default") ? schema.default : undefined;
   const clone = IsFunction2(defaultValue) ? defaultValue() : Clone2(defaultValue);
@@ -11005,7 +11005,7 @@ function Visit14(schema, references, value) {
 function Default5(...args) {
   return args.length === 3 ? Visit14(args[0], args[1], args[2]) : Visit14(args[0], [], args[1]);
 }
-// ../node_modules/@sinclair/typebox/build/esm/value/pointer/pointer.mjs
+// node_modules/@sinclair/typebox/build/esm/value/pointer/pointer.mjs
 var exports_pointer = {};
 __export(exports_pointer, {
   ValuePointerRootSetError: () => ValuePointerRootSetError,
@@ -11110,7 +11110,7 @@ function Get3(value, pointer) {
   }
   return current;
 }
-// ../node_modules/@sinclair/typebox/build/esm/value/equal/equal.mjs
+// node_modules/@sinclair/typebox/build/esm/value/equal/equal.mjs
 function ObjectType3(left, right) {
   if (!IsObject2(right))
     return false;
@@ -11150,7 +11150,7 @@ function Equal(left, right) {
   throw new Error("ValueEquals: Unable to compare value");
 }
 
-// ../node_modules/@sinclair/typebox/build/esm/value/delta/delta.mjs
+// node_modules/@sinclair/typebox/build/esm/value/delta/delta.mjs
 var Insert = Object2({
   type: Literal("insert"),
   path: String2(),
@@ -11286,7 +11286,7 @@ function Patch(current, edits) {
   }
   return clone;
 }
-// ../node_modules/@sinclair/typebox/build/esm/value/encode/encode.mjs
+// node_modules/@sinclair/typebox/build/esm/value/encode/encode.mjs
 function Encode(...args) {
   const [schema, references, value] = args.length === 3 ? [args[0], args[1], args[2]] : [args[0], [], args[1]];
   const encoded = HasTransform(schema, references) ? TransformEncode(schema, references, value) : value;
@@ -11294,7 +11294,7 @@ function Encode(...args) {
     throw new TransformEncodeCheckError(schema, encoded, Errors(schema, references, encoded).First());
   return encoded;
 }
-// ../node_modules/@sinclair/typebox/build/esm/value/mutate/mutate.mjs
+// node_modules/@sinclair/typebox/build/esm/value/mutate/mutate.mjs
 function IsStandardObject2(value) {
   return IsObject2(value) && !IsArray2(value);
 }
@@ -11372,7 +11372,7 @@ function Mutate(current, next) {
     throw new ValueMutateError("Cannot assign due type mismatch of assignable values");
   Visit16(current, "", current, next);
 }
-// ../node_modules/@sinclair/typebox/build/esm/value/parse/parse.mjs
+// node_modules/@sinclair/typebox/build/esm/value/parse/parse.mjs
 class ParseError extends TypeBoxError {
   constructor(message) {
     super(message);
@@ -11428,7 +11428,7 @@ function Parse(...args) {
   })();
   return ParseValue(operations, schema, references, value);
 }
-// ../node_modules/@sinclair/typebox/build/esm/value/value/value.mjs
+// node_modules/@sinclair/typebox/build/esm/value/value/value.mjs
 var exports_value2 = {};
 __export(exports_value2, {
   ValueErrorIterator: () => ValueErrorIterator,
@@ -11451,7 +11451,7 @@ __export(exports_value2, {
   Cast: () => Cast,
   Assert: () => Assert
 });
-// ../node_modules/@sinclair/typebox/build/esm/compiler/compiler.mjs
+// node_modules/@sinclair/typebox/build/esm/compiler/compiler.mjs
 class TypeCheck {
   constructor(schema, references, checkFunc, code) {
     this.schema = schema;
@@ -12028,7 +12028,7 @@ var TypeCompiler;
   TypeCompiler2.Compile = Compile;
 })(TypeCompiler || (TypeCompiler = {}));
 
-// ../node_modules/elysia/dist/universal/utils.mjs
+// node_modules/elysia/dist/universal/utils.mjs
 var isBun = typeof Bun < "u";
 function isCloudflareWorker() {
   try {
@@ -12040,7 +12040,7 @@ function isCloudflareWorker() {
   return false;
 }
 
-// ../node_modules/elysia/dist/universal/file.mjs
+// node_modules/elysia/dist/universal/file.mjs
 var mime = {
   aac: "audio/aac",
   abw: "application/x-abiword",
@@ -12167,7 +12167,7 @@ class ElysiaFile {
   }
 }
 
-// ../node_modules/elysia/dist/utils.mjs
+// node_modules/elysia/dist/utils.mjs
 var replaceUrlPath = (url, pathname) => {
   const pathStartIndex = url.indexOf("/", 11), queryIndex = url.indexOf("?", pathStartIndex);
   return queryIndex === -1 ? `${url.slice(0, pathStartIndex)}${pathname.charCodeAt(0) === 47 ? "" : "/"}${pathname}` : `${url.slice(0, pathStartIndex)}${pathname.charCodeAt(0) === 47 ? "" : "/"}${pathname}${url.slice(queryIndex)}`;
@@ -12641,7 +12641,7 @@ var emptySchema = {
   response: true
 };
 
-// ../node_modules/elysia/dist/error.mjs
+// node_modules/elysia/dist/error.mjs
 var env = typeof Bun < "u" ? Bun.env : typeof process < "u" ? process?.env : undefined;
 var ERROR_CODE = Symbol("ElysiaErrorCode");
 var isProduction = (env?.NODE_ENV ?? env?.ENV) === "production";
@@ -12890,7 +12890,7 @@ class ValidationError extends Error {
   }
 }
 
-// ../node_modules/elysia/dist/type-system/utils.mjs
+// node_modules/elysia/dist/type-system/utils.mjs
 var tryParse = (v, schema) => {
   try {
     return JSON.parse(v);
@@ -12972,7 +12972,7 @@ var validateFile = (options, value) => {
   return true;
 };
 
-// ../node_modules/elysia/dist/type-system/format.mjs
+// node_modules/elysia/dist/type-system/format.mjs
 var fullFormats = {
   date,
   time: getTime(true),
@@ -13111,7 +13111,7 @@ exports_format.Has("date") || exports_format.Set("date", (value) => {
   }
 });
 
-// ../node_modules/elysia/dist/type-system/index.mjs
+// node_modules/elysia/dist/type-system/index.mjs
 var t = Object.assign({}, Type);
 createType("UnionEnum", (schema, value) => (typeof value == "number" || typeof value == "string" || value === null) && schema.enum.includes(value)), createType("ArrayBuffer", (schema, value) => value instanceof ArrayBuffer);
 var internalFiles = createType("Files", (options, value) => {
@@ -13434,7 +13434,7 @@ t.BooleanString = ElysiaType.BooleanString, t.ObjectString = ElysiaType.ObjectSt
   }
 })), t.Nullable = ElysiaType.Nullable, t.MaybeEmpty = ElysiaType.MaybeEmpty, t.Cookie = ElysiaType.Cookie, t.Date = ElysiaType.Date, t.UnionEnum = ElysiaType.UnionEnum, t.NoValidate = ElysiaType.NoValidate, t.Form = ElysiaType.Form, t.ArrayBuffer = ElysiaType.ArrayBuffer, t.Uint8Array = ElysiaType.Uint8Array;
 
-// ../node_modules/elysia/dist/sucrose.mjs
+// node_modules/elysia/dist/sucrose.mjs
 var separateFunction = (code) => {
   code.startsWith("async") && (code = code.slice(5)), code = code.trimStart();
   let index = -1;
@@ -13698,7 +13698,7 @@ var sucrose = (lifeCycle, inference = {
   return inference;
 };
 
-// ../node_modules/elysia/dist/cookies.mjs
+// node_modules/elysia/dist/cookies.mjs
 var import_cookie = __toESM(require_dist(), 1);
 var import_fast_decode_uri_component = __toESM(require_fast_decode_uri_component(), 1);
 var hashString = (str) => {
@@ -13899,7 +13899,7 @@ var serializeCookie = (cookies) => {
     return set.length === 1 ? set[0] : set;
 };
 
-// ../node_modules/elysia/dist/adapter/utils.mjs
+// node_modules/elysia/dist/adapter/utils.mjs
 var handleFile = (response, set, request) => {
   if (!isBun && response instanceof Promise)
     return response.then((res) => handleFile(res, set, request));
@@ -14156,7 +14156,7 @@ async function tee(source, branches = 2) {
   return Array.from({ length: branches }, makeIterator);
 }
 
-// ../node_modules/elysia/dist/adapter/web-standard/handler.mjs
+// node_modules/elysia/dist/adapter/web-standard/handler.mjs
 var handleElysiaFile = (file, set = {
   headers: {}
 }, request) => {
@@ -14473,7 +14473,7 @@ var handleStream = createStreamHandler({
   mapCompactResponse
 });
 
-// ../node_modules/elysia/dist/adapter/web-standard/index.mjs
+// node_modules/elysia/dist/adapter/web-standard/index.mjs
 var WebStandardAdapter = {
   name: "web-standard",
   isWebStandard: true,
@@ -14609,7 +14609,7 @@ const error404=new Response(error404Message,{status:404})
   }
 };
 
-// ../node_modules/elysia/dist/adapter/bun/handler.mjs
+// node_modules/elysia/dist/adapter/bun/handler.mjs
 var mapResponse2 = (response, set, request) => {
   if (isNotEmpty(set.headers) || set.status !== 200 || set.cookie)
     switch (handleSet(set), response?.constructor?.name) {
@@ -14881,10 +14881,10 @@ var handleStream2 = createStreamHandler({
   mapCompactResponse: mapCompactResponse2
 });
 
-// ../node_modules/elysia/dist/compose.mjs
+// node_modules/elysia/dist/compose.mjs
 var import_fast_decode_uri_component3 = __toESM(require_fast_decode_uri_component(), 1);
 
-// ../node_modules/elysia/dist/parse-query.mjs
+// node_modules/elysia/dist/parse-query.mjs
 var import_fast_decode_uri_component2 = __toESM(require_fast_decode_uri_component(), 1);
 var KEY_HAS_PLUS = 1;
 var KEY_NEEDS_DECODE = 2;
@@ -15010,7 +15010,7 @@ function parseQuery(input) {
   }
 }
 
-// ../node_modules/elysia/dist/trace.mjs
+// node_modules/elysia/dist/trace.mjs
 var ELYSIA_TRACE = Symbol("ElysiaTrace");
 var createProcess = () => {
   const { promise, resolve } = Promise.withResolvers(), { promise: end, resolve: resolveEnd } = Promise.withResolvers(), { promise: error, resolve: resolveError } = Promise.withResolvers(), callbacks = [], callbacksEnd = [];
@@ -15115,7 +15115,7 @@ var createTracer = (traceListener) => (context) => {
   };
 };
 
-// ../node_modules/exact-mirror/dist/index.mjs
+// node_modules/exact-mirror/dist/index.mjs
 var Kind2 = Symbol.for("TypeBox.Kind");
 var Hint2 = Symbol.for("TypeBox.Hint");
 var isSpecialProperty = (name) => /(\ |-|\t|\n|\.|\[|\]|\{|\})/.test(name) || !isNaN(+name[0]);
@@ -15451,7 +15451,7 @@ var createMirror = (schema, {
   });
 };
 
-// ../node_modules/elysia/dist/replace-schema.mjs
+// node_modules/elysia/dist/replace-schema.mjs
 var replaceSchemaTypeFromManyOptions = (schema, options) => {
   if (Array.isArray(options)) {
     let result = schema;
@@ -15549,7 +15549,7 @@ var coerceFormData = () => (_coerceFormData || (_coerceFormData = [
   }
 ]), _coerceFormData);
 
-// ../node_modules/elysia/dist/schema.mjs
+// node_modules/elysia/dist/schema.mjs
 var isOptional = (schema) => schema ? schema?.[Kind] === "Import" && schema.References ? schema.References().some(isOptional) : (schema.schema && (schema = schema.schema), !!schema && (OptionalKind in schema)) : false;
 var hasAdditionalProperties = (_schema) => {
   if (!_schema)
@@ -16336,7 +16336,7 @@ var getCookieValidator = ({
 };
 var unwrapImportSchema = (schema) => schema && schema[Kind] === "Import" && schema.$defs[schema.$ref][Kind] === "Object" ? schema.$defs[schema.$ref] : schema;
 
-// ../node_modules/elysia/dist/compose.mjs
+// node_modules/elysia/dist/compose.mjs
 var allocateIf = (value, condition) => condition ? value : "";
 var defaultParsers = [
   "json",
@@ -17485,7 +17485,7 @@ return mapResponse(${saveResponse}error,set${adapter.mapResponseContext})}`;
   });
 };
 
-// ../node_modules/elysia/dist/adapter/bun/compose.mjs
+// node_modules/elysia/dist/adapter/bun/compose.mjs
 var allocateIf2 = (value, condition) => condition ? value : "";
 var createContext = (app, route, inference, isInline = false) => {
   let fnLiteral = "";
@@ -17536,7 +17536,7 @@ var createBunRouteHandler = (app, route) => {
   });
 };
 
-// ../node_modules/elysia/dist/adapter/bun/handler-native.mjs
+// node_modules/elysia/dist/adapter/bun/handler-native.mjs
 var createNativeStaticHandler = (handle, hooks, set) => {
   if (typeof handle == "function" || handle instanceof Blob)
     return;
@@ -17552,7 +17552,7 @@ var createNativeStaticHandler = (handle, hooks, set) => {
     }) : () => response.clone();
 };
 
-// ../node_modules/elysia/dist/ws/index.mjs
+// node_modules/elysia/dist/ws/index.mjs
 var websocket = {
   open(ws) {
     ws.data.open?.(ws);
@@ -17655,7 +17655,7 @@ var createHandleWSResponse = (responseValidator) => {
   return handleWSResponse;
 };
 
-// ../node_modules/elysia/dist/adapter/bun/index.mjs
+// node_modules/elysia/dist/adapter/bun/index.mjs
 var optionalParam = /:.+?\?(?=\/|$)/;
 var getPossibleParams = (path) => {
   const match = optionalParam.exec(path);
@@ -17939,10 +17939,10 @@ for(const [k,v] of c.request.headers.entries())c.headers[k]=v
   }
 };
 
-// ../node_modules/elysia/dist/universal/env.mjs
+// node_modules/elysia/dist/universal/env.mjs
 var env2 = isBun ? Bun.env : typeof process < "u" && process?.env ? process.env : {};
 
-// ../node_modules/elysia/dist/dynamic-handle.mjs
+// node_modules/elysia/dist/dynamic-handle.mjs
 var ARRAY_INDEX_REGEX = /^(.+)\[(\d+)\]$/;
 var DANGEROUS_KEYS = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
 var isDangerousKey = (key) => {
@@ -18366,7 +18366,7 @@ var createDynamicErrorHandler = (app) => {
   };
 };
 
-// ../node_modules/elysia/dist/index.mjs
+// node_modules/elysia/dist/index.mjs
 var _a;
 _a = Symbol.dispose;
 var _Elysia = class _Elysia2 {
@@ -19612,24 +19612,142 @@ var Elysia = _Elysia;
 
 // src/db/index.ts
 import { Database } from "bun:sqlite";
+import { join } from "path";
 var _db = null;
-function initDB() {
+function getDB() {
   if (!_db) {
-    _db = new Database("mission-control.db", { create: true });
+    const envPath = process.env.DB_PATH;
+    const defaultPath = join(import.meta.dir, "../../../mission-control.db");
+    const dbPath = envPath || defaultPath;
+    const dir = dbPath.substring(0, dbPath.lastIndexOf("/"));
+    if (dir && !dir.startsWith("/data") && !dir.startsWith("/app")) {
+      try {
+        Bun.write(join(dir, ".keep"), "");
+      } catch {}
+    }
+    _db = new Database(dbPath, { create: true });
     _db.exec("PRAGMA journal_mode = WAL");
     _db.exec("PRAGMA foreign_keys = ON");
+    _db.exec("PRAGMA busy_timeout = 5000");
+    ensureTables(_db);
   }
   return _db;
 }
-var db = new Proxy({}, {
-  get(_2, prop) {
-    return initDB()[prop];
+function ensureTables(db) {
+  const tables = [
+    `CREATE TABLE IF NOT EXISTS tasks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, description TEXT DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'backlog', priority TEXT NOT NULL DEFAULT 'medium',
+      project TEXT DEFAULT '', tags TEXT DEFAULT '', due_date TEXT DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT '', updated_at TEXT NOT NULL DEFAULT ''
+    )`,
+    `CREATE TABLE IF NOT EXISTS daily_goals (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT NOT NULL UNIQUE,
+      goals TEXT NOT NULL DEFAULT '[]', journal TEXT DEFAULT '', mood TEXT DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT '', updated_at TEXT NOT NULL DEFAULT ''
+    )`,
+    `CREATE TABLE IF NOT EXISTS scheduled_tasks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, description TEXT DEFAULT '',
+      schedule TEXT NOT NULL, type TEXT NOT NULL DEFAULT 'script', payload TEXT NOT NULL DEFAULT '',
+      enabled INTEGER NOT NULL DEFAULT 1, last_run TEXT DEFAULT '', last_status TEXT DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT '', updated_at TEXT NOT NULL DEFAULT ''
+    )`,
+    `CREATE TABLE IF NOT EXISTS agent_snapshots (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE, model TEXT DEFAULT '',
+      version TEXT DEFAULT '', icon TEXT DEFAULT '', status TEXT NOT NULL DEFAULT 'idle',
+      last_active TEXT DEFAULT '', pid INTEGER DEFAULT NULL, endpoint TEXT DEFAULT '',
+      metadata TEXT DEFAULT '{}', created_at TEXT NOT NULL DEFAULT ''
+    )`,
+    `CREATE TABLE IF NOT EXISTS agent_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, agent_id INTEGER NOT NULL, event TEXT NOT NULL,
+      message TEXT DEFAULT '', level TEXT NOT NULL DEFAULT 'info', created_at TEXT NOT NULL DEFAULT '',
+      FOREIGN KEY (agent_id) REFERENCES agent_snapshots(id) ON DELETE CASCADE
+    )`,
+    `CREATE TABLE IF NOT EXISTS content_assets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, type TEXT NOT NULL, title TEXT NOT NULL,
+      prompt TEXT DEFAULT '', file_path TEXT DEFAULT '', image_data TEXT DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'pending', metadata TEXT DEFAULT '{}',
+      created_at TEXT NOT NULL DEFAULT '', updated_at TEXT NOT NULL DEFAULT ''
+    )`,
+    `CREATE TABLE IF NOT EXISTS vault_notes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, path TEXT NOT NULL UNIQUE, title TEXT NOT NULL,
+      folder TEXT NOT NULL, tags TEXT DEFAULT '', last_modified TEXT DEFAULT '',
+      indexed_at TEXT NOT NULL DEFAULT ''
+    )`,
+    `CREATE TABLE IF NOT EXISTS seo_keywords (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, keyword TEXT NOT NULL UNIQUE,
+      volume INTEGER DEFAULT 0, difficulty REAL DEFAULT 0,
+      related TEXT DEFAULT '[]', notes TEXT DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT '', updated_at TEXT NOT NULL DEFAULT ''
+    )`,
+    `CREATE TABLE IF NOT EXISTS seo_content (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, keyword TEXT NOT NULL,
+      target_url TEXT DEFAULT '', title TEXT DEFAULT '', meta_description TEXT DEFAULT '',
+      headings TEXT DEFAULT '[]', body TEXT DEFAULT '', status TEXT NOT NULL DEFAULT 'draft',
+      created_at TEXT NOT NULL DEFAULT '', updated_at TEXT NOT NULL DEFAULT ''
+    )`,
+    `CREATE TABLE IF NOT EXISTS seo_ranks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, keyword TEXT NOT NULL,
+      position INTEGER DEFAULT 0, url TEXT DEFAULT '',
+      check_date TEXT NOT NULL DEFAULT '', notes TEXT DEFAULT ''
+    )`,
+    `CREATE TABLE IF NOT EXISTS seo_audits (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, url TEXT NOT NULL,
+      score INTEGER DEFAULT 0, title TEXT DEFAULT '', meta_description TEXT DEFAULT '',
+      headings_count INTEGER DEFAULT 0, links_count INTEGER DEFAULT 0,
+      has_meta INTEGER DEFAULT 0, has_title INTEGER DEFAULT 0,
+      page_size INTEGER DEFAULT 0, issues TEXT DEFAULT '[]',
+      created_at TEXT NOT NULL DEFAULT ''
+    )`
+  ];
+  for (const sql of tables) {
+    try {
+      db.exec(sql);
+    } catch (e) {
+      console.error("[db] create table error:", e);
+    }
   }
-});
+}
+function convertSQL(sql) {
+  return sql.replace(/\$(\d+)/g, "?");
+}
+function dbQuery(text, params) {
+  const db = getDB();
+  const sql = convertSQL(text);
+  const stmt = db.prepare(sql);
+  const result = params && params.length > 0 ? stmt.all(...params) : stmt.all();
+  return result;
+}
+function dbGet(text, params) {
+  const rows = dbQuery(text, params);
+  return rows[0] ?? null;
+}
+function dbRun(text, params) {
+  const db = getDB();
+  const sql = convertSQL(text);
+  const stmt = db.prepare(sql);
+  if (params && params.length > 0) {
+    stmt.run(...params);
+  } else {
+    stmt.run();
+  }
+  return { rows: [], rowCount: stmt.changes };
+}
+function dbInsert(text, params) {
+  const db = getDB();
+  const sql = convertSQL(text).replace(/\s+RETURNING\s+\w+/i, "");
+  const stmt = db.prepare(sql);
+  if (params && params.length > 0) {
+    stmt.run(...params);
+  } else {
+    stmt.run();
+  }
+  return Number(db.lastInsertRowId);
+}
 
 // src/lib/helpers.ts
 import { readFileSync } from "fs";
-import { join, extname } from "path";
+import { join as join2, extname } from "path";
 import { homedir } from "os";
 import { readdir, stat as stat2 } from "fs/promises";
 function safeJson(str) {
@@ -19694,26 +19812,14 @@ function formatSize(bytes) {
     return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
-function timeAgoStr(iso) {
-  if (!iso)
-    return "never";
-  const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  if (s < 60)
-    return `${s}s ago`;
-  if (s < 3600)
-    return `${Math.floor(s / 60)}m ago`;
-  if (s < 86400)
-    return `${Math.floor(s / 3600)}h ago`;
-  return `${Math.floor(s / 86400)}d ago`;
-}
 var _envLoaded = false;
 var _envCache = {};
 function loadEnv() {
   if (_envLoaded)
     return _envCache;
   const paths = [
-    join(process.cwd(), ".env"),
-    join(homedir(), ".hermes", ".env")
+    join2(process.cwd(), ".env"),
+    join2(homedir(), ".hermes", ".env")
   ];
   for (const envPath of paths) {
     try {
@@ -19748,6 +19854,15 @@ function getNvidiaKey() {
 }
 function getOpenRouterKey() {
   return getApiKey("OPENROUTER_API_KEY");
+}
+function getGeminiKey() {
+  return getApiKey("GEMINI_API_TOKEN");
+}
+function getCloudflareAccountId() {
+  return getApiKey("CLOUDFLARE_ACCOUNT_ID");
+}
+function getCloudflareApiToken() {
+  return getApiKey("CLOUDFLARE_API_TOKEN");
 }
 var PROCESS_MAP = {
   Hermes: { pattern: "hermes", detect: "pgrep" },
@@ -19789,17 +19904,17 @@ function computeAgentStatus(agent) {
 }
 function logActivity(agentId, event, message, level = "info") {
   const now = new Date().toISOString();
-  db.run("INSERT INTO agent_logs (agent_id, event, message, level, created_at) VALUES (?, ?, ?, ?, ?)", [agentId, event, message, level, now]);
-  db.run("UPDATE agent_snapshots SET last_active = ?, status = ? WHERE id = ?", [now, level === "error" ? "error" : "working", agentId]);
+  dbRun("INSERT INTO agent_logs (agent_id, event, message, level, created_at) VALUES ($1, $2, $3, $4, $5)", [agentId, event, message, level, now]);
+  dbRun("UPDATE agent_snapshots SET last_active = $1, status = $2 WHERE id = $3", [now, level === "error" ? "error" : "working", agentId]);
 }
 async function listFiles(workspaceDir, subdirs, filter, limit = 200) {
   const allFiles = [];
   for (const subdir of subdirs) {
-    const dirPath = join(workspaceDir, subdir);
+    const dirPath = join2(workspaceDir, subdir);
     try {
       const entries = await readdir(dirPath);
       for (const entry of entries) {
-        const fullPath = join(dirPath, entry);
+        const fullPath = join2(dirPath, entry);
         const stats = await stat2(fullPath);
         if (!stats.isFile())
           continue;
@@ -19835,12 +19950,12 @@ var DIR_MAP = {
 };
 async function listRecentAssets(type, outputDir, limit = 30) {
   const subdir = DIR_MAP[type] || type;
-  const dirPath = join(outputDir, subdir);
+  const dirPath = join2(outputDir, subdir);
   const results = [];
   try {
     const entries = await readdir(dirPath);
     for (const entry of entries.slice().reverse().slice(0, limit)) {
-      const fullPath = join(dirPath, entry);
+      const fullPath = join2(dirPath, entry);
       const stats = await stat2(fullPath);
       if (!stats.isFile())
         continue;
@@ -19875,48 +19990,51 @@ var prevStatuses = {};
 function runPollCycle() {
   if (clients.size === 0)
     return;
-  const agents = db.query("SELECT * FROM agent_snapshots ORDER BY id ASC").all();
-  const enhanced = agents.map((a) => {
-    const { status: status2, pid } = computeAgentStatus(a);
-    const prev = prevStatuses[a.id];
-    const changed = prev !== undefined && prev !== status2;
-    if (changed) {
-      if (prev === "working" && (status2 === "offline" || status2 === "idle")) {
-        broadcast("agent_offline", {
-          agentId: a.id,
-          name: a.name,
-          icon: a.icon || "\uD83E\uDD16",
-          prevStatus: prev,
-          status: status2
-        });
+  dbQuery("SELECT * FROM agent_snapshots ORDER BY id ASC").then((agents) => {
+    const enhanced = agents.map((a) => {
+      const { status: status2, pid } = computeAgentStatus(a);
+      const prev = prevStatuses[a.id];
+      const changed = prev !== undefined && prev !== status2;
+      if (changed) {
+        if (prev === "working" && (status2 === "offline" || status2 === "idle")) {
+          broadcast("agent_offline", {
+            agentId: a.id,
+            name: a.name,
+            icon: a.icon || "\uD83E\uDD16",
+            prevStatus: prev,
+            status: status2
+          });
+        }
+        if (status2 === "working" && prev !== "working") {
+          broadcast("agent_online", {
+            agentId: a.id,
+            name: a.name,
+            icon: a.icon || "\uD83E\uDD16",
+            prevStatus: prev,
+            status: status2
+          });
+        }
       }
-      if (status2 === "working" && prev !== "working") {
-        broadcast("agent_online", {
-          agentId: a.id,
-          name: a.name,
-          icon: a.icon || "\uD83E\uDD16",
-          prevStatus: prev,
-          status: status2
-        });
-      }
-    }
-    prevStatuses[a.id] = status2;
-    return { ...a, icon: a.icon || "", metadata: safeJson(a.metadata), status: status2, pid, updated: changed };
+      prevStatuses[a.id] = status2;
+      return { ...a, icon: a.icon || "", metadata: safeJson(a.metadata), status: status2, pid, updated: changed };
+    });
+    broadcast("agents_update", enhanced);
   });
-  broadcast("agents_update", enhanced);
+  dbQuery("SELECT * FROM tasks").then((allTasks) => {
+    broadcast("dashboard_stats", {
+      total: allTasks.length,
+      backlog: allTasks.filter((t2) => t2.status === "backlog").length,
+      todo: allTasks.filter((t2) => t2.status === "todo").length,
+      inProgress: allTasks.filter((t2) => t2.status === "in_progress").length,
+      done: allTasks.filter((t2) => t2.status === "done").length
+    });
+  });
   const today = new Date().toISOString().split("T")[0];
-  const allTasks = db.query("SELECT * FROM tasks").all();
-  broadcast("dashboard_stats", {
-    total: allTasks.length,
-    backlog: allTasks.filter((t2) => t2.status === "backlog").length,
-    todo: allTasks.filter((t2) => t2.status === "todo").length,
-    inProgress: allTasks.filter((t2) => t2.status === "in_progress").length,
-    done: allTasks.filter((t2) => t2.status === "done").length
+  dbGet("SELECT * FROM daily_goals WHERE date = $1", [today]).then((todayGoals) => {
+    if (todayGoals) {
+      broadcast("goals_update", { ...todayGoals, goals: safeJson(todayGoals.goals) });
+    }
   });
-  const todayGoals = db.query("SELECT * FROM daily_goals WHERE date = ?").get(today);
-  if (todayGoals) {
-    broadcast("goals_update", { ...todayGoals, goals: safeJson(todayGoals.goals) });
-  }
 }
 function startPolling() {
   if (pollTimer)
@@ -19944,22 +20062,24 @@ function handleWsUpgrade(req) {
     open(ws) {
       const id = ws.data.id;
       clients.set(id, { socket: ws, id });
-      const agents = db.query("SELECT * FROM agent_snapshots ORDER BY id ASC").all();
-      const enhanced = agents.map((a) => ({
-        ...a,
-        icon: a.icon || "",
-        metadata: safeJson(a.metadata),
-        ...computeAgentStatus(a)
-      }));
-      ws.send(JSON.stringify({ event: "initial_state", agents: enhanced, timestamp: new Date().toISOString() }));
+      dbQuery("SELECT * FROM agent_snapshots ORDER BY id ASC").then((agents) => {
+        const enhanced = agents.map((a) => ({
+          ...a,
+          icon: a.icon || "",
+          metadata: safeJson(a.metadata),
+          ...computeAgentStatus(a)
+        }));
+        ws.send(JSON.stringify({ event: "initial_state", agents: enhanced, timestamp: new Date().toISOString() }));
+      });
       startPolling();
     },
     message(ws, data) {
       try {
         const msg = JSON.parse(data.toString());
         if (msg.type === "resync") {
-          const agents = db.query("SELECT * FROM agent_snapshots ORDER BY id ASC").all();
-          ws.send(JSON.stringify({ event: "agents_update", agents, timestamp: new Date().toISOString() }));
+          dbQuery("SELECT * FROM agent_snapshots ORDER BY id ASC").then((agents) => {
+            ws.send(JSON.stringify({ event: "agents_update", agents, timestamp: new Date().toISOString() }));
+          });
         }
       } catch {}
     },
@@ -19974,15 +20094,14 @@ function handleWsUpgrade(req) {
 }
 
 // src/routes/tasks.ts
-var tasksRoutes = new Elysia({ prefix: "/api/tasks" }).get("/", () => {
-  return db.query("SELECT * FROM tasks ORDER BY created_at DESC").all();
-}).post("/", ({ body }) => {
+var tasksRoutes = new Elysia({ prefix: "/api/tasks" }).get("/", async () => {
+  return await dbQuery("SELECT * FROM tasks ORDER BY created_at DESC");
+}).post("/", async ({ body }) => {
   const now = new Date().toISOString();
-  db.run("INSERT INTO tasks (title, description, status, priority, project, tags, due_date, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", [body.title, body.description ?? "", body.status ?? "backlog", body.priority ?? "medium", body.project ?? "", body.tags ?? "", body.dueDate ?? "", now, now]);
-  const id = db.query("SELECT last_insert_rowid() as id").get();
-  const newTask = { id: id.id, ...body };
+  const id = await dbInsert("INSERT INTO tasks (title, description, status, priority, project, tags, due_date, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)", [body.title, body.description ?? "", body.status ?? "backlog", body.priority ?? "medium", body.project ?? "", body.tags ?? "", body.dueDate ?? "", now, now]);
+  const newTask = { id, ...body };
   notifyTaskChange("created", newTask);
-  return { id: id.id, ...body };
+  return { id, ...body };
 }, {
   body: t.Object({
     title: t.String(),
@@ -19993,41 +20112,43 @@ var tasksRoutes = new Elysia({ prefix: "/api/tasks" }).get("/", () => {
     tags: t.Optional(t.String()),
     dueDate: t.Optional(t.String())
   })
-}).patch("/:id", ({ params, body }) => {
+}).patch("/:id", async ({ params, body }) => {
   const now = new Date().toISOString();
   const sets = [];
   const vals = [];
+  let i = 1;
   if (body.title !== undefined) {
-    sets.push("title = ?");
+    sets.push(`title = $${i++}`);
     vals.push(body.title);
   }
   if (body.description !== undefined) {
-    sets.push("description = ?");
+    sets.push(`description = $${i++}`);
     vals.push(body.description);
   }
   if (body.status !== undefined) {
-    sets.push("status = ?");
+    sets.push(`status = $${i++}`);
     vals.push(body.status);
   }
   if (body.priority !== undefined) {
-    sets.push("priority = ?");
+    sets.push(`priority = $${i++}`);
     vals.push(body.priority);
   }
   if (body.project !== undefined) {
-    sets.push("project = ?");
+    sets.push(`project = $${i++}`);
     vals.push(body.project);
   }
   if (body.tags !== undefined) {
-    sets.push("tags = ?");
+    sets.push(`tags = $${i++}`);
     vals.push(body.tags);
   }
   if (body.dueDate !== undefined) {
-    sets.push("due_date = ?");
+    sets.push(`due_date = $${i++}`);
     vals.push(body.dueDate);
   }
-  sets.push("updated_at = ?");
+  sets.push(`updated_at = $${i++}`);
   vals.push(now, Number(params.id));
-  db.run(`UPDATE tasks SET ${sets.join(", ")} WHERE id = ?`, vals);
+  sets.push(`id = $${i}`);
+  await dbRun(`UPDATE tasks SET ${sets.join(", ")} WHERE id = $${i}`, vals);
   notifyTaskChange("updated", { id: Number(params.id), ...body, status: body.status });
   return { id: Number(params.id), updatedAt: now };
 }, {
@@ -20041,8 +20162,8 @@ var tasksRoutes = new Elysia({ prefix: "/api/tasks" }).get("/", () => {
     tags: t.Optional(t.String()),
     dueDate: t.Optional(t.String())
   })
-}).delete("/:id", ({ params }) => {
-  db.run("DELETE FROM tasks WHERE id = ?", [Number(params.id)]);
+}).delete("/:id", async ({ params }) => {
+  await dbRun("DELETE FROM tasks WHERE id = $1", [Number(params.id)]);
   notifyTaskChange("deleted", { id: Number(params.id) });
   return { deleted: true };
 }, {
@@ -20050,39 +20171,40 @@ var tasksRoutes = new Elysia({ prefix: "/api/tasks" }).get("/", () => {
 });
 
 // src/routes/goals.ts
-var goalsRoutes = new Elysia({ prefix: "/api/goals" }).get("/:date", ({ params }) => {
-  const goal = db.query("SELECT * FROM daily_goals WHERE date = ?").get(params.date);
+var goalsRoutes = new Elysia({ prefix: "/api/goals" }).get("/:date", async ({ params }) => {
+  const goal = await dbGet("SELECT * FROM daily_goals WHERE date = $1", [params.date]);
   if (!goal) {
     const now = new Date().toISOString();
-    db.run("INSERT INTO daily_goals (date, goals, created_at, updated_at) VALUES (?, '[]', ?, ?)", [params.date, now, now]);
+    await dbRun("INSERT INTO daily_goals (date, goals, created_at, updated_at) VALUES ($1, '[]', $2, $3)", [params.date, now, now]);
     return { date: params.date, goals: [], journal: "", mood: "" };
   }
   return { ...goal, goals: JSON.parse(goal.goals) };
 }, {
   params: t.Object({ date: t.String() })
-}).post("/:date", ({ params, body }) => {
+}).post("/:date", async ({ params, body }) => {
   const now = new Date().toISOString();
-  const existing = db.query("SELECT id FROM daily_goals WHERE date = ?").get(params.date);
+  const existing = await dbGet("SELECT id FROM daily_goals WHERE date = $1", [params.date]);
   if (existing) {
     const sets = [];
     const vals = [];
+    let i = 1;
     if (body.goals !== undefined) {
-      sets.push("goals = ?");
+      sets.push(`goals = $${i++}`);
       vals.push(JSON.stringify(body.goals));
     }
     if (body.journal !== undefined) {
-      sets.push("journal = ?");
+      sets.push(`journal = $${i++}`);
       vals.push(body.journal);
     }
     if (body.mood !== undefined) {
-      sets.push("mood = ?");
+      sets.push(`mood = $${i++}`);
       vals.push(body.mood);
     }
-    sets.push("updated_at = ?");
+    sets.push(`updated_at = $${i++}`);
     vals.push(now, params.date);
-    db.run(`UPDATE daily_goals SET ${sets.join(", ")} WHERE date = ?`, vals);
+    await dbRun(`UPDATE daily_goals SET ${sets.join(", ")} WHERE date = $${i}`, vals);
   } else {
-    db.run("INSERT INTO daily_goals (date, goals, journal, mood, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)", [params.date, JSON.stringify(body.goals ?? []), body.journal ?? "", body.mood ?? "", now, now]);
+    await dbRun("INSERT INTO daily_goals (date, goals, journal, mood, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)", [params.date, JSON.stringify(body.goals ?? []), body.journal ?? "", body.mood ?? "", now, now]);
   }
   return { date: params.date, goals: body.goals ?? [], journal: body.journal ?? "", mood: body.mood ?? "" };
 }, {
@@ -20092,21 +20214,20 @@ var goalsRoutes = new Elysia({ prefix: "/api/goals" }).get("/:date", ({ params }
     journal: t.Optional(t.String()),
     mood: t.Optional(t.String())
   })
-}).get("/range/:from/:to", ({ params }) => {
-  const rows = db.query("SELECT * FROM daily_goals WHERE date >= ? AND date <= ? ORDER BY date").all(params.from, params.to);
+}).get("/range/:from/:to", async ({ params }) => {
+  const rows = await dbQuery("SELECT * FROM daily_goals WHERE date >= $1 AND date <= $2 ORDER BY date", [params.from, params.to]);
   return rows.map((g) => ({ ...g, goals: JSON.parse(g.goals) }));
 }, {
   params: t.Object({ from: t.String(), to: t.String() })
 });
 
 // src/routes/scheduled.ts
-var scheduledRoutes = new Elysia({ prefix: "/api/scheduled" }).get("/", () => {
-  return db.query("SELECT * FROM scheduled_tasks ORDER BY created_at DESC").all();
-}).post("/", ({ body }) => {
+var scheduledRoutes = new Elysia({ prefix: "/api/scheduled" }).get("/", async () => {
+  return await dbQuery("SELECT * FROM scheduled_tasks ORDER BY created_at DESC");
+}).post("/", async ({ body }) => {
   const now = new Date().toISOString();
-  db.run("INSERT INTO scheduled_tasks (name, description, schedule, type, payload, enabled, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [body.name, body.description ?? "", body.schedule, body.type ?? "script", body.payload ?? "", body.enabled ? 1 : 0, now, now]);
-  const id = db.query("SELECT last_insert_rowid() as id").get();
-  return { id: id.id, ...body };
+  const id = await dbInsert("INSERT INTO scheduled_tasks (name, description, schedule, type, payload, enabled, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)", [body.name, body.description ?? "", body.schedule, body.type ?? "script", body.payload ?? "", body.enabled ? 1 : 0, now, now]);
+  return { id, ...body };
 }, {
   body: t.Object({
     name: t.String(),
@@ -20116,37 +20237,38 @@ var scheduledRoutes = new Elysia({ prefix: "/api/scheduled" }).get("/", () => {
     payload: t.Optional(t.String()),
     enabled: t.Optional(t.Boolean())
   })
-}).patch("/:id", ({ params, body }) => {
+}).patch("/:id", async ({ params, body }) => {
   const now = new Date().toISOString();
   const sets = [];
   const vals = [];
+  let i = 1;
   if (body.name !== undefined) {
-    sets.push("name = ?");
+    sets.push(`name = $${i++}`);
     vals.push(body.name);
   }
   if (body.description !== undefined) {
-    sets.push("description = ?");
+    sets.push(`description = $${i++}`);
     vals.push(body.description);
   }
   if (body.schedule !== undefined) {
-    sets.push("schedule = ?");
+    sets.push(`schedule = $${i++}`);
     vals.push(body.schedule);
   }
   if (body.type !== undefined) {
-    sets.push("type = ?");
+    sets.push(`type = $${i++}`);
     vals.push(body.type);
   }
   if (body.payload !== undefined) {
-    sets.push("payload = ?");
+    sets.push(`payload = $${i++}`);
     vals.push(body.payload);
   }
   if (body.enabled !== undefined) {
-    sets.push("enabled = ?");
+    sets.push(`enabled = $${i++}`);
     vals.push(body.enabled ? 1 : 0);
   }
-  sets.push("updated_at = ?");
+  sets.push(`updated_at = $${i++}`);
   vals.push(now, Number(params.id));
-  db.run(`UPDATE scheduled_tasks SET ${sets.join(", ")} WHERE id = ?`, vals);
+  await dbRun(`UPDATE scheduled_tasks SET ${sets.join(", ")} WHERE id = $${i}`, vals);
   return { id: Number(params.id), updatedAt: now };
 }, {
   params: t.Object({ id: t.String() }),
@@ -20158,13 +20280,13 @@ var scheduledRoutes = new Elysia({ prefix: "/api/scheduled" }).get("/", () => {
     payload: t.Optional(t.String()),
     enabled: t.Optional(t.Boolean())
   })
-}).delete("/:id", ({ params }) => {
-  db.run("DELETE FROM scheduled_tasks WHERE id = ?", [Number(params.id)]);
+}).delete("/:id", async ({ params }) => {
+  await dbRun("DELETE FROM scheduled_tasks WHERE id = $1", [Number(params.id)]);
   return { deleted: true };
 }, {
   params: t.Object({ id: t.String() })
-}).post("/:id/run", ({ params }) => {
-  const task = db.query("SELECT * FROM scheduled_tasks WHERE id = ?").get(Number(params.id));
+}).post("/:id/run", async ({ params }) => {
+  const task = await dbGet("SELECT * FROM scheduled_tasks WHERE id = $1", [Number(params.id)]);
   if (!task)
     return { error: "Not found" };
   const now = new Date().toISOString();
@@ -20178,15 +20300,15 @@ var scheduledRoutes = new Elysia({ prefix: "/api/scheduled" }).get("/", () => {
   } catch {
     status2 = "error";
   }
-  db.run("UPDATE scheduled_tasks SET last_run = ?, last_status = ?, updated_at = ? WHERE id = ?", [now, status2, now, Number(params.id)]);
+  await dbRun("UPDATE scheduled_tasks SET last_run = $1, last_status = $2, updated_at = $3 WHERE id = $4", [now, status2, now, Number(params.id)]);
   return { executed: true, status: status2 };
 }, {
   params: t.Object({ id: t.String() })
 });
 
 // src/routes/agents.ts
-var agentRoutes = new Elysia({ prefix: "/api/agents" }).get("/", () => {
-  const rows = db.query("SELECT * FROM agent_snapshots ORDER BY id ASC").all();
+var agentRoutes = new Elysia({ prefix: "/api/agents" }).get("/", async () => {
+  const rows = await dbQuery("SELECT * FROM agent_snapshots ORDER BY id ASC");
   return rows.map((row) => {
     const { status: status2, pid } = computeAgentStatus(row);
     return {
@@ -20196,12 +20318,12 @@ var agentRoutes = new Elysia({ prefix: "/api/agents" }).get("/", () => {
       pid
     };
   });
-}).get("/:id", ({ params }) => {
-  const agent = db.query("SELECT * FROM agent_snapshots WHERE id = ?").get(Number(params.id));
+}).get("/:id", async ({ params }) => {
+  const agent = await dbGet("SELECT * FROM agent_snapshots WHERE id = $1", [Number(params.id)]);
   if (!agent)
     return { error: "Agent not found" };
   const { status: status2, pid } = computeAgentStatus(agent);
-  const logs = db.query("SELECT * FROM agent_logs WHERE agent_id = ? ORDER BY created_at DESC LIMIT 50").all(Number(params.id));
+  const logs = await dbQuery("SELECT * FROM agent_logs WHERE agent_id = $1 ORDER BY created_at DESC LIMIT 50", [Number(params.id)]);
   return {
     ...agent,
     metadata: safeJson(agent.metadata),
@@ -20211,18 +20333,17 @@ var agentRoutes = new Elysia({ prefix: "/api/agents" }).get("/", () => {
   };
 }, {
   params: t.Object({ id: t.String() })
-}).post("/", ({ body }) => {
+}).post("/", async ({ body }) => {
   const now = new Date().toISOString();
-  const existing = db.query("SELECT id FROM agent_snapshots WHERE name = ?").get(body.name);
+  const existing = await dbGet("SELECT id FROM agent_snapshots WHERE name = $1", [body.name]);
   if (existing) {
-    db.run("UPDATE agent_snapshots SET model = ?, version = ?, icon = ?, status = ?, endpoint = ?, metadata = ?, last_active = ? WHERE id = ?", [body.model ?? "", body.version ?? "", body.icon ?? "", body.status ?? "idle", body.endpoint ?? "", JSON.stringify(body.metadata ?? {}), now, existing.id]);
+    await dbRun("UPDATE agent_snapshots SET model = $1, version = $2, icon = $3, status = $4, endpoint = $5, metadata = $6, last_active = $7 WHERE id = $8", [body.model ?? "", body.version ?? "", body.icon ?? "", body.status ?? "idle", body.endpoint ?? "", JSON.stringify(body.metadata ?? {}), now, existing.id]);
     logActivity(existing.id, "registered", `Agent ${body.name} re-registered`);
     return { id: existing.id, ...body };
   }
-  db.run("INSERT INTO agent_snapshots (name, model, version, icon, status, last_active, endpoint, metadata, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", [body.name, body.model ?? "", body.version ?? "", body.icon ?? "", body.status ?? "idle", now, body.endpoint ?? "", JSON.stringify(body.metadata ?? {}), now]);
-  const row = db.query("SELECT last_insert_rowid() as id").get();
-  logActivity(row.id, "registered", `Agent ${body.name} registered`);
-  return { id: row.id, ...body };
+  const id = await dbInsert("INSERT INTO agent_snapshots (name, model, version, icon, status, last_active, endpoint, metadata, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)", [body.name, body.model ?? "", body.version ?? "", body.icon ?? "", body.status ?? "idle", now, body.endpoint ?? "", JSON.stringify(body.metadata ?? {}), now]);
+  logActivity(id, "registered", `Agent ${body.name} registered`);
+  return { id, ...body };
 }, {
   body: t.Object({
     name: t.String(),
@@ -20233,45 +20354,46 @@ var agentRoutes = new Elysia({ prefix: "/api/agents" }).get("/", () => {
     endpoint: t.Optional(t.String()),
     metadata: t.Optional(t.Record(t.String(), t.Any()))
   })
-}).patch("/:id", ({ params, body }) => {
+}).patch("/:id", async ({ params, body }) => {
   const now = new Date().toISOString();
   const sets = [];
   const vals = [];
+  let i = 1;
   if (body.name !== undefined) {
-    sets.push("name = ?");
+    sets.push(`name = $${i++}`);
     vals.push(body.name);
   }
   if (body.model !== undefined) {
-    sets.push("model = ?");
+    sets.push(`model = $${i++}`);
     vals.push(body.model);
   }
   if (body.version !== undefined) {
-    sets.push("version = ?");
+    sets.push(`version = $${i++}`);
     vals.push(body.version);
   }
   if (body.icon !== undefined) {
-    sets.push("icon = ?");
+    sets.push(`icon = $${i++}`);
     vals.push(body.icon);
   }
   if (body.status !== undefined) {
-    sets.push("status = ?");
+    sets.push(`status = $${i++}`);
     vals.push(body.status);
   }
   if (body.endpoint !== undefined) {
-    sets.push("endpoint = ?");
+    sets.push(`endpoint = $${i++}`);
     vals.push(body.endpoint);
   }
   if (body.pid !== undefined) {
-    sets.push("pid = ?");
+    sets.push(`pid = $${i++}`);
     vals.push(body.pid);
   }
   if (body.metadata !== undefined) {
-    sets.push("metadata = ?");
+    sets.push(`metadata = $${i++}`);
     vals.push(JSON.stringify(body.metadata));
   }
-  sets.push("last_active = ?");
+  sets.push(`last_active = $${i++}`);
   vals.push(now, Number(params.id));
-  db.run(`UPDATE agent_snapshots SET ${sets.join(", ")} WHERE id = ?`, vals);
+  await dbRun(`UPDATE agent_snapshots SET ${sets.join(", ")} WHERE id = $${i}`, vals);
   logActivity(Number(params.id), "updated", `Agent configuration updated`);
   return { id: Number(params.id), lastActive: now };
 }, {
@@ -20286,13 +20408,13 @@ var agentRoutes = new Elysia({ prefix: "/api/agents" }).get("/", () => {
     pid: t.Optional(t.Number()),
     metadata: t.Optional(t.Record(t.String(), t.Any()))
   })
-}).delete("/:id", ({ params }) => {
-  db.run("DELETE FROM agent_snapshots WHERE id = ?", [Number(params.id)]);
+}).delete("/:id", async ({ params }) => {
+  await dbRun("DELETE FROM agent_snapshots WHERE id = $1", [Number(params.id)]);
   return { deleted: true };
 }, {
   params: t.Object({ id: t.String() })
 }).post("/:id/ping", async ({ params }) => {
-  const agent = db.query("SELECT * FROM agent_snapshots WHERE id = ?").get(Number(params.id));
+  const agent = await dbGet("SELECT * FROM agent_snapshots WHERE id = $1", [Number(params.id)]);
   if (!agent)
     return { error: "Agent not found" };
   const now = new Date().toISOString();
@@ -20329,7 +20451,7 @@ var agentRoutes = new Elysia({ prefix: "/api/agents" }).get("/", () => {
     } catch {}
   }
   const newStatus = responsive ? "online" : "offline";
-  db.run("UPDATE agent_snapshots SET status = ?, last_active = ?, pid = ? WHERE id = ?", [newStatus, now, proc.pid || agent.pid, Number(params.id)]);
+  await dbRun("UPDATE agent_snapshots SET status = $1, last_active = $2, pid = $3 WHERE id = $4", [newStatus, now, proc.pid || agent.pid, Number(params.id)]);
   logActivity(Number(params.id), responsive ? "ping_ok" : "ping_fail", responsive ? `Ping OK \u2014 ${details.join(", ")}` : `Ping failed \u2014 no process/endpoint responded`, responsive ? "info" : "error");
   return {
     agent: agent.name,
@@ -20342,7 +20464,7 @@ var agentRoutes = new Elysia({ prefix: "/api/agents" }).get("/", () => {
   };
 }, {
   params: t.Object({ id: t.String() })
-}).post("/:id/log", ({ params, body }) => {
+}).post("/:id/log", async ({ params, body }) => {
   logActivity(Number(params.id), body.event, body.message, body.level ?? "info");
   return { logged: true };
 }, {
@@ -20352,26 +20474,25 @@ var agentRoutes = new Elysia({ prefix: "/api/agents" }).get("/", () => {
     message: t.String(),
     level: t.Optional(t.String())
   })
-}).get("/:id/logs", ({ params }) => {
-  const logs = db.query("SELECT * FROM agent_logs WHERE agent_id = ? ORDER BY created_at DESC LIMIT 100").all(Number(params.id));
+}).get("/:id/logs", async ({ params }) => {
+  const logs = await dbQuery("SELECT * FROM agent_logs WHERE agent_id = $1 ORDER BY created_at DESC LIMIT 100", [Number(params.id)]);
   return logs;
 }, {
   params: t.Object({ id: t.String() })
-}).delete("/:id/logs", ({ params }) => {
-  db.run("DELETE FROM agent_logs WHERE agent_id = ?", [Number(params.id)]);
+}).delete("/:id/logs", async ({ params }) => {
+  await dbRun("DELETE FROM agent_logs WHERE agent_id = $1", [Number(params.id)]);
   return { cleared: true };
 }, {
   params: t.Object({ id: t.String() })
 });
 
 // src/routes/content.ts
-var contentRoutes = new Elysia({ prefix: "/api/content" }).get("/", () => {
-  return db.query("SELECT * FROM content_assets ORDER BY created_at DESC").all();
-}).post("/", ({ body }) => {
+var contentRoutes = new Elysia({ prefix: "/api/content" }).get("/", async () => {
+  return await dbQuery("SELECT * FROM content_assets ORDER BY created_at DESC");
+}).post("/", async ({ body }) => {
   const now = new Date().toISOString();
-  db.run("INSERT INTO content_assets (type, title, prompt, status, metadata, created_at, updated_at) VALUES (?, ?, ?, 'pending', ?, ?, ?)", [body.type, body.title, body.prompt ?? "", JSON.stringify(body.metadata ?? {}), now, now]);
-  const id = db.query("SELECT last_insert_rowid() as id").get();
-  return { id: id.id, ...body, status: "pending" };
+  const id = await dbInsert("INSERT INTO content_assets (type, title, prompt, status, metadata, created_at, updated_at) VALUES ($1, $2, $3, 'pending', $4, $5, $6)", [body.type, body.title, body.prompt ?? "", JSON.stringify(body.metadata ?? {}), now, now]);
+  return { id, ...body, status: "pending" };
 }, {
   body: t.Object({
     type: t.String(),
@@ -20379,25 +20500,26 @@ var contentRoutes = new Elysia({ prefix: "/api/content" }).get("/", () => {
     prompt: t.Optional(t.String()),
     metadata: t.Optional(t.Record(t.String(), t.Any()))
   })
-}).patch("/:id", ({ params, body }) => {
+}).patch("/:id", async ({ params, body }) => {
   const now = new Date().toISOString();
   const sets = [];
   const vals = [];
+  let i = 1;
   if (body.status !== undefined) {
-    sets.push("status = ?");
+    sets.push(`status = $${i++}`);
     vals.push(body.status);
   }
   if (body.filePath !== undefined) {
-    sets.push("file_path = ?");
+    sets.push(`file_path = $${i++}`);
     vals.push(body.filePath);
   }
   if (body.metadata !== undefined) {
-    sets.push("metadata = ?");
+    sets.push(`metadata = $${i++}`);
     vals.push(JSON.stringify(body.metadata));
   }
-  sets.push("updated_at = ?");
+  sets.push(`updated_at = $${i++}`);
   vals.push(now, Number(params.id));
-  db.run(`UPDATE content_assets SET ${sets.join(", ")} WHERE id = ?`, vals);
+  await dbRun(`UPDATE content_assets SET ${sets.join(", ")} WHERE id = $${i}`, vals);
   return { id: Number(params.id), updatedAt: now };
 }, {
   params: t.Object({ id: t.String() }),
@@ -20406,8 +20528,8 @@ var contentRoutes = new Elysia({ prefix: "/api/content" }).get("/", () => {
     filePath: t.Optional(t.String()),
     metadata: t.Optional(t.Record(t.String(), t.Any()))
   })
-}).delete("/:id", ({ params }) => {
-  db.run("DELETE FROM content_assets WHERE id = ?", [Number(params.id)]);
+}).delete("/:id", async ({ params }) => {
+  await dbRun("DELETE FROM content_assets WHERE id = $1", [Number(params.id)]);
   return { deleted: true };
 }, {
   params: t.Object({ id: t.String() })
@@ -20415,19 +20537,19 @@ var contentRoutes = new Elysia({ prefix: "/api/content" }).get("/", () => {
 
 // src/routes/vault.ts
 import { readdir as readdir2, stat as stat3 } from "fs/promises";
-import { join as join2 } from "path";
+import { join as join3 } from "path";
 var VAULT_PATH = "/mnt/hdd/home-folder/Obsidian Vault";
-var vaultRoutes = new Elysia({ prefix: "/api/vault" }).get("/notes", () => {
-  return db.query("SELECT * FROM vault_notes ORDER BY indexed_at DESC").all();
-}).get("/notes/:folder", ({ params }) => {
-  return db.query("SELECT * FROM vault_notes WHERE folder = ?").all(params.folder);
+var vaultRoutes = new Elysia({ prefix: "/api/vault" }).get("/notes", async () => {
+  return await dbQuery("SELECT * FROM vault_notes ORDER BY indexed_at DESC");
+}).get("/notes/:folder", async ({ params }) => {
+  return await dbQuery("SELECT * FROM vault_notes WHERE folder = $1", [params.folder]);
 }, {
   params: t.Object({ folder: t.String() })
-}).get("/search", ({ query }) => {
+}).get("/search", async ({ query }) => {
   const q = `%${(query.q ?? "").toLowerCase()}%`;
   if (!q || q === "%%")
     return [];
-  return db.query("SELECT * FROM vault_notes WHERE LOWER(title) LIKE ? OR LOWER(tags) LIKE ? OR LOWER(folder) LIKE ?").all(q, q, q);
+  return await dbQuery("SELECT * FROM vault_notes WHERE LOWER(title) LIKE $1 OR LOWER(tags) LIKE $1 OR LOWER(folder) LIKE $1", [q]);
 }, {
   query: t.Object({ q: t.String() })
 }).post("/sync", async () => {
@@ -20439,18 +20561,18 @@ var vaultRoutes = new Elysia({ prefix: "/api/vault" }).get("/notes", () => {
       for (const entry of entries) {
         if (entry.name.startsWith(".") || entry.name === "attachments")
           continue;
-        const fullPath = join2(dir, entry.name);
+        const fullPath = join3(dir, entry.name);
         if (entry.isDirectory()) {
           await scanDir(fullPath, folder ? `${folder}/${entry.name}` : entry.name);
         } else if (entry.name.endsWith(".md")) {
           const stats = await stat3(fullPath);
           const title = entry.name.replace(".md", "").replace(/_/g, " ");
           const relativePath = fullPath.replace(VAULT_PATH + "/", "");
-          const existing = db.query("SELECT id FROM vault_notes WHERE path = ?").get(relativePath);
+          const existing = await dbGet("SELECT id FROM vault_notes WHERE path = $1", [relativePath]);
           if (existing) {
-            db.run("UPDATE vault_notes SET title = ?, last_modified = ?, indexed_at = ? WHERE path = ?", [title, stats.mtime.toISOString(), now, relativePath]);
+            await dbRun("UPDATE vault_notes SET title = $1, last_modified = $2, indexed_at = $3 WHERE path = $4", [title, stats.mtime.toISOString(), now, relativePath]);
           } else {
-            db.run("INSERT INTO vault_notes (path, title, folder, last_modified, indexed_at) VALUES (?, ?, ?, ?, ?)", [relativePath, title, folder || "root", stats.mtime.toISOString(), now]);
+            await dbRun("INSERT INTO vault_notes (path, title, folder, last_modified, indexed_at) VALUES ($1, $2, $3, $4, $5)", [relativePath, title, folder || "root", stats.mtime.toISOString(), now]);
           }
           count++;
         }
@@ -20459,57 +20581,43 @@ var vaultRoutes = new Elysia({ prefix: "/api/vault" }).get("/notes", () => {
   }
   await scanDir(VAULT_PATH, "");
   return { synced: count, timestamp: now };
-}).get("/stats", () => {
-  const rows = db.query("SELECT folder, COUNT(*) as count FROM vault_notes GROUP BY folder ORDER BY count DESC").all();
+}).get("/stats", async () => {
+  const rows = await dbQuery("SELECT folder, COUNT(*) as count FROM vault_notes GROUP BY folder ORDER BY count DESC");
   const folders = {};
   for (const row of rows) {
     folders[row.folder] = row.count;
   }
-  const total = db.query("SELECT COUNT(*) as c FROM vault_notes").get();
-  return { total: total.c, folders };
+  const total = await dbGet("SELECT COUNT(*) as c FROM vault_notes");
+  return { total: total?.c ?? 0, folders };
 });
 
 // src/routes/dashboard.ts
-var dashboardRoutes = new Elysia({ prefix: "/api/dashboard" }).get("/", () => {
-  const today = new Date().toISOString().split("T")[0];
-  const allTasks = db.query("SELECT * FROM tasks").all();
-  const taskStats = {
-    total: allTasks.length,
-    backlog: allTasks.filter((t2) => t2.status === "backlog").length,
-    todo: allTasks.filter((t2) => t2.status === "todo").length,
-    inProgress: allTasks.filter((t2) => t2.status === "in_progress").length,
-    done: allTasks.filter((t2) => t2.status === "done").length
-  };
-  const todayGoals = db.query("SELECT * FROM daily_goals WHERE date = ?").get(today);
-  const agents = db.query("SELECT * FROM agent_snapshots ORDER BY id ASC").all();
-  const enhancedAgents = agents.map((a) => {
-    const { status: status2, pid } = computeAgentStatus(a);
-    return {
-      ...a,
-      icon: a.icon || "",
-      metadata: safeJson(a.metadata),
-      status: status2,
-      pid
-    };
-  });
-  const scheduled = db.query("SELECT * FROM scheduled_tasks").all();
-  const recentContent = db.query("SELECT * FROM content_assets ORDER BY created_at DESC LIMIT 5").all();
-  const vaultTotal = db.query("SELECT COUNT(*) as c FROM vault_notes").get();
+var dashboardRoutes = new Elysia({ prefix: "/api/dashboard" }).get("/stats", async () => {
+  const total = await dbGet("SELECT COUNT(*) as c FROM tasks");
+  const backlog = await dbGet("SELECT COUNT(*) as c FROM tasks WHERE status = 'backlog'");
+  const todo = await dbGet("SELECT COUNT(*) as c FROM tasks WHERE status = 'todo'");
+  const inProgress = await dbGet("SELECT COUNT(*) as c FROM tasks WHERE status = 'in_progress'");
+  const done = await dbGet("SELECT COUNT(*) as c FROM tasks WHERE status = 'done'");
+  const assets = await dbGet("SELECT COUNT(*) as c FROM content_assets");
+  const agents = await dbGet("SELECT COUNT(*) as c FROM agent_snapshots");
+  const notes = await dbGet("SELECT COUNT(*) as c FROM vault_notes");
   return {
-    date: today,
-    tasks: taskStats,
-    goals: todayGoals ? { ...todayGoals, goals: JSON.parse(todayGoals.goals) } : { date: today, goals: [], journal: "", mood: "" },
-    agents: enhancedAgents,
-    scheduled: { total: scheduled.length, enabled: scheduled.filter((s) => s.enabled).length },
-    recentContent,
-    vault: { total: vaultTotal?.c ?? 0 }
+    tasks: { total: total?.c ?? 0, backlog: backlog?.c ?? 0, todo: todo?.c ?? 0, inProgress: inProgress?.c ?? 0, done: done?.c ?? 0 },
+    assets: assets?.c ?? 0,
+    agents: agents?.c ?? 0,
+    notes: notes?.c ?? 0
   };
+}).get("/activity", async () => {
+  const tasks = await dbQuery("SELECT * FROM tasks ORDER BY updated_at DESC LIMIT 5");
+  const assets = await dbQuery("SELECT * FROM content_assets ORDER BY created_at DESC LIMIT 5");
+  const logs = await dbQuery("SELECT * FROM agent_logs ORDER BY created_at DESC LIMIT 10");
+  return { recentTasks: tasks, recentAssets: assets, recentLogs: logs };
 });
 
 // src/routes/workspace.ts
-import { join as join3, extname as extname2 } from "path";
+import { join as join4, extname as extname2 } from "path";
 import { homedir as homedir2 } from "os";
-var WORKSPACE_DIR = join3(homedir2(), "agent-outputs");
+var WORKSPACE_DIR = join4(homedir2(), "agent-outputs");
 var SUBDIRS = ["images", "videos", "audio", "documents"];
 var workspaceRoutes = new Elysia({ prefix: "/api/workspace" }).get("/files", async ({ request }) => {
   const url = new URL(request.url);
@@ -20531,7 +20639,7 @@ var workspaceRoutes = new Elysia({ prefix: "/api/workspace" }).get("/files", asy
   const filePath = url.searchParams.get("path");
   if (!filePath)
     return new Response("Missing path", { status: 400 });
-  const resolved = join3(filePath);
+  const resolved = join4(filePath);
   if (!resolved.startsWith(WORKSPACE_DIR)) {
     return new Response("Forbidden", { status: 403 });
   }
@@ -20545,7 +20653,8 @@ var workspaceRoutes = new Elysia({ prefix: "/api/workspace" }).get("/files", asy
     return new Response(file2, {
       headers: {
         "Content-Type": mime2,
-        "Cache-Control": "public, max-age=3600"
+        "Cache-Control": url.searchParams.has("download") ? "no-store" : "public, max-age=3600",
+        ...url.searchParams.has("download") ? { "Content-Disposition": 'attachment; filename="' + resolved.split("/").pop() + '"' } : {}
       }
     });
   } catch {
@@ -20555,7 +20664,7 @@ var workspaceRoutes = new Elysia({ prefix: "/api/workspace" }).get("/files", asy
 
 // src/routes/studio.ts
 import { mkdir, writeFile } from "fs/promises";
-import { join as join4, extname as extname3 } from "path";
+import { join as join5, extname as extname3 } from "path";
 import { homedir as homedir3 } from "os";
 import { spawn, execSync } from "child_process";
 import { createHash } from "crypto";
@@ -20591,15 +20700,18 @@ function rateLimit(options) {
     }
   });
 }
-var strictLimiter = rateLimit({ windowMs: 60000, max: 10 });
-var standardLimiter = rateLimit({ windowMs: 60000, max: 30 });
-var relaxedLimiter = rateLimit({ windowMs: 60000, max: 60 });
+var strictLimiter = rateLimit({ windowMs: 60000, max: 60 });
+var standardLimiter = rateLimit({ windowMs: 60000, max: 120 });
+var relaxedLimiter = rateLimit({ windowMs: 60000, max: 300 });
 
 // src/routes/studio.ts
-var OUTPUT_DIR = join4(homedir3(), "agent-outputs");
+var OUTPUT_DIR = join5(homedir3(), "agent-outputs");
 var NVIDIA_KEY = getNvidiaKey();
 var OPENROUTER_KEY = getOpenRouterKey();
-var IMAGE_MODELS = [
+var GEMINI_KEY = getGeminiKey();
+var CF_ACCOUNT_ID = getCloudflareAccountId();
+var CF_API_TOKEN = getCloudflareApiToken();
+var ALL_IMAGE_MODELS = [
   {
     id: "imagemagick",
     name: "ImageMagick",
@@ -20610,46 +20722,81 @@ var IMAGE_MODELS = [
     recommendedFor: "Always available, quick mockups"
   },
   {
-    id: "stabilityai/stable-diffusion-xl-base-1.0",
-    name: "Stable Diffusion XL",
+    id: "openrouter/openai/gpt-5-image-mini",
+    name: "GPT-5 Image Mini",
     provider: "OpenRouter",
-    description: "High-quality text-to-image by Stability AI. 1024x1024. Great detail and composition.",
-    speed: "medium",
+    description: "OpenAI GPT-5 Image Mini via OpenRouter. Fast, good quality image generation.",
+    speed: "fast",
     status: "available",
-    recommendedFor: "General purpose, high quality"
+    needsAuth: true,
+    recommendedFor: "Fast, affordable image gen"
   },
   {
-    id: "black-forest-labs/flux-dev",
-    name: "Flux.1 Dev",
+    id: "openrouter/google/gemini-2.5-flash-image",
+    name: "Gemini 2.5 Flash Image",
     provider: "OpenRouter",
-    description: "Black Forest Labs' flagship model. Excellent photorealism and prompt adherence.",
-    speed: "slow",
+    description: "Google Gemini 2.5 Flash Image via OpenRouter. Good quality, fast generation.",
+    speed: "fast",
     status: "available",
-    recommendedFor: "Photorealism, complex scenes"
+    needsAuth: true,
+    recommendedFor: "Balanced speed and quality"
   },
   {
-    id: "playgroundai/playground-v2.5-1024px-aesthetic",
-    name: "Playground v2.5",
-    provider: "OpenRouter",
-    description: "Aesthetic-focused model from Playground AI. Vibrant colors, artistic compositions.",
-    speed: "medium",
+    id: "@cf/black-forest-labs/flux-1-schnell",
+    name: "FLUX.1 Schnell",
+    provider: "Cloudflare",
+    description: "Fast image generation via Cloudflare Workers AI. Free daily quota.",
+    speed: "fast",
     status: "available",
-    recommendedFor: "Artistic, vibrant imagery"
+    needsAuth: true,
+    free: true,
+    recommendedFor: "Fast generation, free tier"
+  },
+  {
+    id: "@cf/stabilityai/stable-diffusion-xl-base-1.0",
+    name: "SDXL 1.0",
+    provider: "Cloudflare",
+    description: "Stable Diffusion XL via Cloudflare Workers AI. Free daily quota.",
+    speed: "fast",
+    status: "available",
+    needsAuth: true,
+    free: true,
+    recommendedFor: "General purpose, free tier"
   }
 ];
+function getAvailableImageModels() {
+  return ALL_IMAGE_MODELS.filter((m) => {
+    if (!m.needsAuth)
+      return true;
+    if (m.provider === "OpenRouter")
+      return !!OPENROUTER_KEY;
+    if (m.provider === "Google")
+      return !!GEMINI_KEY;
+    if (m.provider === "Cloudflare")
+      return !!CF_ACCOUNT_ID && !!CF_API_TOKEN;
+    if (m.provider === "Nvidia")
+      return !!NVIDIA_KEY;
+    return false;
+  });
+}
 var VIDEO_MODELS = [
   { id: "nvidia/cosmos-predict1", name: "Cosmos Predict1", provider: "NVIDIA", description: "World model for video prediction \u2014 requires NVIDIA API authorization", status: "preview" }
 ];
 async function ensureDirs() {
   for (const dir of ["audio", "images", "videos", "documents"]) {
-    await mkdir(join4(OUTPUT_DIR, dir), { recursive: true });
+    await mkdir(join5(OUTPUT_DIR, dir), { recursive: true });
   }
+}
+function slugifyPrompt(prompt, maxWords = 5) {
+  const stopWords = new Set(["a", "an", "the", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "do", "does", "did", "will", "would", "could", "should", "may", "might", "shall", "can", "need", "dare", "ought", "used", "to", "of", "in", "for", "on", "with", "at", "by", "from", "as", "into", "through", "during", "before", "after", "above", "below", "between", "out", "off", "over", "under", "again", "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "each", "every", "both", "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very", "just", "because", "but", "and", "or", "if", "while", "although", "though", "that", "this", "these", "those", "it", "its", "i", "me", "my", "we", "our", "you", "your", "he", "him", "his", "she", "her", "they", "them", "their", "what", "which", "who", "whom", "image", "picture", "photo", "drawing", "painting", "art", "style", "make", "create", "generate", "show", "with", "without", "high", "quality", "detailed", "realistic", "hd", "4k", "8k", "resolution"]);
+  const words = prompt.replace(/[^a-zA-Z0-9\u0600-\u06FF ]/g, "").trim().split(/\s+/).filter((w) => w.length > 1 && !stopWords.has(w.toLowerCase())).slice(0, maxWords);
+  return words.join("-").toLowerCase().slice(0, 50) || "generated-image";
 }
 async function generateTTS(text, voice) {
   const hash2 = createHash("md5").update(text + voice).digest("hex").slice(0, 8);
   const slug = text.replace(/[^a-zA-Z0-9_\u0600-\u06FF ]/g, "").trim().slice(0, 40).replace(/\s+/g, "-");
   const filename = `tts-${slug || "speech"}-${hash2}.mp3`;
-  const outputPath = join4(OUTPUT_DIR, "audio", filename);
+  const outputPath = join5(OUTPUT_DIR, "audio", filename);
   await ensureDirs();
   return new Promise((resolve, reject) => {
     const proc = spawn("edge-tts", ["--voice", voice, "--text", text, "--write-media", outputPath], { stdio: ["ignore", "pipe", "pipe"] });
@@ -20665,10 +20812,9 @@ async function generateImageLocal(prompt, width = 1024, height = 768, count = 1)
   await ensureDirs();
   const outputPaths = [];
   for (let i = 0;i < count; i++) {
-    const hash2 = createHash("md5").update(prompt + i + Date.now()).digest("hex").slice(0, 8);
-    const slug = prompt.replace(/[^a-zA-Z0-9_ ]/g, "").trim().slice(0, 40).replace(/\s+/g, "-");
-    const filename = `img-${slug || "image"}-magick-${hash2}.png`;
-    const outputPath = join4(OUTPUT_DIR, "images", filename);
+    const promptSlug = slugifyPrompt(prompt);
+    const filename = "img-" + promptSlug + "-magick-" + (i + 1) + ".png";
+    const outputPath = join5(OUTPUT_DIR, "images", filename);
     const label = prompt.replace(/'/g, "'\\''").slice(0, 80);
     const palette = [
       '"#1a1a2e,#16213e,#0f3460"',
@@ -20687,58 +20833,189 @@ async function generateImageLocal(prompt, width = 1024, height = 768, count = 1)
   }
   return outputPaths;
 }
+async function generateImageGoogle(prompt, model, count) {
+  if (!GEMINI_KEY)
+    throw new Error("Missing GEMINI_API_TOKEN");
+  await ensureDirs();
+  const results = [];
+  const modelId = model.replace("google/", "");
+  for (let i = 0;i < count; i++) {
+    const resp = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + modelId + ":predict?key=" + GEMINI_KEY, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ instances: [{ content: prompt }] }),
+      signal: AbortSignal.timeout(120000)
+    });
+    if (!resp.ok) {
+      const e = await resp.text().catch(() => "unknown");
+      throw new Error("Google AI Studio API error " + resp.status + ": " + e.slice(0, 500));
+    }
+    const data = await resp.json();
+    const predictions = data?.predictions;
+    if (!predictions || !predictions.length) {
+      throw new Error("Google AI Studio returned no image: " + JSON.stringify(data).slice(0, 500));
+    }
+    for (let j = 0;j < predictions.length; j++) {
+      const base64 = predictions[j]?.bytesBase64Encoded;
+      if (!base64)
+        continue;
+      const promptSlug = slugifyPrompt(prompt);
+      const modelSlug = modelId.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
+      const filename = "img-" + promptSlug + "-" + modelSlug + "-" + (i + 1) + ".png";
+      const outputPath = join5(OUTPUT_DIR, "images", filename);
+      await writeFile(outputPath, Buffer.from(base64, "base64"));
+      results.push(outputPath);
+    }
+  }
+  return results;
+}
+async function generateImageNvidiaNIM(prompt, model, width, height, count) {
+  if (!NVIDIA_KEY)
+    throw new Error("Missing NVIDIA_API_KEY from build.nvidia.com");
+  await ensureDirs();
+  const results = [];
+  for (let i = 0;i < count; i++) {
+    const resp = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: "Bearer " + NVIDIA_KEY
+      },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 4096
+      }),
+      signal: AbortSignal.timeout(120000)
+    });
+    if (!resp.ok) {
+      const e = await resp.text().catch(() => "unknown");
+      throw new Error("Nvidia NIM API error " + resp.status + ": " + e.slice(0, 300));
+    }
+    const data = await resp.json();
+    const imgUrl = data?.choices?.[0]?.message?.content;
+    if (!imgUrl)
+      throw new Error("Nvidia NIM returned no image URL: " + JSON.stringify(data).slice(0, 300));
+    const imgResp = await fetch(imgUrl, { signal: AbortSignal.timeout(60000) });
+    const buf = Buffer.from(await imgResp.arrayBuffer());
+    const promptSlug = slugifyPrompt(prompt);
+    const modelSlug = model.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
+    const filename = "img-" + promptSlug + "-" + modelSlug + "-" + (i + 1) + ".png";
+    const outputPath = join5(OUTPUT_DIR, "images", filename);
+    await writeFile(outputPath, buf);
+    results.push(outputPath);
+  }
+  return results;
+}
+async function generateImageCloudflare(prompt, model, count) {
+  if (!CF_ACCOUNT_ID || !CF_API_TOKEN)
+    throw new Error("Missing CLOUDFLARE_ACCOUNT_ID or CLOUDFLARE_API_TOKEN");
+  await ensureDirs();
+  const results = [];
+  for (let i = 0;i < count; i++) {
+    const resp = await fetch("https://api.cloudflare.com/client/v4/accounts/" + CF_ACCOUNT_ID + "/ai/run/" + model, {
+      method: "POST",
+      headers: { Authorization: "Bearer " + CF_API_TOKEN },
+      body: JSON.stringify({ prompt }),
+      signal: AbortSignal.timeout(120000)
+    });
+    if (!resp.ok) {
+      const e = await resp.text().catch(() => "unknown");
+      throw new Error("Cloudflare AI error " + resp.status + ": " + e.slice(0, 300));
+    }
+    const contentType = resp.headers.get("content-type") || "";
+    let buffer;
+    if (contentType.startsWith("image/")) {
+      buffer = Buffer.from(await resp.arrayBuffer());
+    } else {
+      const res = await resp.json();
+      const imageBase64 = res?.result?.image;
+      if (!imageBase64)
+        throw new Error("Cloudflare AI returned no image: " + JSON.stringify(res).slice(0, 300));
+      buffer = Buffer.from(imageBase64.replace(/^data:image\/\w+;base64,/, ""), "base64");
+    }
+    const promptSlug = slugifyPrompt(prompt);
+    const modelSlug = model.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
+    const filename = "img-" + promptSlug + "-" + modelSlug + "-" + (i + 1) + ".png";
+    const outputPath = join5(OUTPUT_DIR, "images", filename);
+    await writeFile(outputPath, buffer);
+    results.push(outputPath);
+  }
+  return results;
+}
 async function generateImageOpenRouter(prompt, model, width = 1024, height = 1024, count = 1, negativePrompt) {
   if (!OPENROUTER_KEY) {
     throw new Error("OPENROUTER_API_KEY not set. Add it to .env or ~/.hermes/.env");
   }
   await ensureDirs();
   const outputPaths = [];
-  const resp = await fetch("https://openrouter.ai/api/v1/images/generations", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${OPENROUTER_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      model,
-      prompt,
-      n: count,
-      size: `${width}x${height}`,
-      ...negativePrompt ? { negative_prompt: negativePrompt } : {}
-    }),
-    signal: AbortSignal.timeout(120000)
-  });
-  if (!resp.ok) {
-    const errText = await resp.text().catch(() => "unknown error");
-    throw new Error(`OpenRouter API error ${resp.status}: ${errText.slice(0, 200)}`);
-  }
-  const data = await resp.json();
-  for (let i = 0;i < data.data.length; i++) {
-    const imageUrl = data.data[i].url;
-    const hash2 = createHash("md5").update(prompt + i + Date.now()).digest("hex").slice(0, 8);
-    const slug = prompt.replace(/[^a-zA-Z0-9_ ]/g, "").trim().slice(0, 40).replace(/\s+/g, "-");
-    const filename = `img-${slug || "image"}-ai-${hash2}.png`;
-    const outputPath = join4(OUTPUT_DIR, "images", filename);
+  const results = [];
+  for (let i = 0;i < count; i++) {
+    const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${OPENROUTER_KEY}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://control.ahmedlotfy.site",
+        "X-Title": "Mission Control Studio"
+      },
+      body: JSON.stringify({
+        model: model.replace("openrouter/", ""),
+        messages: [
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        ...negativePrompt ? { negative_prompt: negativePrompt } : {}
+      }),
+      signal: AbortSignal.timeout(120000)
+    });
+    if (!resp.ok) {
+      const errText = await resp.text().catch(() => "unknown error");
+      throw new Error(`OpenRouter API error ${resp.status}: ${errText.slice(0, 200)}`);
+    }
+    const data = await resp.json();
+    const imageUrl = data?.choices?.[0]?.message?.content;
+    if (!imageUrl || typeof imageUrl !== "string") {
+      throw new Error(`OpenRouter returned no image URL. Response: ${JSON.stringify(data).slice(0, 300)}`);
+    }
     const imgResp = await fetch(imageUrl, { signal: AbortSignal.timeout(30000) });
     const buffer = Buffer.from(await imgResp.arrayBuffer());
+    const promptSlug = slugifyPrompt(prompt);
+    const modelSlug = model.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
+    const filename = "img-" + promptSlug + "-" + modelSlug + "-" + (i + 1) + ".png";
+    const outputPath = join5(OUTPUT_DIR, "images", filename);
     await writeFile(outputPath, buffer);
-    outputPaths.push(outputPath);
+    results.push(outputPath);
   }
-  return outputPaths;
+  return results;
 }
-function trackAsset(type, title, prompt, filePath, status2, metadata = {}) {
+async function saveImageAsset(title, prompt, filePath, metadata = {}) {
   const now = new Date().toISOString();
-  db.run("INSERT INTO content_assets (type, title, prompt, file_path, status, metadata, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [type, title.slice(0, 60), prompt, filePath, status2, JSON.stringify(metadata), now, now]);
+  let base64 = "";
+  try {
+    const file2 = Bun.file(filePath);
+    const buffer = await file2.arrayBuffer();
+    base64 = Buffer.from(buffer).toString("base64");
+  } catch {}
+  const id = await dbInsert("INSERT INTO content_assets (type, title, prompt, file_path, image_data, status, metadata, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)", ["image", title.slice(0, 60), prompt, filePath, base64, "done", JSON.stringify(metadata), now, now]);
+  return id;
+}
+async function trackAsset(type, title, prompt, filePath, status2, metadata = {}) {
+  const now = new Date().toISOString();
+  await dbInsert("INSERT INTO content_assets (type, title, prompt, file_path, status, metadata, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)", [type, title.slice(0, 60), prompt, filePath, status2, JSON.stringify(metadata), now, now]);
 }
 var studioRoutes = new Elysia({ prefix: "/api/studio" }).use(standardLimiter).get("/models", () => ({
-  image: IMAGE_MODELS,
+  image: getAvailableImageModels(),
   video: VIDEO_MODELS,
-  note: "NVIDIA hosted images/generations API deprecated. Using ImageMagick for local generation. For AI image gen, setup ComfyUI or use OpenRouter."
+  note: "Images saved to local filesystem + base64 in DB for Gallery persistence."
 })).post("/tts", async ({ body }) => {
   try {
     const audioPath = await generateTTS(body.text, body.voice ?? "en-US-GuyNeural");
     const rel = audioPath.replace(OUTPUT_DIR, "").replace(/^\//, "");
-    trackAsset("audio", body.text, body.text, audioPath, "done", { voice: body.voice, provider: "edge-tts" });
+    await trackAsset("audio", body.text, body.text, audioPath, "done", { voice: body.voice, provider: "edge-tts" });
     return { status: "done", file: audioPath, filename: audioPath.split("/").pop(), serveUrl: `/api/serve/${rel}` };
   } catch (e) {
     return { status: "error", error: e.message };
@@ -20750,22 +21027,32 @@ var studioRoutes = new Elysia({ prefix: "/api/studio" }).use(standardLimiter).ge
     const isAiModel = model !== "imagemagick";
     let outputPaths;
     let method;
-    if (isAiModel) {
-      outputPaths = await generateImageOpenRouter(body.prompt, model, body.width, body.height, numImages, body.negativePrompt);
-      method = `openrouter/${model}`;
-    } else {
+    if (model === "imagemagick" || model === "local") {
       outputPaths = await generateImageLocal(body.prompt, body.width, body.height, numImages);
       method = "imagemagick";
+    } else if (model.startsWith("google/")) {
+      outputPaths = await generateImageGoogle(body.prompt, model, numImages);
+      method = "google/" + model;
+    } else if (model.startsWith("@cf/")) {
+      outputPaths = await generateImageCloudflare(body.prompt, model, numImages);
+      method = "cloudflare/" + model;
+    } else if (model.startsWith("qwen/") || model.startsWith("nvidia/")) {
+      outputPaths = await generateImageNvidiaNIM(body.prompt, model, body.width, body.height, numImages);
+      method = "nvidia/" + model;
+    } else {
+      outputPaths = await generateImageOpenRouter(body.prompt, model, body.width, body.height, numImages, body.negativePrompt);
+      method = "openrouter/" + model;
     }
-    const results = outputPaths.map((p) => {
+    const results = await Promise.all(outputPaths.map(async (p) => {
       const rel = p.replace(OUTPUT_DIR, "").replace(/^\//, "");
-      trackAsset("image", body.prompt, body.prompt, p, "done", { method, model, width: body.width, height: body.height });
+      const id = await saveImageAsset(body.prompt, body.prompt, p, { method, model, width: body.width, height: body.height });
       return {
+        id,
         file: p,
         filename: p.split("/").pop(),
         serveUrl: `/api/serve/${rel}`
       };
-    });
+    }));
     return { status: "done", images: results, count: results.length, method };
   } catch (e) {
     return { status: "error", error: e.message };
@@ -20783,7 +21070,7 @@ var studioRoutes = new Elysia({ prefix: "/api/studio" }).use(standardLimiter).ge
   try {
     const hash2 = createHash("md5").update(body.prompt).digest("hex").slice(0, 8);
     const filename = `vid-${hash2}.mp4`;
-    const outputPath = join4(OUTPUT_DIR, "videos", filename);
+    const outputPath = join5(OUTPUT_DIR, "videos", filename);
     await ensureDirs();
     let videoGenerated = false;
     if (NVIDIA_KEY) {
@@ -20817,7 +21104,7 @@ var studioRoutes = new Elysia({ prefix: "/api/studio" }).use(standardLimiter).ge
 ` + `- Or local setup: ComfyUI + video diffusion workflow
 `);
     }
-    trackAsset("video", body.prompt, body.prompt, outputPath, videoGenerated ? "done" : "pending", {
+    await trackAsset("video", body.prompt, body.prompt, outputPath, videoGenerated ? "done" : "pending", {
       generated: videoGenerated
     });
     return {
@@ -20853,25 +21140,25 @@ var studioRoutes = new Elysia({ prefix: "/api/studio" }).use(standardLimiter).ge
         { name: "en-GB-RyanNeural", gender: "Male", locale: "en-GB" },
         { name: "en-GB-SoniaNeural", gender: "Female", locale: "en-GB" },
         { name: "ar-EG-ShakirNeural", gender: "Male", locale: "ar-EG" },
-        { name: "ar-SA-HamedNeural", gender: "Male", locale: "ar-SA" }
+        { name: "ar-SA-HamedNeural", gender: "Female", locale: "ar-SA" }
       ],
       source: "built-in"
     };
   }
-}).get("/history", ({ query }) => {
+}).get("/history", async ({ query }) => {
   const type = query.type || "";
   const limit = Math.min(query.limit || 50, 200);
   if (type && type !== "all") {
-    return db.query("SELECT * FROM content_assets WHERE type = ? ORDER BY created_at DESC LIMIT ?").all(type, limit);
+    return await dbQuery("SELECT id, type, title, prompt, file_path, status, metadata, created_at, updated_at FROM content_assets WHERE type = $1 ORDER BY created_at DESC LIMIT $2", [type, limit]);
   }
-  return db.query("SELECT * FROM content_assets ORDER BY created_at DESC LIMIT ?").all(limit);
+  return await dbQuery("SELECT id, type, title, prompt, file_path, status, metadata, created_at, updated_at FROM content_assets ORDER BY created_at DESC LIMIT $1", [limit]);
 }, {
   query: t.Object({
     type: t.Optional(t.String()),
     limit: t.Optional(t.Number())
   })
-}).delete("/history/:id", ({ params }) => {
-  db.run("DELETE FROM content_assets WHERE id = ?", [Number(params.id)]);
+}).delete("/history/:id", async ({ params }) => {
+  await dbRun("DELETE FROM content_assets WHERE id = $1", [Number(params.id)]);
   return { deleted: true };
 }, {
   params: t.Object({ id: t.String() })
@@ -20882,12 +21169,12 @@ var studioRoutes = new Elysia({ prefix: "/api/studio" }).use(standardLimiter).ge
   const [audio, image] = await Promise.all([listRecentAssets("audio", OUTPUT_DIR), listRecentAssets("image", OUTPUT_DIR)]);
   return { audio, image };
 });
-var serveRoutes = new Elysia().get("/api/serve/:type/:filename", async ({ params }) => {
+var serveRoutes = new Elysia().get("/api/serve/:type/:filename", async ({ params, query }) => {
   const safeType = params.type.replace(/[^a-z]/g, "");
   const safeFile = params.filename.replace(/[^a-zA-Z0-9._-]/g, "");
   if (!safeFile)
     return new Response("Invalid filename", { status: 400 });
-  const filePath = join4(OUTPUT_DIR, safeType, safeFile);
+  const filePath = join5(OUTPUT_DIR, safeType, safeFile);
   if (!filePath.startsWith(OUTPUT_DIR))
     return new Response("Forbidden", { status: 403 });
   try {
@@ -20896,436 +21183,162 @@ var serveRoutes = new Elysia().get("/api/serve/:type/:filename", async ({ params
     if (!exists)
       return new Response("Not found", { status: 404 });
     const ext = extname3(safeFile).toLowerCase();
-    return new Response(file2, { headers: { "Content-Type": getMime(ext), "Cache-Control": "public, max-age=3600" } });
+    const headers = { "Content-Type": getMime(ext), "Cache-Control": "public, max-age=3600" };
+    if (query.download) {
+      headers["Content-Disposition"] = 'attachment; filename="' + safeFile + '"';
+      delete headers["Cache-Control"];
+    }
+    return new Response(file2, { headers });
   } catch {
     return new Response("Error", { status: 500 });
   }
 }, { params: t.Object({ type: t.String(), filename: t.String() }) });
+var contentRoutes2 = new Elysia({ prefix: "/api/content" }).get("/asset/:id/image", async ({ params }) => {
+  const id = Number(params.id);
+  if (!id)
+    return new Response("Invalid id", { status: 400 });
+  const asset = dbGet("SELECT id, image_data, file_path, title FROM content_assets WHERE id = $1", [id]);
+  if (!asset)
+    return new Response("Not found", { status: 404 });
+  if (asset.image_data) {
+    const buf = Buffer.from(asset.image_data, "base64");
+    return new Response(buf, {
+      headers: { "Content-Type": "image/png", "Cache-Control": "public, max-age=86400" }
+    });
+  }
+  if (asset.file_path) {
+    try {
+      const file2 = Bun.file(asset.file_path);
+      const exists = await file2.exists();
+      if (!exists)
+        return new Response("Not found", { status: 404 });
+      const ext = extname3(asset.file_path).toLowerCase();
+      return new Response(file2, {
+        headers: { "Content-Type": getMime(ext), "Cache-Control": "public, max-age=86400" }
+      });
+    } catch {}
+  }
+  return new Response("Not found", { status: 404 });
+}, {
+  params: t.Object({ id: t.String() })
+});
 
 // src/routes/seo.ts
-var NVIDIA_KEY2 = getNvidiaKey();
-async function callNvidiaLLM(system, user) {
-  if (!NVIDIA_KEY2)
-    throw new Error("NVIDIA_API_KEY not found");
-  const resp = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${NVIDIA_KEY2}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "meta/llama-3.1-70b-instruct",
-      messages: [
-        { role: "system", content: system },
-        { role: "user", content: user }
-      ],
-      max_tokens: 2000,
-      temperature: 0.7
-    })
-  });
-  if (!resp.ok)
-    throw new Error(`NVIDIA LLM error ${resp.status}`);
-  const data = await resp.json();
-  return data?.choices?.[0]?.message?.content || "";
-}
-function normalizeIssues(issues) {
-  if (!Array.isArray(issues))
-    return [];
-  if (issues.length === 0)
-    return [];
-  if (typeof issues[0] === "string") {
-    return issues.map((i) => ({ text: i, severity: "notice" }));
-  }
-  return issues;
-}
-function simulateRankHistory(keyword) {
-  const history = [];
-  let pos = Math.floor(Math.random() * 30) + 5;
-  for (let i = 14;i >= 0; i--) {
-    const d = new Date;
-    d.setDate(d.getDate() - i * 2);
-    pos = Math.max(1, pos + Math.floor(Math.random() * 5) - 2);
-    history.push({ date: d.toISOString().split("T")[0], position: pos });
-  }
-  return history;
-}
-async function crawlUrl(url) {
-  const issues = [];
-  let score = 50;
-  let title = "(missing)";
-  let metaDescription = "(missing)";
-  let h1Count = 0;
-  let linkCount = 0;
-  let pageSize = 0;
-  let findings = [];
-  let httpStatus = 0;
-  try {
-    const resp = await fetch(url, { signal: AbortSignal.timeout(15000) });
-    httpStatus = resp.status;
-    const html = await resp.text();
-    pageSize = Math.round(html.length / 1024);
-    const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
-    if (titleMatch) {
-      title = titleMatch[1].trim();
-      const titleLen = title.length;
-      if (titleLen === 0) {
-        score -= 12;
-        issues.push("Empty <title> tag");
-      } else if (titleLen < 30) {
-        score -= 6;
-        issues.push(`Title too short (${titleLen} chars \u2014 aim for 50-60)`);
-      } else if (titleLen > 70) {
-        score -= 4;
-        issues.push(`Title too long (${titleLen} chars \u2014 will be truncated in SERPs)`);
-      } else {
-        score += 5;
-        findings.push(`Title length optimal (${titleLen} chars)`);
-      }
-    } else {
-      score -= 15;
-      issues.push("Missing <title> tag \u2014 critical SEO issue");
-    }
-    const metaMatch = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([\s\S]*?)["']/i);
-    if (metaMatch) {
-      metaDescription = metaMatch[1].trim();
-      const metaLen = metaDescription.length;
-      if (metaLen === 0) {
-        score -= 8;
-        issues.push("Empty meta description");
-      } else if (metaLen < 80) {
-        score -= 4;
-        issues.push(`Meta description too short (${metaLen} chars \u2014 aim for 150-160)`);
-      } else if (metaLen > 170) {
-        score -= 3;
-        issues.push(`Meta description too long (${metaLen} chars \u2014 will be truncated)`);
-      } else {
-        score += 4;
-        findings.push(`Meta description length optimal (${metaLen} chars)`);
-      }
-    } else {
-      score -= 10;
-      issues.push("Missing meta description tag");
-    }
-    const h1Matches = html.match(/<h1[\s>]/gi);
-    h1Count = h1Matches ? h1Matches.length : 0;
-    if (h1Count === 0) {
-      score -= 10;
-      issues.push("No H1 heading found \u2014 essential for SEO");
-    } else if (h1Count === 1) {
-      const h1Content = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
-      const h1Text = h1Content ? h1Content[1].replace(/<[^>]+>/g, "").trim() : "";
-      if (h1Text.length < 10) {
-        score -= 4;
-        issues.push("H1 heading has very little content");
-      } else if (h1Text.length > 150) {
-        score -= 3;
-        issues.push("H1 heading too long for a heading");
-      } else {
-        score += 6;
-        findings.push("Single H1 heading with good content");
-      }
-    } else {
-      score -= 8;
-      issues.push(`Multiple H1 headings (${h1Count} found) \u2014 use only one`);
-    }
-    const h2Matches = html.match(/<h2[\s>]/gi);
-    const h3Matches = html.match(/<h3[\s>]/gi);
-    const h2Count = h2Matches ? h2Matches.length : 0;
-    const h3Count = h3Matches ? h3Matches.length : 0;
-    if (h1Count > 0 && h2Count === 0) {
-      score -= 5;
-      issues.push("No H2 headings \u2014 poor content structure");
-    }
-    if (h2Count > 0 && h3Count === 0 && pageSize > 50) {
-      score -= 3;
-      issues.push("No H3 headings for a page this size \u2014 shallow content structure");
-    }
-    const linkMatches = html.match(/<a[\s>]/gi);
-    linkCount = linkMatches ? linkMatches.length : 0;
-    if (linkCount < 5) {
-      score -= 8;
-      issues.push(`Very few links (${linkCount}) \u2014 consider adding internal/external links`);
-    } else if (linkCount < 15) {
-      score -= 3;
-      issues.push(`Limited links (${linkCount}) \u2014 consider more internal linking`);
-    } else {
-      score += 3;
-      findings.push(`Good link count (${linkCount})`);
-    }
-    const noHrefLinks = html.match(/<a[^>]*>(?![\s\S]*?href=)/gi);
-    if (noHrefLinks && noHrefLinks.length > 3) {
-      score -= 4;
-      issues.push(`${noHrefLinks.length} links missing href attribute`);
-    }
-    const imgTags = html.match(/<img[\s>]/gi);
-    if (imgTags && imgTags.length > 3) {
-      const withAlt = html.match(/<img[^>]+alt\s*=\s*["']/gi)?.length || 0;
-      const altRatio = withAlt / imgTags.length;
-      if (altRatio < 0.3) {
-        score -= 8;
-        issues.push(`Only ${Math.round(altRatio * 100)}% of images have alt text \u2014 accessibility & SEO issue`);
-      } else if (altRatio < 0.7) {
-        score -= 4;
-        issues.push(`${Math.round((1 - altRatio) * 100)}% of images missing alt text`);
-      }
-    }
-    const ogTitle = html.match(/<meta[^>]+property=["']og:title["']/i);
-    const ogDesc = html.match(/<meta[^>]+property=["']og:description["']/i);
-    const ogImage = html.match(/<meta[^>]+property=["']og:image["']/i);
-    const ogCount = [ogTitle, ogDesc, ogImage].filter(Boolean).length;
-    if (ogCount === 0) {
-      score -= 6;
-      issues.push("Missing Open Graph tags \u2014 poor social sharing");
-    } else if (ogCount < 3) {
-      score -= 3;
-      issues.push(`Incomplete Open Graph tags (${ogCount}/3)`);
-    } else {
-      score += 3;
-      findings.push("Complete Open Graph tags present");
-    }
-    const twitterCard = html.match(/<meta[^>]+name=["']twitter:card["']/i);
-    if (!twitterCard) {
-      score -= 3;
-      issues.push("Missing Twitter Card meta tag");
-    }
-    const canonical = html.match(/<link[^>]+rel=["']canonical["']/i);
-    if (!canonical) {
-      score -= 5;
-      issues.push("Missing canonical URL tag \u2014 duplicate content risk");
-    } else {
-      score += 2;
-      findings.push("Canonical URL set");
-    }
-    const viewport = html.match(/<meta[^>]+name=["']viewport["']/i);
-    if (!viewport) {
-      score -= 6;
-      issues.push("Missing viewport meta tag \u2014 not mobile-friendly");
-    }
-    const favicon = html.match(/<link[^>]+rel=["'](?:shortcut )?icon["']/i);
-    if (!favicon) {
-      score -= 3;
-      issues.push("No favicon detected");
-    }
-    const robotsMeta = html.match(/<meta[^>]+name=["']robots["']/i);
-    if (robotsMeta) {
-      const robotsContent = html.match(/<meta[^>]+name=["']robots["'][^>]+content=["']([\s\S]*?)["']/i);
-      const robotsVal = robotsContent ? robotsContent[1].toLowerCase() : "";
-      if (robotsVal.includes("noindex")) {
-        score -= 15;
-        issues.push("Page has 'noindex' directive \u2014 won't appear in search results");
-      }
-      if (robotsVal.includes("nofollow")) {
-        score -= 5;
-        issues.push("Page has 'nofollow' \u2014 link equity not passed");
-      }
-    }
-    const htmlLang = html.match(/<html[^>]+lang\s*=\s*["'][\w-]+["']/i);
-    if (!htmlLang) {
-      score -= 3;
-      issues.push("Missing lang attribute on <html> tag");
-    }
-    const contentEncoding = resp.headers.get("content-encoding");
-    if (!contentEncoding || !contentEncoding.includes("gzip")) {
-      score -= 4;
-      issues.push("Page not served with GZIP compression \u2014 slower load times");
-    }
-    if (pageSize > 500) {
-      score -= 6;
-      issues.push(`Large page size (${pageSize}KB) \u2014 aim for under 200KB`);
-    } else if (pageSize > 200) {
-      score -= 3;
-      issues.push(`Page size ${pageSize}KB \u2014 could be optimized`);
-    } else if (pageSize < 10) {
-      score -= 4;
-      issues.push(`Very small page (${pageSize}KB) \u2014 possible thin content`);
-    }
-    if (!url.startsWith("https://")) {}
-  } catch (e) {
-    if (e.message?.includes("Timed out") || e.message?.includes("timeout")) {
-      score = 5;
-      issues.push("Connection timed out \u2014 server may be slow or unreachable");
-    } else {
-      score = 15;
-      issues.push("Failed to fetch URL: " + (e.message?.slice(0, 100) || "unknown error"));
-    }
-  }
-  score = Math.max(0, Math.min(100, score));
-  if (issues.length === 0) {
-    findings.forEach((f) => issues.push(f));
-  }
-  function categorizeIssue(issue) {
-    const errors = [
-      "missing <title>",
-      "empty <title>",
-      "missing meta description",
-      "empty meta description",
-      "noindex",
-      "connection timed out",
-      "failed to fetch",
-      "critical"
-    ];
-    const warnings = [
-      "too short",
-      "too long",
-      "no h1",
-      "multiple h1",
-      "no h2",
-      "missing canonical",
-      "missing viewport",
-      "no gzip",
-      "nofollow",
-      "large page",
-      "very few links",
-      "limited links",
-      "no h3",
-      "no outgoing links",
-      "5xx",
-      "4xx",
-      "3xx",
-      "redirect"
-    ];
-    const lower = issue.toLowerCase();
-    if (errors.some((e) => lower.includes(e)))
-      return "error";
-    if (warnings.some((w) => lower.includes(w)))
-      return "warning";
-    return "notice";
-  }
-  const categorizedIssues = issues.map((text) => ({
-    text,
-    severity: categorizeIssue(text)
-  }));
-  return {
-    url,
-    score,
-    title: title.slice(0, 200),
-    metaDescription: metaDescription.slice(0, 300),
-    headingsCount: h1Count,
-    linksCount: linkCount,
-    hasMeta: metaDescription !== "(missing)" ? 1 : 0,
-    hasTitle: title !== "(missing)" ? 1 : 0,
-    pageSize,
-    httpStatus,
-    issues: categorizedIssues
-  };
-}
-var seoRoutes = new Elysia({ prefix: "/api/seo" }).use(strictLimiter).get("/keywords", () => db.query("SELECT * FROM seo_keywords ORDER BY created_at DESC").all()).post("/keywords", async ({ body }) => {
+var seoRoutes = new Elysia({ prefix: "/api/seo" }).get("/keywords", async () => {
+  return await dbQuery("SELECT * FROM seo_keywords ORDER BY created_at DESC");
+}).post("/keywords", async ({ body }) => {
   const now = new Date().toISOString();
-  let related = [];
-  try {
-    const llmResult = await callNvidiaLLM('You are an SEO keyword research expert. Return ONLY a JSON array of 8 related keywords with estimated monthly search volume and difficulty (0-100). Format: [{"keyword":"...", "volume": 1234, "difficulty": 45}]', `Generate related keywords for: "${body.keyword}". Return ONLY valid JSON, no other text.`);
-    const parsed = JSON.parse(llmResult.replace(/```json|```/g, "").trim());
-    if (Array.isArray(parsed))
-      related = parsed.slice(0, 8);
-  } catch {}
-  if (related.length === 0) {
-    const suffixes = ["guide", "tools", "best", "vs", "review", "pricing", "alternative", "tutorial"];
-    const base = body.keyword.toLowerCase().trim();
-    related = suffixes.map((s) => ({
-      keyword: `${base} ${s}`,
-      volume: Math.floor(Math.random() * 8000) + 200,
-      difficulty: Math.round(Math.random() * 85 + 10)
-    }));
+  const id = await dbInsert("INSERT INTO seo_keywords (keyword, volume, difficulty, related, notes, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)", [body.keyword, body.volume ?? 0, body.difficulty ?? 0, JSON.stringify(body.related ?? []), body.notes ?? "", now, now]);
+  return { id, ...body };
+}, {
+  body: t.Object({
+    keyword: t.String(),
+    volume: t.Optional(t.Number()),
+    difficulty: t.Optional(t.Number()),
+    related: t.Optional(t.Array(t.String())),
+    notes: t.Optional(t.String())
+  })
+}).patch("/keywords/:id", async ({ params, body }) => {
+  const now = new Date().toISOString();
+  const sets = [];
+  const vals = [];
+  let i = 1;
+  if (body.keyword !== undefined) {
+    sets.push(`keyword = $${i++}`);
+    vals.push(body.keyword);
   }
-  const volume = related.reduce((sum, r) => sum + r.volume, 0) / related.length;
-  const difficulty = Math.round(related.reduce((sum, r) => sum + r.difficulty, 0) / related.length);
-  const existing = db.query("SELECT id FROM seo_keywords WHERE keyword = ?").get(body.keyword);
-  if (existing) {
-    db.run("UPDATE seo_keywords SET volume = ?, difficulty = ?, related = ?, notes = ?, updated_at = ? WHERE id = ?", [Math.round(volume), difficulty, JSON.stringify(related), body.notes ?? "", now, existing.id]);
-    return { id: existing.id, keyword: body.keyword, volume: Math.round(volume), difficulty, related, notes: body.notes };
+  if (body.volume !== undefined) {
+    sets.push(`volume = $${i++}`);
+    vals.push(body.volume);
   }
-  db.run("INSERT INTO seo_keywords (keyword, volume, difficulty, related, notes, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)", [body.keyword, Math.round(volume), difficulty, JSON.stringify(related), body.notes ?? "", now, now]);
-  const id = db.query("SELECT last_insert_rowid() as id").get();
-  return { id: id.id, keyword: body.keyword, volume: Math.round(volume), difficulty, related, notes: body.notes };
-}, { body: t.Object({ keyword: t.String({ minLength: 1 }), notes: t.Optional(t.String()) }) }).delete("/keywords/:id", ({ params }) => {
-  db.run("DELETE FROM seo_keywords WHERE id = ?", [Number(params.id)]);
-  return { deleted: true };
-}, { params: t.Object({ id: t.String() }) }).patch("/keywords/:id", ({ params, body }) => {
+  if (body.difficulty !== undefined) {
+    sets.push(`difficulty = $${i++}`);
+    vals.push(body.difficulty);
+  }
+  if (body.related !== undefined) {
+    sets.push(`related = $${i++}`);
+    vals.push(JSON.stringify(body.related));
+  }
   if (body.notes !== undefined) {
-    db.run("UPDATE seo_keywords SET notes = ?, updated_at = ? WHERE id = ?", [body.notes, new Date().toISOString(), Number(params.id)]);
+    sets.push(`notes = $${i++}`);
+    vals.push(body.notes);
   }
-  return { id: Number(params.id), notes: body.notes };
-}, { params: t.Object({ id: t.String() }), body: t.Object({ notes: t.Optional(t.String()) }) }).get("/content", () => db.query("SELECT * FROM seo_content ORDER BY created_at DESC").all()).post("/content", async ({ body }) => {
-  const now = new Date().toISOString();
-  let title = "";
-  let metaDescription = "";
-  let headings = [];
-  let bodyText = "";
-  let wordCount = 0;
-  try {
-    const llmResult = await callNvidiaLLM(`You are an expert SEO content strategist. Generate optimized content for the given keyword and optional target URL. Return your response in this exact JSON structure, no other text:
-{
-  "title": "SEO-optimized title (max 60 chars)",
-  "metaDescription": "Compelling meta description (max 160 chars)",
-  "headings": ["H1: Main Heading", "H2: Section 1", "H2: Section 2", "H3: Sub-section"],
-  "body": "Full article body (300-500 words, SEO-optimized with the keyword naturally included)",
-  "wordCount": 450
-}`, `Keyword: "${body.keyword}"${body.targetUrl ? `
-Target URL: ${body.targetUrl}` : ""}
-
-Return ONLY valid JSON.`);
-    const cleaned = llmResult.replace(/```json|```/g, "").trim();
-    const parsed = JSON.parse(cleaned);
-    title = parsed.title || "";
-    metaDescription = parsed.metaDescription || "";
-    headings = parsed.headings || [];
-    bodyText = parsed.body || "";
-    wordCount = parsed.wordCount || bodyText.split(/\s+/).length;
-  } catch {
-    title = `${body.keyword.charAt(0).toUpperCase() + body.keyword.slice(1)}: Complete Guide 2026`;
-    metaDescription = `Learn everything about ${body.keyword}. Expert guide with tips, tools, and strategies.`;
-    headings = [`What is ${body.keyword}?`, `Benefits of ${body.keyword}`, `How to Get Started`];
-    bodyText = `[NVIDIA LLM unavailable] Content generation for "${body.keyword}" requires NVIDIA_API_KEY.`;
-    wordCount = 20;
-  }
-  db.run("INSERT INTO seo_content (keyword, target_url, title, meta_description, headings, body, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 'generated', ?, ?)", [body.keyword, body.targetUrl ?? "", title, metaDescription, JSON.stringify(headings), bodyText, now, now]);
-  const id = db.query("SELECT last_insert_rowid() as id").get();
-  return { id: id.id, keyword: body.keyword, targetUrl: body.targetUrl, title, metaDescription, headings, body: bodyText, wordCount };
-}, { body: t.Object({ keyword: t.String({ minLength: 1 }), targetUrl: t.Optional(t.String()) }) }).get("/content/:id", ({ params }) => {
-  const row = db.query("SELECT * FROM seo_content WHERE id = ?").get(Number(params.id));
-  if (!row)
-    return { error: "Content not found" };
-  return { ...row, headings: JSON.parse(row.headings || "[]") };
-}, { params: t.Object({ id: t.String() }) }).delete("/content/:id", ({ params }) => {
-  db.run("DELETE FROM seo_content WHERE id = ?", [Number(params.id)]);
+  sets.push(`updated_at = $${i++}`);
+  vals.push(now, Number(params.id));
+  await dbRun(`UPDATE seo_keywords SET ${sets.join(", ")} WHERE id = $${i}`, vals);
+  return { id: Number(params.id), updatedAt: now };
+}, {
+  params: t.Object({ id: t.String() })
+}).delete("/keywords/:id", async ({ params }) => {
+  await dbRun("DELETE FROM seo_keywords WHERE id = $1", [Number(params.id)]);
   return { deleted: true };
-}, { params: t.Object({ id: t.String() }) }).get("/ranks", ({ query }) => {
-  const keyword = query?.keyword;
-  return keyword ? db.query("SELECT * FROM seo_ranks WHERE keyword = ? ORDER BY check_date ASC").all(keyword) : db.query("SELECT * FROM seo_ranks ORDER BY check_date DESC").all();
-}, { query: t.Object({ keyword: t.Optional(t.String()) }) }).post("/ranks/check", ({ body }) => {
+}, {
+  params: t.Object({ id: t.String() })
+}).get("/content", async () => {
+  return await dbQuery("SELECT * FROM seo_content ORDER BY created_at DESC");
+}).post("/content", async ({ body }) => {
   const now = new Date().toISOString();
-  const position = Math.max(1, (body.currentPosition ?? 15) + Math.floor(Math.random() * 3) - 1);
-  db.run("INSERT INTO seo_ranks (keyword, position, url, check_date, notes) VALUES (?, ?, ?, ?, ?)", [body.keyword, position, body.url ?? "", now, body.notes ?? ""]);
-  return { keyword: body.keyword, position, date: now, history: simulateRankHistory(body.keyword) };
-}, { body: t.Object({ keyword: t.String({ minLength: 1 }), url: t.Optional(t.String()), currentPosition: t.Optional(t.Number()), notes: t.Optional(t.String()) }) }).post("/audit", async ({ body, request }) => {
-  const now = new Date().toISOString();
-  const url = new URL(request.url);
-  const force = url.searchParams.get("force") === "true";
-  if (!force) {
-    const existing = db.query("SELECT * FROM seo_audits WHERE url = ? AND created_at >= datetime('now', '-1 day') ORDER BY created_at DESC LIMIT 1").get(body.url);
-    if (existing) {
-      return {
-        ...existing,
-        issues: normalizeIssues(JSON.parse(existing.issues || "[]")),
-        cached: true,
-        message: `URL already audited ${timeAgoStr(existing.created_at)}. Use ?force=true to run a fresh audit.`,
-        freshAudit: false
-      };
-    }
-  }
-  const audit = await crawlUrl(body.url);
-  db.run("INSERT INTO seo_audits (url, score, title, meta_description, headings_count, links_count, has_meta, has_title, page_size, issues, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [audit.url, audit.score, audit.title, audit.metaDescription, audit.headingsCount, audit.linksCount, audit.hasMeta, audit.hasTitle, audit.pageSize, JSON.stringify(audit.issues), now]);
-  const row = db.query("SELECT * FROM seo_audits WHERE id = last_insert_rowid()").get();
-  return { ...row, issues: normalizeIssues(JSON.parse(row.issues || "[]")), cached: false, freshAudit: true };
-}, { body: t.Object({ url: t.String({ minLength: 1 }) }) }).get("/audits", () => {
-  const rows = db.query("SELECT * FROM seo_audits ORDER BY created_at DESC").all();
-  return rows.map((r) => ({ ...r, issues: normalizeIssues(JSON.parse(r.issues || "[]")) }));
-}).get("/audits/:id", ({ params }) => {
-  const row = db.query("SELECT * FROM seo_audits WHERE id = ?").get(Number(params.id));
-  if (!row)
-    return { error: "Audit not found" };
-  return { ...row, issues: normalizeIssues(JSON.parse(row.issues || "[]")) };
-}, { params: t.Object({ id: t.String() }) }).delete("/audits/:id", ({ params }) => {
-  db.run("DELETE FROM seo_audits WHERE id = ?", [Number(params.id)]);
+  const id = await dbInsert("INSERT INTO seo_content (keyword, target_url, title, meta_description, headings, body, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)", [body.keyword, body.targetUrl ?? "", body.title ?? "", body.metaDescription ?? "", JSON.stringify(body.headings ?? []), body.body ?? "", body.status ?? "generated", now, now]);
+  return { id, ...body };
+}, {
+  body: t.Object({
+    keyword: t.String(),
+    targetUrl: t.Optional(t.String()),
+    title: t.Optional(t.String()),
+    metaDescription: t.Optional(t.String()),
+    headings: t.Optional(t.Array(t.String())),
+    body: t.Optional(t.String()),
+    status: t.Optional(t.String())
+  })
+}).delete("/content/:id", async ({ params }) => {
+  await dbRun("DELETE FROM seo_content WHERE id = $1", [Number(params.id)]);
   return { deleted: true };
-}, { params: t.Object({ id: t.String() }) });
+}, {
+  params: t.Object({ id: t.String() })
+}).get("/ranks", async () => {
+  return await dbQuery("SELECT * FROM seo_ranks ORDER BY check_date DESC");
+}).post("/ranks", async ({ body }) => {
+  const now = new Date().toISOString();
+  const id = await dbInsert("INSERT INTO seo_ranks (keyword, position, url, check_date, notes) VALUES ($1, $2, $3, $4, $5)", [body.keyword, body.position ?? 0, body.url ?? "", body.checkDate ?? now, body.notes ?? ""]);
+  return { id, ...body };
+}, {
+  body: t.Object({
+    keyword: t.String(),
+    position: t.Optional(t.Number()),
+    url: t.Optional(t.String()),
+    checkDate: t.Optional(t.String()),
+    notes: t.Optional(t.String())
+  })
+}).delete("/ranks/:id", async ({ params }) => {
+  await dbRun("DELETE FROM seo_ranks WHERE id = $1", [Number(params.id)]);
+  return { deleted: true };
+}, {
+  params: t.Object({ id: t.String() })
+}).get("/audits", async () => {
+  return await dbQuery("SELECT * FROM seo_audits ORDER BY created_at DESC");
+}).post("/audits", async ({ body }) => {
+  const now = new Date().toISOString();
+  const id = await dbInsert("INSERT INTO seo_audits (url, score, title, meta_description, headings_count, links_count, has_meta, has_title, page_size, issues, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)", [body.url, body.score ?? 0, body.title ?? "", body.metaDescription ?? "", body.headingsCount ?? 0, body.linksCount ?? 0, body.hasMeta ? 1 : 0, body.hasTitle ? 1 : 0, body.pageSize ?? 0, JSON.stringify(body.issues ?? []), now]);
+  return { id, ...body };
+}, {
+  body: t.Object({
+    url: t.String(),
+    score: t.Optional(t.Number()),
+    title: t.Optional(t.String()),
+    metaDescription: t.Optional(t.String()),
+    headingsCount: t.Optional(t.Number()),
+    linksCount: t.Optional(t.Number()),
+    hasMeta: t.Optional(t.Boolean()),
+    hasTitle: t.Optional(t.Boolean()),
+    pageSize: t.Optional(t.Number()),
+    issues: t.Optional(t.Array(t.String()))
+  })
+}).delete("/audits/:id", async ({ params }) => {
+  await dbRun("DELETE FROM seo_audits WHERE id = $1", [Number(params.id)]);
+  return { deleted: true };
+}, {
+  params: t.Object({ id: t.String() })
+});
 
 // src/index.ts
 var app = new Elysia().onRequest(({ request }) => {
@@ -21338,7 +21351,7 @@ var app = new Elysia().onRequest(({ request }) => {
     request.headers.set("access-control-allow-methods", "GET,POST,PATCH,DELETE,OPTIONS");
     request.headers.set("access-control-allow-headers", "Content-Type");
   }
-}).use(tasksRoutes).use(goalsRoutes).use(scheduledRoutes).use(agentRoutes).use(contentRoutes).use(vaultRoutes).use(dashboardRoutes).use(workspaceRoutes).use(studioRoutes).use(serveRoutes).use(seoRoutes).get("/assets/*", ({ path }) => {
+}).use(tasksRoutes).use(goalsRoutes).use(scheduledRoutes).use(agentRoutes).use(contentRoutes).use(vaultRoutes).use(dashboardRoutes).use(workspaceRoutes).use(studioRoutes).use(serveRoutes).use(contentRoutes2).use(seoRoutes).get("/assets/*", ({ path }) => {
   return Bun.file(`client/dist/${path}`);
 }).get("/static/*", ({ path }) => {
   return Bun.file(`client/dist/${path}`);

@@ -1,21 +1,20 @@
 import { Elysia, t } from "elysia";
-import { db } from "../db";
+import { dbQuery, dbGet, dbRun, dbInsert } from "../db";
 import { notifyTaskChange } from "./ws";
 
 export const tasksRoutes = new Elysia({ prefix: "/api/tasks" })
-  .get("/", () => {
-    return db.query("SELECT * FROM tasks ORDER BY created_at DESC").all();
+  .get("/", async () => {
+    return await dbQuery("SELECT * FROM tasks ORDER BY created_at DESC");
   })
-  .post("/", ({ body }) => {
+  .post("/", async ({ body }) => {
     const now = new Date().toISOString();
-    db.run(
-      "INSERT INTO tasks (title, description, status, priority, project, tags, due_date, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    const id = await dbInsert(
+      "INSERT INTO tasks (title, description, status, priority, project, tags, due_date, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
       [body.title, body.description ?? "", body.status ?? "backlog", body.priority ?? "medium", body.project ?? "", body.tags ?? "", body.dueDate ?? "", now, now]
     );
-    const id = db.query("SELECT last_insert_rowid() as id").get() as { id: number };
-    const newTask = { id: id.id, ...body };
+    const newTask = { id, ...body };
     notifyTaskChange("created", newTask);
-    return { id: id.id, ...body };
+    return { id, ...body };
   }, {
     body: t.Object({
       title: t.String(),
@@ -27,20 +26,22 @@ export const tasksRoutes = new Elysia({ prefix: "/api/tasks" })
       dueDate: t.Optional(t.String()),
     }),
   })
-  .patch("/:id", ({ params, body }) => {
+  .patch("/:id", async ({ params, body }) => {
     const now = new Date().toISOString();
     const sets: string[] = [];
     const vals: (string | number)[] = [];
-    if (body.title !== undefined) { sets.push("title = ?"); vals.push(body.title); }
-    if (body.description !== undefined) { sets.push("description = ?"); vals.push(body.description); }
-    if (body.status !== undefined) { sets.push("status = ?"); vals.push(body.status); }
-    if (body.priority !== undefined) { sets.push("priority = ?"); vals.push(body.priority); }
-    if (body.project !== undefined) { sets.push("project = ?"); vals.push(body.project); }
-    if (body.tags !== undefined) { sets.push("tags = ?"); vals.push(body.tags); }
-    if (body.dueDate !== undefined) { sets.push("due_date = ?"); vals.push(body.dueDate); }
-    sets.push("updated_at = ?");
+    let i = 1;
+    if (body.title !== undefined) { sets.push(`title = $${i++}`); vals.push(body.title); }
+    if (body.description !== undefined) { sets.push(`description = $${i++}`); vals.push(body.description); }
+    if (body.status !== undefined) { sets.push(`status = $${i++}`); vals.push(body.status); }
+    if (body.priority !== undefined) { sets.push(`priority = $${i++}`); vals.push(body.priority); }
+    if (body.project !== undefined) { sets.push(`project = $${i++}`); vals.push(body.project); }
+    if (body.tags !== undefined) { sets.push(`tags = $${i++}`); vals.push(body.tags); }
+    if (body.dueDate !== undefined) { sets.push(`due_date = $${i++}`); vals.push(body.dueDate); }
+    sets.push(`updated_at = $${i++}`);
     vals.push(now, Number(params.id));
-    db.run(`UPDATE tasks SET ${sets.join(", ")} WHERE id = ?`, vals);
+    sets.push(`id = $${i}`);
+    await dbRun(`UPDATE tasks SET ${sets.join(", ")} WHERE id = $${i}`, vals);
     notifyTaskChange("updated", { id: Number(params.id), ...body, status: body.status });
     return { id: Number(params.id), updatedAt: now };
   }, {
@@ -55,8 +56,8 @@ export const tasksRoutes = new Elysia({ prefix: "/api/tasks" })
       dueDate: t.Optional(t.String()),
     }),
   })
-  .delete("/:id", ({ params }) => {
-    db.run("DELETE FROM tasks WHERE id = ?", [Number(params.id)]);
+  .delete("/:id", async ({ params }) => {
+    await dbRun("DELETE FROM tasks WHERE id = $1", [Number(params.id)]);
     notifyTaskChange("deleted", { id: Number(params.id) });
     return { deleted: true };
   }, {

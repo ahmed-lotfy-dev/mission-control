@@ -3,11 +3,11 @@ import { tasksRoutes } from "./routes/tasks";
 import { goalsRoutes } from "./routes/goals";
 import { scheduledRoutes } from "./routes/scheduled";
 import { agentRoutes } from "./routes/agents";
-import { contentRoutes } from "./routes/content";
+import { contentRoutes as studioContentRoutes } from "./routes/content";
 import { vaultRoutes } from "./routes/vault";
 import { dashboardRoutes } from "./routes/dashboard";
 import { workspaceRoutes } from "./routes/workspace";
-import { studioRoutes, serveRoutes, r2Routes } from "./routes/studio";
+import { studioRoutes, serveRoutes, contentRoutes } from "./routes/studio";
 import { seoRoutes } from "./routes/seo";
 import { handleWsUpgrade } from "./routes/ws";
 
@@ -30,13 +30,13 @@ const app = new Elysia()
   .use(goalsRoutes)
   .use(scheduledRoutes)
   .use(agentRoutes)
-  .use(contentRoutes)
+  .use(studioContentRoutes)
   .use(vaultRoutes)
   .use(dashboardRoutes)
   .use(workspaceRoutes)
   .use(studioRoutes)
   .use(serveRoutes)
-  .use(r2Routes)
+  .use(contentRoutes)    // /api/content/asset/:id/image — serves Gallery images from DB base64
   .use(seoRoutes)
   // Serve React build
   .get("/assets/*", ({ path }) => {

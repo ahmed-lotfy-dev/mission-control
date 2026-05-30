@@ -1,17 +1,17 @@
-import { db } from "../db";
+import { dbRun, dbQuery, dbInsert } from "../db";
 
 const now = new Date().toISOString();
 
 // Clear and re-seed with agents that are actually running
-db.run("DELETE FROM agent_logs");
-db.run("DELETE FROM agent_snapshots");
+await dbRun("DELETE FROM agent_logs");
+await dbRun("DELETE FROM agent_snapshots");
 
 // Detect what's actually running
 function isRunning(pattern: string): boolean {
   try {
     const r = Bun.spawnSync(["pgrep", "-f", pattern], { stdout: "pipe" });
     return r.exitCode === 0;
-  } catch { return false; }
+  } catch { return false }
 }
 
 const agents = [
@@ -45,22 +45,19 @@ const agents = [
 ];
 
 for (const a of agents) {
-  // Get actual PID for more accurate status
   const pidResult = Bun.spawnSync(["pgrep", "-f", "-n", a.name.toLowerCase()], { stdout: "pipe" });
   const pidStr = pidResult.stdout.toString().trim();
   const pid = pidStr && !isNaN(parseInt(pidStr)) ? parseInt(pidStr) : null;
 
-  db.run(
-    "INSERT INTO agent_snapshots (name, model, version, icon, status, last_active, pid, endpoint, metadata, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+  const id = await dbInsert(
+    "INSERT INTO agent_snapshots (name, model, version, icon, status, last_active, pid, endpoint, metadata, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
     [a.name, a.model, a.version, a.icon, a.status, now, pid, a.endpoint, JSON.stringify(a.metadata), now]
   );
 
-  const row = db.query("SELECT id FROM agent_snapshots WHERE name = ?").get(a.name) as { id: number };
-  db.run(
-    "INSERT INTO agent_logs (agent_id, event, message, level, created_at) VALUES (?, ?, ?, ?, ?)",
-    [row.id, "registered", `Agent ${a.name} auto-detected via pgrep — ${a.status}`, "info", now]
+  await dbRun(
+    "INSERT INTO agent_logs (agent_id, event, message, level, created_at) VALUES ($1, $2, $3, $4, $5)",
+    [id, "registered", `Agent ${a.name} auto-detected via pgrep — ${a.status}`, "info", now]
   );
 }
 
 console.log(`Seeded ${agents.length} agents from live process detection.`);
-db.close();

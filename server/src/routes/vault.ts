@@ -1,23 +1,23 @@
 import { Elysia, t } from "elysia";
-import { db } from "../db";
+import { dbQuery, dbGet, dbRun } from "../db";
 import { readdir, stat } from "node:fs/promises";
 import { join } from "node:path";
 
 const VAULT_PATH = "/mnt/hdd/home-folder/Obsidian Vault";
 
 export const vaultRoutes = new Elysia({ prefix: "/api/vault" })
-  .get("/notes", () => {
-    return db.query("SELECT * FROM vault_notes ORDER BY indexed_at DESC").all();
+  .get("/notes", async () => {
+    return await dbQuery("SELECT * FROM vault_notes ORDER BY indexed_at DESC");
   })
-  .get("/notes/:folder", ({ params }) => {
-    return db.query("SELECT * FROM vault_notes WHERE folder = ?").all(params.folder);
+  .get("/notes/:folder", async ({ params }) => {
+    return await dbQuery("SELECT * FROM vault_notes WHERE folder = $1", [params.folder]);
   }, {
     params: t.Object({ folder: t.String() }),
   })
-  .get("/search", ({ query }) => {
+  .get("/search", async ({ query }) => {
     const q = `%${(query.q ?? "").toLowerCase()}%`;
     if (!q || q === "%%") return [];
-    return db.query("SELECT * FROM vault_notes WHERE LOWER(title) LIKE ? OR LOWER(tags) LIKE ? OR LOWER(folder) LIKE ?").all(q, q, q);
+    return await dbQuery("SELECT * FROM vault_notes WHERE LOWER(title) LIKE $1 OR LOWER(tags) LIKE $1 OR LOWER(folder) LIKE $1", [q]);
   }, {
     query: t.Object({ q: t.String() }),
   })
@@ -37,11 +37,11 @@ export const vaultRoutes = new Elysia({ prefix: "/api/vault" })
             const stats = await stat(fullPath);
             const title = entry.name.replace(".md", "").replace(/_/g, " ");
             const relativePath = fullPath.replace(VAULT_PATH + "/", "");
-            const existing = db.query("SELECT id FROM vault_notes WHERE path = ?").get(relativePath);
+            const existing = await dbGet("SELECT id FROM vault_notes WHERE path = $1", [relativePath]);
             if (existing) {
-              db.run("UPDATE vault_notes SET title = ?, last_modified = ?, indexed_at = ? WHERE path = ?", [title, stats.mtime.toISOString(), now, relativePath]);
+              await dbRun("UPDATE vault_notes SET title = $1, last_modified = $2, indexed_at = $3 WHERE path = $4", [title, stats.mtime.toISOString(), now, relativePath]);
             } else {
-              db.run("INSERT INTO vault_notes (path, title, folder, last_modified, indexed_at) VALUES (?, ?, ?, ?, ?)", [relativePath, title, folder || "root", stats.mtime.toISOString(), now]);
+              await dbRun("INSERT INTO vault_notes (path, title, folder, last_modified, indexed_at) VALUES ($1, $2, $3, $4, $5)", [relativePath, title, folder || "root", stats.mtime.toISOString(), now]);
             }
             count++;
           }
@@ -54,12 +54,12 @@ export const vaultRoutes = new Elysia({ prefix: "/api/vault" })
     await scanDir(VAULT_PATH, "");
     return { synced: count, timestamp: now };
   })
-  .get("/stats", () => {
-    const rows = db.query("SELECT folder, COUNT(*) as count FROM vault_notes GROUP BY folder ORDER BY count DESC").all() as any[];
+  .get("/stats", async () => {
+    const rows = await dbQuery("SELECT folder, COUNT(*) as count FROM vault_notes GROUP BY folder ORDER BY count DESC") as any[];
     const folders: Record<string, number> = {};
     for (const row of rows) {
       folders[row.folder] = row.count;
     }
-    const total = db.query("SELECT COUNT(*) as c FROM vault_notes").get() as any;
-    return { total: total.c, folders };
+    const total = await dbGet("SELECT COUNT(*) as c FROM vault_notes") as any;
+    return { total: total?.c ?? 0, folders };
   });

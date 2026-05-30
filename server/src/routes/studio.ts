@@ -5,8 +5,7 @@ import { homedir } from "node:os";
 import { spawn, execSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { getNvidiaKey, getOpenRouterKey, getGeminiKey, getCloudflareAccountId, getCloudflareApiToken, formatSize, getMime, listRecentAssets } from "../lib/helpers";
-import { uploadToR2, isR2Configured } from "../lib/r2";
-import { db } from "../db";
+import { dbRun, dbQuery, dbInsert, dbGet } from "../db";
 import { standardLimiter } from "../lib/rate-limit";
 
 const OUTPUT_DIR = join(homedir(), "agent-outputs");
@@ -15,17 +14,12 @@ const OPENROUTER_KEY = getOpenRouterKey();
 const GEMINI_KEY = getGeminiKey();
 const CF_ACCOUNT_ID = getCloudflareAccountId();
 const CF_API_TOKEN = getCloudflareApiToken();
-const R2_ENABLED = isR2Configured();
 
-// ── Model Status ──
-// NVIDIA's hosted images/generations API endpoint has been deprecated (404).
-// Only chat completions work on the integrate.api.nvidia.com/v1/ path.
-// Image generation falls back to ImageMagick (`magick`) which is installed locally.
-// For future real AI image gen, options: ComfyUI (local), OpenRouter API, or local GGUF models.
 // ── Image Models ──
 // Local: ImageMagick (always available, no API key)
-// AI: OpenRouter /v1/images/generations (SDXL, Flux, Playground v2.5, etc.)
-// Set OPENROUTER_API_KEY in .env to enable AI image generation.
+// AI: OpenRouter /v1/chat/completions (Gemini 2.5 Flash, GPT-5 Image Mini, etc.)
+// Cloudflare Workers AI (FLUX.1 Schnell, SDXL)
+// Set OPENROUTER_API_KEY or CLOUDFLARE_API_TOKEN in .env to enable AI image generation.
 
 export interface ImageModel {
   id: string;
@@ -50,11 +44,6 @@ const ALL_IMAGE_MODELS: ImageModel[] = [
     id: "openrouter/openai/gpt-5-image-mini", name: "GPT-5 Image Mini", provider: "OpenRouter",
     description: "OpenAI GPT-5 Image Mini via OpenRouter. Fast, good quality image generation.",
     speed: "fast", status: "available", needsAuth: true, recommendedFor: "Fast, affordable image gen",
-  },
-  {
-    id: "openrouter/google/gemini-2.5-flash-image", name: "Gemini 2.5 Flash Image", provider: "OpenRouter",
-    description: "Google Gemini 2.5 Flash Image via OpenRouter. Good quality, fast generation.",
-    speed: "fast", status: "available", needsAuth: true, recommendedFor: "Balanced speed and quality",
   },
   {
     id: "openrouter/google/gemini-2.5-flash-image", name: "Gemini 2.5 Flash Image", provider: "OpenRouter",
@@ -217,7 +206,6 @@ async function generateImageGoogle(prompt: string, model: string, count: number)
       const filename = "img-" + promptSlug + "-" + modelSlug + "-" + (i + 1) + ".png";
       const outputPath = join(OUTPUT_DIR, "images", filename);
       await writeFile(outputPath, Buffer.from(base64, "base64"));
-      backupToR2(outputPath, filename);
       results.push(outputPath);
     }
   }
@@ -261,7 +249,6 @@ async function generateImageNvidiaNIM(prompt: string, model: string, width: numb
     const filename = "img-" + promptSlug + "-" + modelSlug + "-" + (i + 1) + ".png";
     const outputPath = join(OUTPUT_DIR, "images", filename);
     await writeFile(outputPath, buf);
-    backupToR2(outputPath, filename);
     results.push(outputPath);
   }
   return results;
@@ -303,8 +290,6 @@ async function generateImageCloudflare(prompt: string, model: string, count: num
     const filename = "img-" + promptSlug + "-" + modelSlug + "-" + (i + 1) + ".png";
     const outputPath = join(OUTPUT_DIR, "images", filename);
     await writeFile(outputPath, buffer);
-    const fname = outputPath.split("/").pop() || "image.png";
-    backupToR2(outputPath, fname);
     results.push(outputPath);
   }
   return results;
@@ -361,27 +346,48 @@ async function generateImageOpenRouter(
       throw new Error(`OpenRouter returned no image URL. Response: ${JSON.stringify(data).slice(0, 300)}`);
     }
 
+    const imgResp = await fetch(imageUrl, { signal: AbortSignal.timeout(30_000) });
+    const buffer = Buffer.from(await imgResp.arrayBuffer());
     const promptSlug = slugifyPrompt(prompt);
     const modelSlug = model.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
     const filename = "img-" + promptSlug + "-" + modelSlug + "-" + (i + 1) + ".png";
     const outputPath = join(OUTPUT_DIR, "images", filename);
-
-    const imgResp = await fetch(imageUrl, { signal: AbortSignal.timeout(30_000) });
-    const buffer = Buffer.from(await imgResp.arrayBuffer());
     await writeFile(outputPath, buffer);
-    const fname = outputPath.split("/").pop() || "image.png";
-    backupToR2(outputPath, fname);
     results.push(outputPath);
   }
 
   return results;
 }
 
-// ── Track in content_assets ──
-function trackAsset(type: string, title: string, prompt: string, filePath: string, status: string, metadata: Record<string, any> = {}) {
+// ── Save image to content_assets (filesystem + base64 in DB) ──
+// This ensures images persist in Docker volume (via DB) and are viewable in Gallery.
+async function saveImageAsset(
+  title: string,
+  prompt: string,
+  filePath: string,
+  metadata: Record<string, any> = {},
+): Promise<number> {
   const now = new Date().toISOString();
-  db.run(
-    "INSERT INTO content_assets (type, title, prompt, file_path, status, metadata, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+  let base64 = "";
+  try {
+    const file = Bun.file(filePath);
+    const buffer = await file.arrayBuffer();
+    base64 = Buffer.from(buffer).toString("base64");
+  } catch {
+    // File may not exist yet (race condition) — store without base64
+  }
+  const id = await dbInsert(
+    "INSERT INTO content_assets (type, title, prompt, file_path, image_data, status, metadata, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+    ["image", title.slice(0, 60), prompt, filePath, base64, "done", JSON.stringify(metadata), now, now]
+  );
+  return id;
+}
+
+// ── Track non-image assets (audio, video) without base64 ──
+async function trackAsset(type: string, title: string, prompt: string, filePath: string, status: string, metadata: Record<string, any> = {}) {
+  const now = new Date().toISOString();
+  await dbInsert(
+    "INSERT INTO content_assets (type, title, prompt, file_path, status, metadata, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
     [type, title.slice(0, 60), prompt, filePath, status, JSON.stringify(metadata), now, now]
   );
 }
@@ -395,7 +401,7 @@ export const studioRoutes = new Elysia({ prefix: "/api/studio" })
   .get("/models", () => ({
     image: getAvailableImageModels(),
     video: VIDEO_MODELS,
-    note: "NVIDIA hosted images/generations API deprecated. Using ImageMagick for local generation. For AI image gen, setup ComfyUI or use OpenRouter.",
+    note: "Images saved to local filesystem + base64 in DB for Gallery persistence.",
   }))
 
   // ── TTS ──
@@ -403,7 +409,7 @@ export const studioRoutes = new Elysia({ prefix: "/api/studio" })
     try {
       const audioPath = await generateTTS(body.text, body.voice ?? "en-US-GuyNeural");
       const rel = audioPath.replace(OUTPUT_DIR, "").replace(/^\//, "");
-      trackAsset("audio", body.text, body.text, audioPath, "done", { voice: body.voice, provider: "edge-tts" });
+      await trackAsset("audio", body.text, body.text, audioPath, "done", { voice: body.voice, provider: "edge-tts" });
       return { status: "done", file: audioPath, filename: audioPath.split("/").pop(), serveUrl: `/api/serve/${rel}` };
     } catch (e: any) {
       return { status: "error", error: e.message };
@@ -437,15 +443,16 @@ export const studioRoutes = new Elysia({ prefix: "/api/studio" })
         method = "openrouter/" + model;
       }
 
-      const results = outputPaths.map((p) => {
+      const results = await Promise.all(outputPaths.map(async (p) => {
         const rel = p.replace(OUTPUT_DIR, "").replace(/^\//, "");
-        trackAsset("image", body.prompt, body.prompt, p, "done", { method, model, width: body.width, height: body.height });
+        const id = await saveImageAsset(body.prompt, body.prompt, p, { method, model, width: body.width, height: body.height });
         return {
+          id,
           file: p,
           filename: p.split("/").pop(),
           serveUrl: `/api/serve/${rel}`,
         };
-      });
+      }));
 
       return { status: "done", images: results, count: results.length, method };
     } catch (e: any) {
@@ -504,7 +511,7 @@ export const studioRoutes = new Elysia({ prefix: "/api/studio" })
         );
       }
 
-      trackAsset("video", body.prompt, body.prompt, outputPath, videoGenerated ? "done" : "pending", {
+      await trackAsset("video", body.prompt, body.prompt, outputPath, videoGenerated ? "done" : "pending", {
         generated: videoGenerated,
       });
 
@@ -543,7 +550,7 @@ export const studioRoutes = new Elysia({ prefix: "/api/studio" })
           { name: "en-GB-RyanNeural", gender: "Male", locale: "en-GB" },
           { name: "en-GB-SoniaNeural", gender: "Female", locale: "en-GB" },
           { name: "ar-EG-ShakirNeural", gender: "Male", locale: "ar-EG" },
-          { name: "ar-SA-HamedNeural", gender: "Male", locale: "ar-SA" },
+          { name: "ar-SA-HamedNeural", gender: "Female", locale: "ar-SA" },
         ],
         source: "built-in",
       };
@@ -551,13 +558,20 @@ export const studioRoutes = new Elysia({ prefix: "/api/studio" })
   })
 
   // ── Generation history from content_assets ──
-  .get("/history", ({ query }) => {
+  .get("/history", async ({ query }) => {
     const type = query.type || "";
     const limit = Math.min(query.limit || 50, 200);
+    // Exclude image_data from listing (too large), load separately via /content/asset/:id/image
     if (type && type !== "all") {
-      return db.query("SELECT * FROM content_assets WHERE type = ? ORDER BY created_at DESC LIMIT ?").all(type, limit);
+      return await dbQuery(
+        "SELECT id, type, title, prompt, file_path, status, metadata, created_at, updated_at FROM content_assets WHERE type = $1 ORDER BY created_at DESC LIMIT $2",
+        [type, limit]
+      );
     }
-    return db.query("SELECT * FROM content_assets ORDER BY created_at DESC LIMIT ?").all(limit);
+    return await dbQuery(
+      "SELECT id, type, title, prompt, file_path, status, metadata, created_at, updated_at FROM content_assets ORDER BY created_at DESC LIMIT $1",
+      [limit]
+    );
   }, {
     query: t.Object({
       type: t.Optional(t.String()),
@@ -565,8 +579,8 @@ export const studioRoutes = new Elysia({ prefix: "/api/studio" })
     }),
   })
 
-  .delete("/history/:id", ({ params }) => {
-    db.run("DELETE FROM content_assets WHERE id = ?", [Number(params.id)]);
+  .delete("/history/:id", async ({ params }) => {
+    await dbRun("DELETE FROM content_assets WHERE id = $1", [Number(params.id)]);
     return { deleted: true };
   }, {
     params: t.Object({ id: t.String() }),
@@ -608,51 +622,41 @@ export const serveRoutes = new Elysia()
     }
   }, { params: t.Object({ type: t.String(), filename: t.String() }) });
 
-// ── R2 proxy routes (serves files from Cloudflare R2) ─────────────────
+// ── Image serving from content_assets (base64) + file fallback ──
+// This is the primary way the Gallery loads images — works both locally and on Dokploy.
 
-import { listR2Files, getR2File } from "../lib/r2";
+export const contentRoutes = new Elysia({ prefix: "/api/content" })
+  .get("/asset/:id/image", async ({ params }) => {
+    const id = Number(params.id);
+    if (!id) return new Response("Invalid id", { status: 400 });
+    const asset = dbGet("SELECT id, image_data, file_path, title FROM content_assets WHERE id = $1", [id]) as any;
+    if (!asset) return new Response("Not found", { status: 404 });
 
-export const r2Routes = new Elysia({ prefix: "/api/r2" })
-  // List files in R2 bucket, grouped by model
-  .get("/files", async ({ query }) => {
-    try {
-      const prefix = query.prefix || "images/";
-      const files = await listR2Files(prefix, 200);
-      // Group by model slug
-      const grouped: Record<string, any[]> = {};
-      for (const f of files) {
-        const model = f.modelSlug || "unknown";
-        if (!grouped[model]) grouped[model] = [];
-        grouped[model].push(f);
-      }
-      return { files, grouped, count: files.length, r2Enabled: R2_ENABLED };
-    } catch (e: any) {
-      return { files: [], grouped: {}, count: 0, r2Enabled: R2_ENABLED, error: e.message };
-    }
-  })
-
-  // Get a single file from R2
-  .get("/file", async ({ query }) => {
-    const key = query.key as string;
-    if (!key) return new Response("Missing key", { status: 400 });
-    try {
-      const result = await getR2File(key);
-      if (!result) return new Response("Not found", { status: 404 });
-      return new Response(result.data, {
-        headers: { "Content-Type": result.contentType, "Cache-Control": "public, max-age=86400" },
+    // Try base64 first (always available when generated via Studio)
+    if (asset.image_data) {
+      const buf = Buffer.from(asset.image_data, "base64");
+      return new Response(buf, {
+        headers: { "Content-Type": "image/png", "Cache-Control": "public, max-age=86400" },
       });
-    } catch (e: any) {
-      return new Response("Error: " + e.message, { status: 500 });
     }
+
+    // Fallback to filesystem
+    if (asset.file_path) {
+      try {
+        const file = Bun.file(asset.file_path);
+        const exists = await file.exists();
+        if (!exists) return new Response("Not found", { status: 404 });
+        const ext = extname(asset.file_path).toLowerCase();
+        return new Response(file, {
+          headers: { "Content-Type": getMime(ext), "Cache-Control": "public, max-age=86400" },
+        });
+      } catch {}
+    }
+
+    return new Response("Not found", { status: 404 });
+  }, {
+    params: t.Object({ id: t.String() }),
   });
 
-// ── Hook R2 upload after every image generation ─────────────────────────
-
-async function backupToR2(localPath: string, filename: string): Promise<void> {
-  if (!R2_ENABLED) return;
-  try {
-    await uploadToR2(localPath, filename);
-  } catch (e: any) {
-    console.error("[R2] Backup failed:", e.message);
-  }
-}
+// ── Track images for gallery ──
+// Gallery fetches from /api/studio/history?type=image and displays via /api/content/asset/:id/image

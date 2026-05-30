@@ -217,7 +217,7 @@ export function computeAgentStatus(
 
 // ── Logging ──
 
-import { db } from "../db";
+import { dbRun } from "../db";
 
 export function logActivity(
   agentId: number,
@@ -226,12 +226,12 @@ export function logActivity(
   level = "info"
 ) {
   const now = new Date().toISOString();
-  db.run(
-    "INSERT INTO agent_logs (agent_id, event, message, level, created_at) VALUES (?, ?, ?, ?, ?)",
+  dbRun(
+    "INSERT INTO agent_logs (agent_id, event, message, level, created_at) VALUES ($1, $2, $3, $4, $5)",
     [agentId, event, message, level, now]
   );
-  db.run(
-    "UPDATE agent_snapshots SET last_active = ?, status = ? WHERE id = ?",
+  dbRun(
+    "UPDATE agent_snapshots SET last_active = $1, status = $2 WHERE id = $3",
     [now, level === "error" ? "error" : "working", agentId]
   );
 }

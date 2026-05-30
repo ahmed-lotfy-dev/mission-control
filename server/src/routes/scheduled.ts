@@ -1,18 +1,17 @@
 import { Elysia, t } from "elysia";
-import { db } from "../db";
+import { dbQuery, dbGet, dbRun, dbInsert } from "../db";
 
 export const scheduledRoutes = new Elysia({ prefix: "/api/scheduled" })
-  .get("/", () => {
-    return db.query("SELECT * FROM scheduled_tasks ORDER BY created_at DESC").all();
+  .get("/", async () => {
+    return await dbQuery("SELECT * FROM scheduled_tasks ORDER BY created_at DESC");
   })
-  .post("/", ({ body }) => {
+  .post("/", async ({ body }) => {
     const now = new Date().toISOString();
-    db.run(
-      "INSERT INTO scheduled_tasks (name, description, schedule, type, payload, enabled, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    const id = await dbInsert(
+      "INSERT INTO scheduled_tasks (name, description, schedule, type, payload, enabled, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
       [body.name, body.description ?? "", body.schedule, body.type ?? "script", body.payload ?? "", body.enabled ? 1 : 0, now, now]
     );
-    const id = db.query("SELECT last_insert_rowid() as id").get() as { id: number };
-    return { id: id.id, ...body };
+    return { id, ...body };
   }, {
     body: t.Object({
       name: t.String(),
@@ -23,19 +22,20 @@ export const scheduledRoutes = new Elysia({ prefix: "/api/scheduled" })
       enabled: t.Optional(t.Boolean()),
     }),
   })
-  .patch("/:id", ({ params, body }) => {
+  .patch("/:id", async ({ params, body }) => {
     const now = new Date().toISOString();
     const sets: string[] = [];
     const vals: (string | number)[] = [];
-    if (body.name !== undefined) { sets.push("name = ?"); vals.push(body.name); }
-    if (body.description !== undefined) { sets.push("description = ?"); vals.push(body.description); }
-    if (body.schedule !== undefined) { sets.push("schedule = ?"); vals.push(body.schedule); }
-    if (body.type !== undefined) { sets.push("type = ?"); vals.push(body.type); }
-    if (body.payload !== undefined) { sets.push("payload = ?"); vals.push(body.payload); }
-    if (body.enabled !== undefined) { sets.push("enabled = ?"); vals.push(body.enabled ? 1 : 0); }
-    sets.push("updated_at = ?");
+    let i = 1;
+    if (body.name !== undefined) { sets.push(`name = $${i++}`); vals.push(body.name); }
+    if (body.description !== undefined) { sets.push(`description = $${i++}`); vals.push(body.description); }
+    if (body.schedule !== undefined) { sets.push(`schedule = $${i++}`); vals.push(body.schedule); }
+    if (body.type !== undefined) { sets.push(`type = $${i++}`); vals.push(body.type); }
+    if (body.payload !== undefined) { sets.push(`payload = $${i++}`); vals.push(body.payload); }
+    if (body.enabled !== undefined) { sets.push(`enabled = $${i++}`); vals.push(body.enabled ? 1 : 0); }
+    sets.push(`updated_at = $${i++}`);
     vals.push(now, Number(params.id));
-    db.run(`UPDATE scheduled_tasks SET ${sets.join(", ")} WHERE id = ?`, vals);
+    await dbRun(`UPDATE scheduled_tasks SET ${sets.join(", ")} WHERE id = $${i}`, vals);
     return { id: Number(params.id), updatedAt: now };
   }, {
     params: t.Object({ id: t.String() }),
@@ -48,14 +48,14 @@ export const scheduledRoutes = new Elysia({ prefix: "/api/scheduled" })
       enabled: t.Optional(t.Boolean()),
     }),
   })
-  .delete("/:id", ({ params }) => {
-    db.run("DELETE FROM scheduled_tasks WHERE id = ?", [Number(params.id)]);
+  .delete("/:id", async ({ params }) => {
+    await dbRun("DELETE FROM scheduled_tasks WHERE id = $1", [Number(params.id)]);
     return { deleted: true };
   }, {
     params: t.Object({ id: t.String() }),
   })
-  .post("/:id/run", ({ params }) => {
-    const task = db.query("SELECT * FROM scheduled_tasks WHERE id = ?").get(Number(params.id)) as any;
+  .post("/:id/run", async ({ params }) => {
+    const task = await dbGet("SELECT * FROM scheduled_tasks WHERE id = $1", [Number(params.id)]);
     if (!task) return { error: "Not found" };
     const now = new Date().toISOString();
     let status = "success";
@@ -68,7 +68,7 @@ export const scheduledRoutes = new Elysia({ prefix: "/api/scheduled" })
     } catch {
       status = "error";
     }
-    db.run("UPDATE scheduled_tasks SET last_run = ?, last_status = ?, updated_at = ? WHERE id = ?", [now, status, now, Number(params.id)]);
+    await dbRun("UPDATE scheduled_tasks SET last_run = $1, last_status = $2, updated_at = $3 WHERE id = $4", [now, status, now, Number(params.id)]);
     return { executed: true, status };
   }, {
     params: t.Object({ id: t.String() }),

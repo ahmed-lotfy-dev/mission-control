@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia";
-import { db } from "../db";
+import { dbQuery, dbGet, dbRun, dbInsert } from "../db";
 import { spawn } from "child_process";
 import { detectProcessRunning, computeAgentStatus, logActivity, safeJson, type AgentRow } from "../lib/helpers";
 
@@ -13,9 +13,8 @@ type LogRow = {
 };
 
 export const agentRoutes = new Elysia({ prefix: "/api/agents" })
-  // List all agents with live status
-  .get("/", () => {
-    const rows = db.query("SELECT * FROM agent_snapshots ORDER BY id ASC").all() as AgentRow[];
+  .get("/", async () => {
+    const rows = await dbQuery("SELECT * FROM agent_snapshots ORDER BY id ASC") as AgentRow[];
     return rows.map(row => {
       const { status, pid } = computeAgentStatus(row);
       return {
@@ -26,15 +25,14 @@ export const agentRoutes = new Elysia({ prefix: "/api/agents" })
       };
     });
   })
-
-  // Get single agent + recent activity logs
-  .get("/:id", ({ params }) => {
-    const agent = db.query("SELECT * FROM agent_snapshots WHERE id = ?").get(Number(params.id)) as AgentRow | null;
+  .get("/:id", async ({ params }) => {
+    const agent = await dbGet("SELECT * FROM agent_snapshots WHERE id = $1", [Number(params.id)]) as AgentRow | null;
     if (!agent) return { error: "Agent not found" };
     const { status, pid } = computeAgentStatus(agent);
-    const logs = db.query(
-      "SELECT * FROM agent_logs WHERE agent_id = ? ORDER BY created_at DESC LIMIT 50"
-    ).all(Number(params.id)) as LogRow[];
+    const logs = await dbQuery(
+      "SELECT * FROM agent_logs WHERE agent_id = $1 ORDER BY created_at DESC LIMIT 50",
+      [Number(params.id)]
+    ) as LogRow[];
     return {
       ...agent,
       metadata: safeJson(agent.metadata),
@@ -45,28 +43,24 @@ export const agentRoutes = new Elysia({ prefix: "/api/agents" })
   }, {
     params: t.Object({ id: t.String() }),
   })
-
-  // Register new agent
-  .post("/", ({ body }) => {
+  .post("/", async ({ body }) => {
     const now = new Date().toISOString();
-    const existing = db.query("SELECT id FROM agent_snapshots WHERE name = ?").get(body.name) as { id: number } | null;
+    const existing = await dbGet("SELECT id FROM agent_snapshots WHERE name = $1", [body.name]) as { id: number } | null;
     if (existing) {
-      // Update existing instead
-      db.run(
-        "UPDATE agent_snapshots SET model = ?, version = ?, icon = ?, status = ?, endpoint = ?, metadata = ?, last_active = ? WHERE id = ?",
+      await dbRun(
+        "UPDATE agent_snapshots SET model = $1, version = $2, icon = $3, status = $4, endpoint = $5, metadata = $6, last_active = $7 WHERE id = $8",
         [body.model ?? "", body.version ?? "", body.icon ?? "", body.status ?? "idle", body.endpoint ?? "", JSON.stringify(body.metadata ?? {}), now, existing.id]
       );
       logActivity(existing.id, "registered", `Agent ${body.name} re-registered`);
       return { id: existing.id, ...body };
     }
 
-    db.run(
-      "INSERT INTO agent_snapshots (name, model, version, icon, status, last_active, endpoint, metadata, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    const id = await dbInsert(
+      "INSERT INTO agent_snapshots (name, model, version, icon, status, last_active, endpoint, metadata, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
       [body.name, body.model ?? "", body.version ?? "", body.icon ?? "", body.status ?? "idle", now, body.endpoint ?? "", JSON.stringify(body.metadata ?? {}), now]
     );
-    const row = db.query("SELECT last_insert_rowid() as id").get() as { id: number };
-    logActivity(row.id, "registered", `Agent ${body.name} registered`);
-    return { id: row.id, ...body };
+    logActivity(id, "registered", `Agent ${body.name} registered`);
+    return { id, ...body };
   }, {
     body: t.Object({
       name: t.String(),
@@ -78,23 +72,22 @@ export const agentRoutes = new Elysia({ prefix: "/api/agents" })
       metadata: t.Optional(t.Record(t.String(), t.Any())),
     }),
   })
-
-  // Update agent
-  .patch("/:id", ({ params, body }) => {
+  .patch("/:id", async ({ params, body }) => {
     const now = new Date().toISOString();
     const sets: string[] = [];
-    const vals: (string | number)[] = [];
-    if (body.name !== undefined) { sets.push("name = ?"); vals.push(body.name); }
-    if (body.model !== undefined) { sets.push("model = ?"); vals.push(body.model); }
-    if (body.version !== undefined) { sets.push("version = ?"); vals.push(body.version); }
-    if (body.icon !== undefined) { sets.push("icon = ?"); vals.push(body.icon); }
-    if (body.status !== undefined) { sets.push("status = ?"); vals.push(body.status); }
-    if (body.endpoint !== undefined) { sets.push("endpoint = ?"); vals.push(body.endpoint); }
-    if (body.pid !== undefined) { sets.push("pid = ?"); vals.push(body.pid); }
-    if (body.metadata !== undefined) { sets.push("metadata = ?"); vals.push(JSON.stringify(body.metadata)); }
-    sets.push("last_active = ?");
+    const vals: any[] = [];
+    let i = 1;
+    if (body.name !== undefined) { sets.push(`name = $${i++}`); vals.push(body.name); }
+    if (body.model !== undefined) { sets.push(`model = $${i++}`); vals.push(body.model); }
+    if (body.version !== undefined) { sets.push(`version = $${i++}`); vals.push(body.version); }
+    if (body.icon !== undefined) { sets.push(`icon = $${i++}`); vals.push(body.icon); }
+    if (body.status !== undefined) { sets.push(`status = $${i++}`); vals.push(body.status); }
+    if (body.endpoint !== undefined) { sets.push(`endpoint = $${i++}`); vals.push(body.endpoint); }
+    if (body.pid !== undefined) { sets.push(`pid = $${i++}`); vals.push(body.pid); }
+    if (body.metadata !== undefined) { sets.push(`metadata = $${i++}`); vals.push(JSON.stringify(body.metadata)); }
+    sets.push(`last_active = $${i++}`);
     vals.push(now, Number(params.id));
-    db.run(`UPDATE agent_snapshots SET ${sets.join(", ")} WHERE id = ?`, vals);
+    await dbRun(`UPDATE agent_snapshots SET ${sets.join(", ")} WHERE id = $${i}`, vals);
     logActivity(Number(params.id), "updated", `Agent configuration updated`);
     return { id: Number(params.id), lastActive: now };
   }, {
@@ -110,18 +103,14 @@ export const agentRoutes = new Elysia({ prefix: "/api/agents" })
       metadata: t.Optional(t.Record(t.String(), t.Any())),
     }),
   })
-
-  // Delete agent
-  .delete("/:id", ({ params }) => {
-    db.run("DELETE FROM agent_snapshots WHERE id = ?", [Number(params.id)]);
+  .delete("/:id", async ({ params }) => {
+    await dbRun("DELETE FROM agent_snapshots WHERE id = $1", [Number(params.id)]);
     return { deleted: true };
   }, {
     params: t.Object({ id: t.String() }),
   })
-
-  // Ping agent — check if responsive
   .post("/:id/ping", async ({ params }) => {
-    const agent = db.query("SELECT * FROM agent_snapshots WHERE id = ?").get(Number(params.id)) as AgentRow | null;
+    const agent = await dbGet("SELECT * FROM agent_snapshots WHERE id = $1", [Number(params.id)]) as AgentRow | null;
     if (!agent) return { error: "Agent not found" };
 
     const now = new Date().toISOString();
@@ -129,14 +118,12 @@ export const agentRoutes = new Elysia({ prefix: "/api/agents" })
     let responseTime = 0;
     let details: string[] = [];
 
-    // Strategy 1: Process check via pgrep
     const proc = detectProcessRunning(agent.name);
     if (proc.running) {
       responsive = true;
       details.push(`process running (PID ${proc.pid})`);
     }
 
-    // Strategy 2: HTTP endpoint check if configured
     if (agent.endpoint) {
       try {
         const start = performance.now();
@@ -153,7 +140,6 @@ export const agentRoutes = new Elysia({ prefix: "/api/agents" })
       }
     }
 
-    // Strategy 3: Stored PID check
     if (!responsive && agent.pid) {
       try {
         const result = Bun.spawnSync(["kill", "-0", String(agent.pid)], {});
@@ -164,10 +150,9 @@ export const agentRoutes = new Elysia({ prefix: "/api/agents" })
       } catch {}
     }
 
-    // Update status
     const newStatus = responsive ? "online" : "offline";
-    db.run(
-      "UPDATE agent_snapshots SET status = ?, last_active = ?, pid = ? WHERE id = ?",
+    await dbRun(
+      "UPDATE agent_snapshots SET status = $1, last_active = $2, pid = $3 WHERE id = $4",
       [newStatus, now, proc.pid || agent.pid, Number(params.id)]
     );
 
@@ -192,9 +177,7 @@ export const agentRoutes = new Elysia({ prefix: "/api/agents" })
   }, {
     params: t.Object({ id: t.String() }),
   })
-
-  // Log activity
-  .post("/:id/log", ({ params, body }) => {
+  .post("/:id/log", async ({ params, body }) => {
     logActivity(Number(params.id), body.event, body.message, body.level ?? "info");
     return { logged: true };
   }, {
@@ -205,20 +188,17 @@ export const agentRoutes = new Elysia({ prefix: "/api/agents" })
       level: t.Optional(t.String()),
     }),
   })
-
-  // Get recent logs
-  .get("/:id/logs", ({ params }) => {
-    const logs = db.query(
-      "SELECT * FROM agent_logs WHERE agent_id = ? ORDER BY created_at DESC LIMIT 100"
-    ).all(Number(params.id)) as LogRow[];
+  .get("/:id/logs", async ({ params }) => {
+    const logs = await dbQuery(
+      "SELECT * FROM agent_logs WHERE agent_id = $1 ORDER BY created_at DESC LIMIT 100",
+      [Number(params.id)]
+    ) as LogRow[];
     return logs;
   }, {
     params: t.Object({ id: t.String() }),
   })
-
-  // Clear logs
-  .delete("/:id/logs", ({ params }) => {
-    db.run("DELETE FROM agent_logs WHERE agent_id = ?", [Number(params.id)]);
+  .delete("/:id/logs", async ({ params }) => {
+    await dbRun("DELETE FROM agent_logs WHERE agent_id = $1", [Number(params.id)]);
     return { cleared: true };
   }, {
     params: t.Object({ id: t.String() }),
