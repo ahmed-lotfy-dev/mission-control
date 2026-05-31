@@ -211,7 +211,7 @@ function ensureTables(db: Database) {
       hreflang_url TEXT DEFAULT '',
       is_self_reference INTEGER DEFAULT 0,
       target_http_status INTEGER DEFAULT 0,
-      has_ reciprocal INTEGER DEFAULT 0,
+      has_reciprocal INTEGER DEFAULT 0,
       has_x_default INTEGER DEFAULT 0,
       is_valid INTEGER DEFAULT 1,
       issue TEXT DEFAULT '',
