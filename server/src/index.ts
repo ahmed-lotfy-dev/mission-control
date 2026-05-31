@@ -9,6 +9,7 @@ import { dashboardRoutes } from "./routes/dashboard";
 import { workspaceRoutes } from "./routes/workspace";
 import { studioRoutes, serveRoutes, contentRoutes } from "./routes/studio";
 import { seoRoutes } from "./routes/seo";
+import { seoAuditRoutes } from "./routes/seo-audit";
 import { handleWsUpgrade } from "./routes/ws";
 
 const app = new Elysia()
@@ -38,6 +39,7 @@ const app = new Elysia()
   .use(serveRoutes)
   .use(contentRoutes)    // /api/content/asset/:id/image — serves Gallery images from DB base64
   .use(seoRoutes)
+  .use(seoAuditRoutes)
   // Serve React build
   .get("/assets/*", ({ path }) => {
     return Bun.file(`client/dist/${path}`);
