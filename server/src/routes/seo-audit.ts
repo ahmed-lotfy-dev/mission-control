@@ -48,7 +48,7 @@ export const seoAuditRoutes = new Elysia({ prefix: "/api/seo-audit" })
               has_structured_data, structured_data_types,
               internal_links_count, external_links_count, nofollow_links_count,
               created_at
-            ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41,$42,$43,$44)`,
+            ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41,$42,$43)`,
             [
               sessionId, page.url, page.path, page.httpStatus, page.responseTimeMs,
               Math.round(page.pageSizeBytes / 1024), page.wordCount,
