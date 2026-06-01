@@ -3,6 +3,13 @@
  * Crawls a site, extracts all SEO data, detects issues.
  */
 
+// ── Logger ──
+function log(level: string, msg: string, data?: any) {
+  const ts = new Date().toISOString();
+  const line = `[${ts}] [SEO] [${level}] ${msg}${data ? ' ' + JSON.stringify(data) : ''}`;
+  console.log(line);
+}
+
 // ── Types ──
 export interface CrawlPage {
   url: string;
@@ -97,8 +104,8 @@ export interface RedirectChain {
 // ── Constants ──
 const MAX_PAGES = 200;
 const MAX_REDIRECT_HOPS = 5;
-const REQUEST_DELAY_MS = 1000;
-const REQUEST_TIMEOUT_MS = 30000;
+const REQUEST_DELAY_MS = 500;  // reduced from 1000 since we filter junk URLs now
+const REQUEST_TIMEOUT_MS = 15000;  // reduced from 30000 — most pages respond fast
 
 // ── Helpers ──
 
@@ -546,16 +553,20 @@ async function fetchSitemap(siteUrl: string): Promise<string[]> {
 
   for (const loc of sitemapLocations) {
     try {
+      log('INFO', `Fetching sitemap`, { url: loc });
       const resp = await fetch(loc, {
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
         headers: { 'User-Agent': 'Mozilla/5.0 (compatible; SEOAuditBot/1.0)' },
       });
+      log('INFO', `Sitemap response`, { url: loc, status: resp.status, ok: resp.ok });
       if (!resp.ok) continue;
       const text = await resp.text();
+      log('INFO', `Sitemap content length`, { url: loc, length: text.length });
 
       // Check if it's a sitemap index
       if (text.includes('<sitemapindex')) {
         const subSitemaps = extractAllMatches(text, /<loc>([^<]+)<\/loc>/i);
+        log('INFO', `Sitemap index found`, { subSitemapCount: subSitemaps.length });
         for (const sub of subSitemaps) {
           try {
             const subResp = await fetch(sub, {
@@ -567,7 +578,9 @@ async function fetchSitemap(siteUrl: string): Promise<string[]> {
               const urls = extractAllMatches(subText, /<loc>([^<]+)<\/loc>/i);
               sitemapUrls.push(...urls);
             }
-          } catch {}
+          } catch (e: any) {
+            log('WARN', `Failed to fetch sub-sitemap`, { url: sub, error: e.message });
+          }
         }
       } else {
         const urls = extractAllMatches(text, /<loc>([^<]+)<\/loc>/i);
@@ -575,10 +588,14 @@ async function fetchSitemap(siteUrl: string): Promise<string[]> {
       }
 
       if (sitemapUrls.length > 0) break;
-    } catch {}
+    } catch (e: any) {
+      log('WARN', `Failed to fetch sitemap`, { url: loc, error: e.message });
+    }
   }
 
-  return [...new Set(sitemapUrls)];
+  const unique = [...new Set(sitemapUrls)];
+  log('INFO', `Sitemap parsing complete`, { totalUrls: unique.length });
+  return unique;
 }
 
 // ── Robots.txt Parser ──
@@ -602,19 +619,75 @@ export async function crawlSite(
   onProgress?: (done: number, total: number, currentUrl: string) => void,
 ): Promise<CrawlResult> {
   const baseOrigin = getOrigin(siteUrl);
+  log('INFO', `Starting crawl`, { siteUrl, baseOrigin, maxPages: MAX_PAGES });
+
   const pages: CrawlPage[] = [];
   const allIssues: CrawlIssue[] = [];
   const visited = new Set<string>();
   const toVisit: string[] = [siteUrl];
 
   // Fetch sitemap and robots in parallel
+  log('INFO', 'Fetching sitemap and robots.txt...');
   const [sitemapUrls, robotsContent] = await Promise.all([
     fetchSitemap(siteUrl),
     fetchRobots(siteUrl),
   ]);
+  log('INFO', 'Sitemap/robots fetched', { sitemapUrlCount: sitemapUrls.length, hasRobots: !!robotsContent });
 
-  // Add sitemap URLs to crawl queue
-  for (const su of sitemapUrls) {
+  // Filter sitemap URLs: skip email-protection, CDN junk, non-HTML paths
+  const JUNK_PATTERNS = [
+    '/cdn-cgi/l/email-protection',
+    '/cdn-cgi/',
+    '.xml',
+    '.json',
+    '.css',
+    '.js',
+    '.png',
+    '.jpg',
+    '.jpeg',
+    '.gif',
+    '.svg',
+    '.ico',
+    '.woff',
+    '.woff2',
+    '.ttf',
+    '.eot',
+    '.webp',
+    '.avif',
+    '.pdf',
+    '.zip',
+    '.gz',
+  ];
+
+  function shouldCrawl(url: string): boolean {
+    try {
+      const u = new URL(url);
+      // Skip non-HTTP
+      if (!u.protocol.startsWith('http')) return false;
+      // Skip junk paths
+      for (const p of JUNK_PATTERNS) {
+        if (u.pathname.includes(p)) return false;
+      }
+      // Skip URLs with excessive query params (likely tracking)
+      if (u.search.length > 200) return false;
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  const filteredSitemapUrls = sitemapUrls.filter(shouldCrawl);
+  log('INFO', 'Sitemap URLs filtered', {
+    original: sitemapUrls.length,
+    filtered: filteredSitemapUrls.length,
+    removed: sitemapUrls.length - filteredSitemapUrls.length,
+  });
+  if (filteredSitemapUrls.length > 0) {
+    log('DEBUG', 'First sitemap URLs', { urls: filteredSitemapUrls.slice(0, 10) });
+  }
+
+  // Add filtered sitemap URLs to crawl queue
+  for (const su of filteredSitemapUrls) {
     if (!visited.has(su) && isInternalUrl(su, baseOrigin)) {
       toVisit.push(su);
     }
@@ -622,6 +695,7 @@ export async function crawlSite(
 
   const totalPages = Math.min(toVisit.length, MAX_PAGES);
   let crawled = 0;
+  log('INFO', `Crawl queue initialized`, { totalPages, queueSize: toVisit.length });
 
   // Crawl pages
   while (toVisit.length > 0 && pages.length < MAX_PAGES) {
@@ -630,6 +704,7 @@ export async function crawlSite(
     visited.add(url);
 
     onProgress?.(crawled, totalPages, url);
+    log('INFO', `Crawling [${crawled + 1}/${totalPages}]`, { url });
 
     try {
       const start = Date.now();
@@ -642,6 +717,7 @@ export async function crawlSite(
       });
       const responseTimeMs = Date.now() - start;
       const contentType = resp.headers.get('content-type') || '';
+      log('INFO', `Fetched`, { url, status: resp.status, responseTimeMs, contentType: contentType.split(';')[0] });
 
       // Handle redirects
       if (resp.status >= 300 && resp.status < 400) {
@@ -650,9 +726,9 @@ export async function crawlSite(
           const resolved = normalizeUrl(baseOrigin, location);
           if (resolved && isInternalUrl(resolved, baseOrigin) && !visited.has(resolved)) {
             toVisit.push(resolved);
+            log('INFO', `Redirect -> adding to queue`, { from: url, to: resolved });
           }
         }
-        // Still record the redirect page
         const page: CrawlPage = {
           url, path: getPath(url),
           httpStatus: resp.status,
@@ -677,7 +753,7 @@ export async function crawlSite(
       }
 
       if (!resp.ok) {
-        // Record error page
+        log('WARN', `Non-OK response`, { url, status: resp.status });
         const page: CrawlPage = {
           url, path: getPath(url),
           httpStatus: resp.status,
@@ -708,15 +784,34 @@ export async function crawlSite(
       page.responseTimeMs = responseTimeMs;
       page.contentType = contentType;
 
-      // Add internal links to queue
-      for (const link of page.links) {
-        if (link.isInternal && !visited.has(link.url) && !toVisit.includes(link.url)) {
-          toVisit.push(link.url);
-        }
+      log('INFO', `Parsed page`, {
+        url,
+        title: page.title?.slice(0, 60),
+        titleLength: page.titleLength,
+        h1Count: page.h1Count,
+        wordCount: page.wordCount,
+        linksFound: page.links.length,
+        imagesFound: page.images.length,
+        hreflangsFound: page.hreflangs.length,
+        hasCanonical: !!page.canonical,
+        hasRobotsMeta: !!page.robotsMeta,
+        hasOgTags: !!(page.ogTitle && page.ogDescription),
+        hasTwitterTags: !!page.twitterCard,
+      });
+
+      // Add internal links to queue (filtered)
+      const newLinks = page.links.filter(l => l.isInternal && !visited.has(l.url) && !toVisit.includes(l.url) && shouldCrawl(l.url));
+      for (const link of newLinks) {
+        toVisit.push(link.url);
+      }
+      if (newLinks.length > 0) {
+        log('INFO', `Added internal links to queue`, { count: newLinks.length, queueSize: toVisit.length });
       }
 
       pages.push(page);
-      allIssues.push(...detectIssues(page, baseOrigin));
+      const pageIssues = detectIssues(page, baseOrigin);
+      allIssues.push(...pageIssues);
+      log('INFO', `Issues detected for page`, { url, issueCount: pageIssues.length });
       crawled++;
 
       // Delay between requests
@@ -724,7 +819,7 @@ export async function crawlSite(
         await new Promise(r => setTimeout(r, REQUEST_DELAY_MS));
       }
     } catch (err: any) {
-      // Record failed page
+      log('ERROR', `Failed to crawl page`, { url, error: err.message, code: err.code });
       const page: CrawlPage = {
         url, path: getPath(url),
         httpStatus: 0,
@@ -756,6 +851,8 @@ export async function crawlSite(
     }
   }
 
+  log('INFO', `Crawl loop finished`, { pagesCrawled: crawled, totalIssues: allIssues.length, queueRemaining: toVisit.length });
+
   // Post-crawl analysis: detect broken internal links, orphan pages
   const crawledUrls = new Set(pages.map(p => p.url));
   const incomingLinks = new Map<string, number>();
@@ -785,7 +882,7 @@ export async function crawlSite(
   }
 
   // Detect orphan pages (in sitemap but no internal links)
-  for (const su of sitemapUrls) {
+  for (const su of filteredSitemapUrls) {
     if (crawledUrls.has(su) && !incomingLinks.has(su)) {
       allIssues.push({
         pageUrl: su,
@@ -799,7 +896,7 @@ export async function crawlSite(
   }
 
   // Pages crawled but not in sitemap
-  const sitemapSet = new Set(sitemapUrls);
+  const sitemapSet = new Set(filteredSitemapUrls);
   for (const page of pages) {
     if (page.httpStatus === 200 && !sitemapSet.has(page.url) && page.url !== siteUrl) {
       allIssues.push({
@@ -839,7 +936,8 @@ export async function crawlSite(
   // Detect redirect chains for pages that returned redirects
   const redirects: RedirectChain[] = [];
   const redirectPages = pages.filter(p => p.httpStatus >= 300 && p.httpStatus < 400);
-  for (const rp of redirectPages.slice(0, 20)) { // limit to avoid too many requests
+  log('INFO', `Checking redirect chains`, { redirectPageCount: redirectPages.length });
+  for (const rp of redirectPages.slice(0, 20)) {
     const chain = await detectRedirectChain(rp.url, baseOrigin);
     if (chain && chain.chainLength > 0) {
       redirects.push(chain);
@@ -867,6 +965,21 @@ export async function crawlSite(
   }
 
   onProgress?.(crawled, totalPages, '');
+
+  log('INFO', `CRAWL COMPLETE`, {
+    pagesCrawled: pages.length,
+    totalIssues: allIssues.length,
+    sitemapUrlsFound: sitemapUrls.length,
+    hasRobotsTxt: !!robotsContent,
+    redirectsDetected: redirects.length,
+    issueBreakdown: {
+      critical: allIssues.filter(i => i.severity === 'critical').length,
+      high: allIssues.filter(i => i.severity === 'high').length,
+      medium: allIssues.filter(i => i.severity === 'medium').length,
+      low: allIssues.filter(i => i.severity === 'low').length,
+      notice: allIssues.filter(i => i.severity === 'notice').length,
+    },
+  });
 
   return { pages, issues: allIssues, sitemapUrls, robotsContent, redirects };
 }

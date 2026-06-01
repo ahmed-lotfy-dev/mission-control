@@ -13,16 +13,25 @@ export const seoAuditRoutes = new Elysia({ prefix: "/api/seo-audit" })
     if (!siteUrl) return { error: "siteUrl is required" };
 
     const now = new Date().toISOString();
+    console.log(`[SEO-AUDIT] Starting crawl session`, { siteUrl });
     const sessionId = dbInsert(
       "INSERT INTO seo_crawl_sessions (site_url, status, started_at, created_at) VALUES ($1, $2, $3, $4)",
       [siteUrl, "running", now, now]
     );
+    console.log(`[SEO-AUDIT] Session created`, { sessionId, siteUrl });
 
     // Start crawl in background
     (async () => {
       try {
+        console.log(`[SEO-AUDIT] Background crawl started`, { sessionId, siteUrl });
         const result = await crawlSite(siteUrl, (done, total, url) => {
           activeCrawls.set(sessionId, { status: "running", done, total, currentUrl: url });
+        });
+        console.log(`[SEO-AUDIT] Crawl finished, storing results`, {
+          sessionId,
+          pagesFound: result.pages.length,
+          issuesFound: result.issues.length,
+          sitemapUrls: result.sitemapUrls.length,
         });
 
         // Store pages
@@ -126,7 +135,15 @@ export const seoAuditRoutes = new Elysia({ prefix: "/api/seo-audit" })
         // Update session
         dbRun("UPDATE seo_crawl_sessions SET status = $1, pages_crawled = $2, total_pages = $3, finished_at = $4 WHERE id = $5", ["completed", result.pages.length, result.pages.length, now, sessionId]);
         activeCrawls.set(sessionId, { status: "completed", done: result.pages.length, total: result.pages.length, currentUrl: "" });
+        console.log(`[SEO-AUDIT] Session completed successfully`, {
+          sessionId,
+          pagesStored: result.pages.length,
+          issuesStored: result.issues.length,
+          redirectsStored: result.redirects.length,
+          sitemapEntriesStored: result.sitemapUrls.length,
+        });
       } catch (err: any) {
+        console.error(`[SEO-AUDIT] Crawl failed`, { sessionId, error: err.message, stack: err.stack });
         dbRun("UPDATE seo_crawl_sessions SET status = $1, finished_at = $2 WHERE id = $3", ["error", now, sessionId]);
         activeCrawls.set(sessionId, { status: "error", done: 0, total: 0, currentUrl: err.message });
       }

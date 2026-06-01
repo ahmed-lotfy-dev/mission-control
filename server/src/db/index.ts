@@ -338,7 +338,8 @@ export function dbInsert(text: string, params?: any[]): number {
   } else {
     stmt.run();
   }
-  return Number(db.lastInsertRowId);
+  const rowId = db.query("SELECT last_insert_rowid() as id").get() as any;
+  return Number(rowId?.id ?? 0);
 }
 
 // Direct access to raw Database for advanced usage
