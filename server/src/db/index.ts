@@ -94,6 +94,7 @@ function ensureTables(db: Database) {
     `CREATE TABLE IF NOT EXISTS seo_crawl_sessions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       site_url TEXT NOT NULL,
+      domain_slug TEXT NOT NULL DEFAULT '',
       status TEXT NOT NULL DEFAULT 'idle',
       pages_crawled INTEGER DEFAULT 0,
       total_pages INTEGER DEFAULT 0,

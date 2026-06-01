@@ -1,18 +1,17 @@
 /**
  * Individual SEO Crawl Report — Route-based
  *
- * URL: /seo/report/:sessionId
+ * URL: /seo/:domainSlug/:reportId
  * Tabs are rendered as sub-sections within this single page.
- * Data is loaded by session ID from the URL params.
+ * Data is loaded by session ID (reportId) from the URL params.
  */
 import { useState } from "react";
 import { useParams, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { api, formatDate, qk } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Trash2, ArrowLeft, ExternalLink } from "lucide-react";
+import { Trash2, ArrowLeft, Globe } from "lucide-react";
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog";
 
 interface OverviewData {
@@ -41,9 +40,9 @@ const TABS: Array<{ key: TabKey; label: string; icon: string }> = [
 ];
 
 export default function SeoReport() {
-  const { sessionId } = useParams({ from: "/seo/report/$sessionId" });
+  const { domainSlug, reportId } = useParams({ from: "/seo/$domainSlug/$reportId" });
   const navigate = useNavigate();
-  const sid = Number(sessionId);
+  const sid = Number(reportId);
   const [tab, setTab] = useState<TabKey>("overview");
 
   // ── Main data query ──
@@ -159,9 +158,9 @@ export default function SeoReport() {
       {/* ── Header ── */}
       <div className="page-header">
         <div>
-          <Button variant="ghost" size="sm" className="mb-2" onClick={() => navigate({ to: "/seo" })}>
+          <Button variant="ghost" size="sm" className="mb-2" onClick={() => navigate({ to: "/seo/$domainSlug", params: { domainSlug } })}>
             <ArrowLeft className="w-3.5 h-3.5 mr-1" />
-            Back to History
+            Back to {domainSlug}
           </Button>
           <h1>🔍 Crawl Report #{sid}</h1>
           <div className="subtitle text-[14px] text-accent flex items-center gap-2">

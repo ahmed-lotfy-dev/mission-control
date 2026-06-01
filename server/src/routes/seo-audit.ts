@@ -1,6 +1,7 @@
 import { Elysia, t } from "elysia";
 import { dbQuery, dbGet, dbRun, dbInsert } from "../db";
 import { crawlSite } from "../lib/seo-crawler";
+import { urlToDomainSlug } from "../lib/helpers";
 
 // ── In-memory crawl state (for progress tracking) ──
 const activeCrawls = new Map<number, { status: string; done: number; total: number; currentUrl: string }>();
@@ -13,12 +14,13 @@ export const seoAuditRoutes = new Elysia({ prefix: "/api/seo-audit" })
     if (!siteUrl) return { error: "siteUrl is required" };
 
     const now = new Date().toISOString();
-    console.log(`[SEO-AUDIT] Starting crawl session`, { siteUrl });
+    const domainSlug = urlToDomainSlug(siteUrl);
+    console.log(`[SEO-AUDIT] Starting crawl session`, { siteUrl, domainSlug });
     const sessionId = dbInsert(
-      "INSERT INTO seo_crawl_sessions (site_url, status, started_at, created_at) VALUES ($1, $2, $3, $4)",
-      [siteUrl, "running", now, now]
+      "INSERT INTO seo_crawl_sessions (site_url, domain_slug, status, started_at, created_at) VALUES ($1, $2, $3, $4, $5)",
+      [siteUrl, domainSlug, "running", now, now]
     );
-    console.log(`[SEO-AUDIT] Session created`, { sessionId, siteUrl });
+    console.log(`[SEO-AUDIT] Session created`, { sessionId, siteUrl, domainSlug });
 
     // Start crawl in background
     (async () => {
@@ -176,6 +178,21 @@ export const seoAuditRoutes = new Elysia({ prefix: "/api/seo-audit" })
   // ── Crawl Sessions List ──
   .get("/sessions", async () => {
     return dbQuery("SELECT * FROM seo_crawl_sessions ORDER BY created_at DESC LIMIT 50");
+  })
+
+  // ── Get Reports by Domain ──
+  .get("/domain/:domainSlug", async ({ params }) => {
+    const sessions = dbQuery(
+      "SELECT id, site_url, domain_slug, status, pages_crawled, total_pages, started_at, finished_at, created_at FROM seo_crawl_sessions WHERE domain_slug = $1 ORDER BY created_at DESC",
+      [params.domainSlug]
+    );
+    if (!sessions.length) return { domain: params.domainSlug, site_url: "", reports: [] };
+    return {
+      domain: params.domainSlug,
+      site_url: sessions[0].site_url,
+      report_count: sessions.length,
+      reports: sessions,
+    };
   })
 
   // ── Delete Session ──

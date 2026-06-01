@@ -12,6 +12,7 @@ import Seo from "./views/Seo";
 import Gallery from "./views/Gallery";
 import FeatureFlags from "./views/FeatureFlags";
 import SeoReport from "./features/seo/components/SeoReport";
+import SeoDomain from "./features/seo/components/SeoDomain";
 import SeoContentPreview from "./features/seo/components/SeoContentPreview";
 import ErrorPage from "./components/ErrorPage";
 import NotFoundPage from "./components/NotFoundPage";
@@ -32,8 +33,9 @@ const workspaceRoute = createRoute({ getParentRoute: () => rootRoute, path: "/wo
 const studioRoute = createRoute({ getParentRoute: () => rootRoute, path: "/studio", component: Studio });
 const galleryRoute = createRoute({ getParentRoute: () => rootRoute, path: "/gallery", component: Gallery });
 const seoRoute = createRoute({ getParentRoute: () => rootRoute, path: "/seo", component: Seo });
+const seoDomainRoute = createRoute({ getParentRoute: () => rootRoute, path: "/seo/$domainSlug", component: SeoDomain });
+const seoReportRoute = createRoute({ getParentRoute: () => rootRoute, path: "/seo/$domainSlug/$reportId", component: SeoReport });
 const featureFlagsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/feature-flags", component: FeatureFlags });
-const seoReportRoute = createRoute({ getParentRoute: () => rootRoute, path: "/seo/report/$sessionId", component: SeoReport });
 const seoContentPreviewRoute = createRoute({ getParentRoute: () => rootRoute, path: "/seo/content/$contentId", component: SeoContentPreview });
 
 const routeTree = rootRoute.addChildren([

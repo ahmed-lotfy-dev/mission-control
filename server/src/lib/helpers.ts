@@ -3,6 +3,21 @@ import { join, extname } from "node:path";
 import { homedir } from "node:os";
 import { execSync } from "node:child_process";
 
+// ── Domain slug helper ──
+// Converts a URL like "https://www.ahmedlotfy.site" → "ahmedlotfy-site"
+export function urlToDomainSlug(url: string): string {
+  try {
+    const u = new URL(url);
+    // Remove www. prefix, replace dots and hyphens with single hyphen
+    let host = u.hostname.replace(/^www\./, "");
+    // Replace dots with hyphens, collapse multiple hyphens
+    const slug = host.replace(/\./g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+    return slug.toLowerCase();
+  } catch {
+    return "unknown";
+  }
+}
+
 // ── JSON safe parse ──
 
 export function safeJson(str: string): any {
