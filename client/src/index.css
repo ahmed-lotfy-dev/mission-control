@@ -13,17 +13,37 @@
   --radius: 8px;
   --radius-lg: 12px;
 
+  /* Shadcn color tokens — required for utility classes like bg-primary, text-card-foreground etc. */
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: oklch(0.60 0.105 70);
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: oklch(0.20 0.025 35);
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  /* Mission Control custom color tokens */
   --color-bg-deep: oklch(0.055 0.012 30);
   --color-bg: oklch(0.085 0.015 28);
   --color-bg-raise: oklch(0.115 0.018 26);
   --color-bg-hover: oklch(0.155 0.020 25);
-  --color-border: oklch(0.20 0.025 35);
   --color-border-bright: oklch(0.30 0.035 40);
   --color-border-gold: oklch(0.55 0.10 70 / 0.3);
   --color-text: oklch(0.78 0.015 45);
   --color-text-dim: oklch(0.45 0.02 35);
   --color-text-bright: oklch(0.92 0.01 45);
-  --color-accent: oklch(0.60 0.105 70);
   --color-accent-dim: oklch(0.45 0.09 70);
   --color-accent-bright: oklch(0.72 0.12 70);
   --color-accent-glow: oklch(0.60 0.105 70 / 0.12);

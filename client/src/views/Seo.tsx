@@ -4,6 +4,9 @@ import { useNavigate } from "@tanstack/react-router";
 import { api, formatDate } from "../lib/api";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
+import { toast } from "sonner";
+import { Trash2 } from "lucide-react";
 
 // ── Types ──
 interface CrawlSession {
@@ -194,10 +197,23 @@ export default function Seo() {
   });
 
   const deleteSessionMut = useMutation({
-    mutationFn: (id: number) => api(`/seo-audit/sessions/${id}`, { method: "DELETE" }),
-    onSuccess: () => {
+    mutationFn: async (id: number) => {
+      const res = await api(`/seo-audit/sessions/${id}`, { method: "DELETE" });
+      return res;
+    },
+    onMutate: (id) => {
+      toast.loading("Deleting crawl session...", { id: `delete-${id}` });
+    },
+    onSuccess: (_, id) => {
+      toast.success(`Session #${id} deleted`, { id: `delete-${id}` });
       qc.invalidateQueries({ queryKey: ["seo-audit", "sessions"] });
       setSelectedSession(null);
+    },
+    onError: (err: any, id) => {
+      toast.error(`Failed to delete session #${id}`, {
+        id: `delete-${id}`,
+        description: err?.message || "Server error — check console for details",
+      });
     },
   });
 
@@ -864,8 +880,6 @@ export default function Seo() {
 }
 
 // ── Helper Components ──
-
-function SectionTable({ title, data, columns }: { title: string; data: any[]; columns: string[] }) {
   const [expanded, setExpanded] = useState(false);
   const display = expanded ? data : data.slice(0, 10);
 
