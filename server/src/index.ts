@@ -1,4 +1,5 @@
 import { Elysia } from "elysia";
+import { existsSync } from "fs";
 import { tasksRoutes } from "./routes/tasks";
 import { goalsRoutes } from "./routes/goals";
 import { scheduledRoutes } from "./routes/scheduled";
@@ -11,6 +12,14 @@ import { studioRoutes, serveRoutes, contentRoutes } from "./routes/studio";
 import { seoRoutes } from "./routes/seo";
 import { seoAuditRoutes } from "./routes/seo-audit";
 import { handleWsUpgrade } from "./routes/ws";
+
+const distBase = (() => {
+  const rel = ["client/dist", "../client/dist", "../../client/dist"];
+  for (const p of rel) {
+    if (existsSync(p)) return p;
+  }
+  return "../client/dist";
+})();
 
 const app = new Elysia()
   .onRequest(({ request }) => {
@@ -42,15 +51,15 @@ const app = new Elysia()
   .use(seoAuditRoutes)
   // Serve React build
   .get("/assets/*", ({ path }) => {
-    return Bun.file(`client/dist/${path}`);
+    return Bun.file(`${distBase}/${path}`);
   })
   .get("/static/*", ({ path }) => {
-    return Bun.file(`client/dist/${path}`);
+    return Bun.file(`${distBase}/${path}`);
   })
   // SPA fallback — serve index.html for any non-API route
   .get("/*", () => {
-    return Bun.file("client/dist/index.html");
+    return Bun.file(`${distBase}/index.html`);
   })
-  .listen(3000);
+  .listen(8000);
 
-console.log(`🚀 Mission Control running at http://localhost:3000`);
+console.log(`🚀 Mission Control running at http://localhost:8000`);

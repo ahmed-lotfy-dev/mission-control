@@ -1,0 +1,11 @@
+{
+  "name": "mission-control-monorepo",
+  "private": true,
+  "workspaces": ["client", "server"],
+  "scripts": {
+    "dev": "bun run --parallel --filter '*' dev",
+    "build": "bun run --cwd client build",
+    "db:push": "bun run --cwd server db:push",
+    "db:seed": "bun run --cwd server db:seed"
+  }
+}

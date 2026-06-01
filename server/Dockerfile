@@ -35,10 +35,10 @@ COPY server/package.json ./package.json
 # Create data directory for SQLite
 RUN mkdir -p /data
 
-EXPOSE 3000
+EXPOSE 8000
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-  CMD bun -e "fetch('http://localhost:3000/api/dashboard').then(r=>r.ok?process.exit(0):process.exit(1))" || exit 1
+  CMD bun -e "fetch('http://localhost:8000/api/dashboard').then(r=>r.ok?process.exit(0):process.exit(1))" || exit 1
 
 CMD ["bun", "src/index.ts"]

@@ -12,7 +12,7 @@ services:
       CLOUDFLARE_ACCOUNT_ID: ${CLOUDFLARE_ACCOUNT_ID:+${CLOUDFLARE_ACCOUNT_ID}}
       DB_PATH: /data/mission-control.db
     expose:
-      - "3000"
+      - "8000"
     volumes:
       - mission-control-data:/data
 
