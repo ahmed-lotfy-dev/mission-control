@@ -4,8 +4,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
 import { router } from "./router";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import { FeatureFlagsProvider } from "./lib/feature-flags";
-import { MaintenanceGate } from "./components/MaintenanceGate";
 import "./index.css";
 
 const queryClient = new QueryClient({
@@ -21,13 +19,9 @@ const queryClient = new QueryClient({
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <FeatureFlagsProvider>
-        <MaintenanceGate>
-          <ErrorBoundary>
-            <RouterProvider router={router} />
-          </ErrorBoundary>
-        </MaintenanceGate>
-      </FeatureFlagsProvider>
+      <ErrorBoundary>
+        <RouterProvider router={router} />
+      </ErrorBoundary>
     </QueryClientProvider>
-  </StrictMode>
+  </StrictMode>,
 );
