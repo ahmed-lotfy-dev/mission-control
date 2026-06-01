@@ -37,7 +37,15 @@ export default function SeoDomain() {
     queryKey: ["seo-audit", "domain", domainSlug],
     queryFn: () => api(`/seo-audit/domain/${domainSlug}`),
     enabled: !!domainSlug,
+    refetchInterval: (data) => {
+      // Poll every 3s if any report is still running
+      const hasRunning = data?.reports?.some(r => r.status === "running");
+      return hasRunning ? 3000 : false;
+    },
   });
+
+  // Check if any report is currently running (for UI indicator)
+  const hasRunning = domainData?.reports?.some(r => r.status === "running") || false;
 
   const handleDelete = async (reportId: number) => {
     try {
@@ -91,6 +99,15 @@ export default function SeoDomain() {
       </div>
 
       {/* ── Reports List ── */}
+      {hasRunning && (
+        <div className="card mb-16 border-accent/30 bg-accent/5">
+          <div className="flex items-center gap-3">
+            <span className="w-3 h-3 rounded-full bg-accent animate-pulse" />
+            <span className="text-sm text-accent">Crawl in progress... Results will appear automatically when complete.</span>
+          </div>
+        </div>
+      )}
+
       <div className="card">
         <div className="flex-between mb-3">
           <h3>📋 Crawl Reports</h3>

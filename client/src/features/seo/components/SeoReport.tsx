@@ -45,11 +45,12 @@ export default function SeoReport() {
   const sid = Number(reportId);
   const [tab, setTab] = useState<TabKey>("overview");
 
-  // ── Main data query ──
+  // ── Main data query (auto-refresh while crawl is running) ──
   const { data: overview, isLoading, error } = useQuery<OverviewData>({
     queryKey: qk("seo-audit", "overview", sid),
     queryFn: () => api(`/seo-audit/overview/${sid}`),
     enabled: !!sid,
+    refetchInterval: 5000, // Always poll — overview endpoint is cheap
   });
 
   // ── Issues ──
