@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Trash2, ArrowLeft, Globe } from "lucide-react";
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog";
+import { Skeleton, StatCardSkeleton, IssueTableSkeleton } from "@/components/ui/skeleton";
 
 interface OverviewData {
   score: number;
@@ -130,9 +131,26 @@ export default function SeoReport() {
   // ── Loading / Error ──
   if (isLoading) {
     return (
-      <div className="loading-state p-10">
-        <div className="loading-spinner" />
-        <p className="text-text-dim mt-3">Loading report #{sid}...</p>
+      <div>
+        <div className="page-header">
+          <div>
+            <Button variant="ghost" size="sm" className="mb-2" onClick={() => navigate({ to: "/seo/$domainSlug", params: { domainSlug } })}>
+              <ArrowLeft className="w-3.5 h-3.5 mr-1" />Back
+            </Button>
+            <h1><Skeleton className="w-48 h-6" /></h1>
+          </div>
+        </div>
+        <div className="grid-2 mb-24">
+          <div className="card flex items-center justify-between py-5 px-6">
+            <div><Skeleton className="w-24 h-4 mb-2" /><Skeleton className="w-32 h-3" /></div>
+            <Skeleton className="w-[100px] h-[100px] rounded-full" />
+          </div>
+          <div className="card"><Skeleton className="w-20 h-4 mb-3" /><div className="flex gap-3">
+            {[1,2,3,4].map(i => <div key={i} className="flex-1"><Skeleton className="w-full h-10 rounded-lg" /></div>)}
+          </div></div>
+        </div>
+        <div className="grid-3 mb-24">{[1,2,3].map(i => <StatCardSkeleton key={i} />)}</div>
+        <div className="card"><Skeleton className="w-24 h-4 mb-3" /><IssueTableSkeleton /></div>
       </div>
     );
   }

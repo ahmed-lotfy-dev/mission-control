@@ -10,6 +10,9 @@ function log(level: string, msg: string, data?: any) {
   console.log(line);
 }
 
+// ── Crawl progress callback type ──
+export type CrawlProgressCallback = (done: number, total: number, url: string) => void;
+
 // ── Types ──
 export interface CrawlPage {
   url: string;

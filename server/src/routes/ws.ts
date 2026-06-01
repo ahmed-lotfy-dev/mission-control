@@ -96,6 +96,29 @@ export function notifyAgentChange(agentId: number, action: string) {
   });
 }
 
+// ── Crawl Progress Streaming ──
+// Broadcasts real-time crawl progress to all connected WS clients
+export function broadcastCrawlProgress(data: {
+  sessionId: number;
+  domainSlug: string;
+  status: "running" | "completed" | "error";
+  pagesCrawled: number;
+  totalPages: number;
+  currentUrl: string;
+  score?: number;
+  error?: string;
+}) {
+  broadcast("crawl_progress", data);
+}
+
+export function notifyAgentChange(agentId: number, action: string) {
+  dbGet("SELECT * FROM agent_snapshots WHERE id = $1", [agentId]).then(agent => {
+    if (agent) {
+      broadcast("agent_update", { action, agent });
+    }
+  });
+}
+
 export function handleWsUpgrade(req: Request): Response | null {
   const url = new URL(req.url);
   if (url.pathname !== "/ws") return null;

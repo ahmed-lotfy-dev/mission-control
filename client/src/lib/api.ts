@@ -1,19 +1,34 @@
 import { toast } from "sonner";
 
 const BASE = "/api";
+const WS_URL = `${location.protocol === "https:" ? "wss:" : "ws:"}//${location.host}/ws`;
 
 export async function api<T = any>(path: string, opts?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
-    headers: { "Content-Type": "application/json" },
-    ...opts,
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    const msg = body?.error || `API error: ${res.status} ${res.statusText}`;
-    toast.error(msg, { duration: 5000 });
-    throw new Error(msg);
-  }
+  const res = await fetch(`${BASE}${path}`, { headers: { "Content-Type": "application/json" }, ...opts });
+  if (!res.ok) { const body = await res.json().catch(() => ({})); const msg = body?.error || `API error: ${res.status} ${res.statusText}`; toast.error(msg, { duration: 5000 }); throw new Error(msg); }
   return res.json();
+}
+
+// ── WebSocket helper for real-time crawl progress ──
+type WsListener = (data: any) => void;
+let ws: WebSocket | null = null;
+let wsListeners: Map<string, Set<WsListener>> = new Map();
+let wsReconnectTimer: ReturnType<typeof setTimeout> | null = null;
+
+export function connectWs() {
+  if (ws?.readyState === WebSocket.OPEN) return;
+  ws = new WebSocket(WS_URL);
+  ws.onopen = () => { console.log("[WS] Connected"); if (wsReconnectTimer) clearTimeout(wsReconnectTimer); };
+  ws.onmessage = (e) => { try { const msg = JSON.parse(e.data); const listeners = wsListeners.get(msg.event); if (listeners) listeners.forEach(fn => fn(msg.payload)); } catch {} };
+  ws.onclose = () => { ws = null; wsReconnectTimer = setTimeout(connectWs, 3000); };
+  ws.onerror = () => { ws?.close(); };
+}
+
+export function onWs(event: string, fn: WsListener) {
+  if (!wsListeners.has(event)) wsListeners.set(event, new Set());
+  wsListeners.get(event)!.add(fn);
+  connectWs();
+  return () => { wsListeners.get(event)?.delete(fn); };
 }
 
 export function today(): string {
