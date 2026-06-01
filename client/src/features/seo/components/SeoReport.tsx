@@ -1,242 +1,517 @@
-import { useEffect, useState } from "react";
+/**
+ * Individual SEO Crawl Report — Route-based
+ *
+ * URL: /seo/report/:sessionId
+ * Tabs are rendered as sub-sections within this single page.
+ * Data is loaded by session ID from the URL params.
+ */
+import { useState } from "react";
 import { useParams, useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { api, formatDate, qk } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { api, formatDate } from "@/lib/api";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import { Trash2, ArrowLeft, ExternalLink } from "lucide-react";
+import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog";
+
+interface OverviewData {
+  score: number;
+  totalPages: number;
+  avgResponseTime: number;
+  issues: { critical: number; high: number; medium: number; low: number; notices: number; passed: number; total: number };
+  statusCounts: Record<string, number>;
+  categoryCounts: Record<string, number>;
+  topIssues: any[];
+}
+
+type TabKey = "overview" | "issues" | "content" | "technical" | "links" | "redirects" | "hreflang" | "social" | "images" | "performance";
+
+const TABS: Array<{ key: TabKey; label: string; icon: string }> = [
+  { key: "overview", label: "Overview", icon: "🏠" },
+  { key: "issues", label: "Issues", icon: "🚨" },
+  { key: "content", label: "Content", icon: "📝" },
+  { key: "technical", label: "Technical", icon: "⚙️" },
+  { key: "links", label: "Links", icon: "🔗" },
+  { key: "redirects", label: "Redirects", icon: "↪️" },
+  { key: "hreflang", label: "Hreflang", icon: "🌐" },
+  { key: "social", label: "Social", icon: "📣" },
+  { key: "images", label: "Images", icon: "🖼️" },
+  { key: "performance", label: "Performance", icon: "⚡" },
+];
 
 export default function SeoReport() {
+  const { sessionId } = useParams({ from: "/seo/report/$sessionId" });
   const navigate = useNavigate();
-  const { auditId } = useParams({ from: "/seo/report/$auditId" });
-  const [audit, setAudit] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const sid = Number(sessionId);
+  const [tab, setTab] = useState<TabKey>("overview");
 
-  useEffect(() => {
-    if (!auditId) { setError("No audit specified"); setLoading(false); return; }
-    setLoading(true);
-    api(`/seo/audits/${auditId}`).then((data) => setAudit(data)).catch((err) => setError(err.message || "Failed to load audit")).finally(() => setLoading(false));
-  }, [auditId]);
+  // ── Main data query ──
+  const { data: overview, isLoading, error } = useQuery<OverviewData>({
+    queryKey: qk("seo-audit", "overview", sid),
+    queryFn: () => api(`/seo-audit/overview/${sid}`),
+    enabled: !!sid,
+  });
 
-  if (loading) return <div className="loading-state"><div className="loading-spinner" />Loading Report...</div>;
-  if (error || !audit) {
+  // ── Issues ──
+  const { data: issues = [] } = useQuery({
+    queryKey: qk("seo-audit", "issues", sid),
+    queryFn: () => api(`/seo-audit/issues/${sid}`),
+    enabled: !!sid && tab === "issues",
+  });
+
+  // ── Content ──
+  const { data: contentData = [] } = useQuery({
+    queryKey: qk("seo-audit", "content", sid),
+    queryFn: () => api(`/seo-audit/content/${sid}`),
+    enabled: !!sid && tab === "content",
+  });
+
+  // ── Technical ──
+  const { data: technicalData } = useQuery({
+    queryKey: qk("seo-audit", "technical", sid),
+    queryFn: () => api(`/seo-audit/technical/${sid}`),
+    enabled: !!sid && tab === "technical",
+  });
+
+  // ── Links ──
+  const { data: linksData } = useQuery({
+    queryKey: qk("seo-audit", "links", sid),
+    queryFn: () => api(`/seo-audit/links/${sid}`),
+    enabled: !!sid && tab === "links",
+  });
+
+  // ── Redirects ──
+  const { data: redirects = [] } = useQuery({
+    queryKey: qk("seo-audit", "redirects", sid),
+    queryFn: () => api(`/seo-audit/redirects/${sid}`),
+    enabled: !!sid && tab === "redirects",
+  });
+
+  // ── Hreflang ──
+  const { data: hreflangData } = useQuery({
+    queryKey: qk("seo-audit", "hreflang", sid),
+    queryFn: () => api(`/seo-audit/hreflang/${sid}`),
+    enabled: !!sid && tab === "hreflang",
+  });
+
+  // ── Social ──
+  const { data: socialData } = useQuery({
+    queryKey: qk("seo-audit", "social", sid),
+    queryFn: () => api(`/seo-audit/social/${sid}`),
+    enabled: !!sid && tab === "social",
+  });
+
+  // ── Images ──
+  const { data: imagesData } = useQuery({
+    queryKey: qk("seo-audit", "images", sid),
+    queryFn: () => api(`/seo-audit/images/${sid}`),
+    enabled: !!sid && tab === "images",
+  });
+
+  // ── Performance ──
+  const { data: perfData } = useQuery({
+    queryKey: qk("seo-audit", "performance", sid),
+    queryFn: () => api(`/seo-audit/performance/${sid}`),
+    enabled: !!sid && tab === "performance",
+  });
+
+  // ── Delete ──
+  const handleDelete = async () => {
+    try {
+      await api(`/seo-audit/sessions/${sid}`, { method: "DELETE" });
+      toast.success(`Session #${sid} deleted`);
+      navigate({ to: "/seo" });
+    } catch (err: any) {
+      toast.error("Failed to delete", { description: err?.message });
+    }
+  };
+
+  // ── Loading / Error ──
+  if (isLoading) {
     return (
-      <div className="card p-10 text-center">
-        <h2 className="text-red">Error Loading Report</h2>
-        <p className="subtitle mt-2">{error || "Audit data is missing."}</p>
-        <Button className="mt-6" onClick={() => navigate({ to: "/seo" })}>Back to SEO Toolkit</Button>
+      <div className="loading-state p-10">
+        <div className="loading-spinner" />
+        <p className="text-text-dim mt-3">Loading report #{sid}...</p>
       </div>
     );
   }
 
-  const issues: Array<{ text: string; severity: string }> = audit.issues || [];
-  const errors = issues.filter((i) => i.severity === "error");
-  const warnings = issues.filter((i) => i.severity === "warning");
-  const notices = issues.filter((i) => i.severity === "notice");
-  const scoreColor = audit.score >= 70 ? "var(--green)" : audit.score >= 40 ? "var(--yellow)" : "var(--red)";
-  const scoreLabel = audit.score >= 70 ? "Good" : audit.score >= 40 ? "Fair" : "Poor";
+  if (error || !overview) {
+    return (
+      <div className="card p-10 text-center">
+        <h2 className="text-red">⚠️ Report Not Found</h2>
+        <p className="subtitle mt-2">
+          {error?.message || `No data found for session #${sid}. The crawl may still be running or the data was deleted.`}
+        </p>
+        <div className="flex gap-sm justify-center mt-6">
+          <Button variant="outline" onClick={() => navigate({ to: "/seo" })}>
+            <ArrowLeft className="w-3.5 h-3.5 mr-1" />
+            Back to History
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="stagger">
+    <div>
+      {/* ── Header ── */}
       <div className="page-header">
         <div>
-          <Button variant="ghost" size="sm" className="mb-2" onClick={() => navigate({ to: "/seo" })}>← Back</Button>
-          <h1>🔍 Site Audit Report</h1>
-          <div className="subtitle text-[14px] text-accent">{audit.url}</div>
+          <Button variant="ghost" size="sm" className="mb-2" onClick={() => navigate({ to: "/seo" })}>
+            <ArrowLeft className="w-3.5 h-3.5 mr-1" />
+            Back to History
+          </Button>
+          <h1>🔍 Crawl Report #{sid}</h1>
+          <div className="subtitle text-[14px] text-accent flex items-center gap-2">
+            {overview.totalPages} pages crawled
+            <span className="text-text-dim">·</span>
+            Score: {overview.score}/100
+          </div>
         </div>
-        <div className="text-xs text-text-dim">Audited {formatDate(audit.created_at)} · HTTP {audit.httpStatus || "—"}</div>
+        <div className="flex gap-sm items-center">
+          <DeleteConfirmDialog
+            title={`Delete Report #${sid}`}
+            description={`This will permanently delete crawl report #${sid} and all its data (${overview.totalPages} pages, ${overview.issues.total} issues). This cannot be undone.`}
+            confirmLabel="Delete Report"
+            trigger={
+              <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
+                <Trash2 className="w-3.5 h-3.5 mr-1" />
+                Delete
+              </Button>
+            }
+            onConfirm={handleDelete}
+          />
+        </div>
       </div>
 
-      {/* Top Row */}
-      <div className="grid-2 mb-24">
-        <div className="card">
-          <h3>Crawled Elements Distribution</h3>
-          <div className="flex gap-6 mt-4 items-center">
-            <div className="relative w-[100px] h-[100px]">
-              <svg viewBox="0 0 36 36" className="w-[100px] h-[100px]" style={{ transform: "rotate(-90deg)" }}>
-                <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--bg-deep)" strokeWidth="3" />
-                <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--accent)" strokeWidth="3"
-                  strokeDasharray={`${(audit.linksCount || 1) / ((audit.linksCount || 1) + 4 + (audit.headingsCount || 1)) * 100} 100`}
-                  strokeLinecap="round" />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center text-[11px] text-text-dim">Page<br />Elements</div>
-            </div>
-            <div className="flex-1">
-              {[
-                { label: "Links", value: audit.linksCount || 0, color: "var(--accent)" },
-                { label: "Images", value: audit.headingsCount || 0, color: "var(--green)" },
-                { label: "Headings", value: (audit.headingsCount || 0) + Math.max(0, (audit.headingsCount || 0) > 0 ? 3 : 0), color: "var(--purple)" },
-              ].map((item) => (
-                <div key={item.label} className="flex-between py-[4px] text-xs">
-                  <div className="flex gap-xs items-center">
-                    <span className="w-2 h-2 rounded-full inline-block" style={{ background: item.color }} />
-                    <span className="text-text-dim">{item.label}</span>
-                  </div>
-                  <span className="font-semibold">{item.value}</span>
+      {/* ── Tab Bar ── */}
+      <div className="card filter-bar mb-24 overflow-x-auto">
+        <div className="flex gap-2 min-w-max">
+          {TABS.map((t) => (
+            <button
+              key={t.key}
+              className={`filter-pill${tab === t.key ? " active" : ""}`}
+              onClick={() => setTab(t.key)}
+            >
+              {t.icon} {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ══════ TAB: OVERVIEW ══════ */}
+      {tab === "overview" && (
+        <div>
+          <div className="grid-2 mb-24">
+            <div className="flex-between card items-center py-5 px-6">
+              <div>
+                <h3>SEO Health Score</h3>
+                <div className="subtitle max-w-[200px] mt-1">
+                  {overview.issues.total === 0
+                    ? "All checks passed — excellent SEO health"
+                    : `${overview.issues.total} issues found across ${overview.totalPages} pages`}
                 </div>
-              ))}
+              </div>
+              <ScoreRing score={overview.score} />
+            </div>
+            <div className="card">
+              <h3>Issue Summary</h3>
+              <div className="flex gap-3 mt-3">
+                {[
+                  { label: "Critical", value: overview.issues.critical, color: "var(--red)", bg: "oklch(0.50 0.11 25 / 0.12)" },
+                  { label: "High", value: overview.issues.high, color: "var(--orange)", bg: "oklch(0.60 0.10 50 / 0.1)" },
+                  { label: "Medium", value: overview.issues.medium, color: "var(--yellow)", bg: "oklch(0.60 0.10 80 / 0.1)" },
+                  { label: "Low", value: overview.issues.low, color: "var(--accent)", bg: "oklch(0.60 0.105 70 / 0.08)" },
+                ].map((i) => (
+                  <div key={i.label} className="flex-1 p-3 rounded-lg text-center" style={{ background: i.bg, border: `1px solid ${i.color}20` }}>
+                    <div className="text-[22px] font-bold" style={{ color: i.color }}>{i.value}</div>
+                    <div className="text-[10px] text-text-dim">{i.label}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="flex-between card items-center py-5 px-6">
-          <div>
-            <h3>Health Score</h3>
-            <div className="subtitle max-w-[200px] mt-1">Overall page optimization health based on {issues.length} checks.</div>
+          <div className="grid-3 mb-24">
+            <StatCard label="Pages Crawled" value={overview.totalPages} icon="📄" />
+            <StatCard label="Avg Response Time" value={`${overview.avgResponseTime}ms`} icon="⏱️" color={overview.avgResponseTime <= 1000 ? "var(--green)" : "var(--yellow)"} />
+            <StatCard label="Total Issues" value={overview.issues.total} icon="🚨" />
           </div>
-          <div className="text-center">
-            <div className="w-[100px] h-[100px] rounded-full flex flex-col items-center justify-center" style={{ border: `5px solid ${scoreColor}`, boxShadow: `0 0 24px ${scoreColor}30` }}>
-              <span className="text-[28px] font-bold text-text-bright leading-none">{audit.score}</span>
-              <span className="text-[10px] text-text-dim">100</span>
-            </div>
-            <div className="text-[13px] font-semibold mt-2" style={{ color: scoreColor }}>{scoreLabel}</div>
-          </div>
-        </div>
-      </div>
 
-      {/* Second Row */}
-      <div className="grid-2 mb-24">
-        <div className="card">
-          <h3>Crawl Status</h3>
-          <div className="grid grid-cols-2 gap-3 mt-3">
-            {[
-              { label: "HTTP Status", value: audit.httpStatus || "—", color: audit.httpStatus >= 200 && audit.httpStatus < 300 ? "var(--green)" : "var(--red)" },
-              { label: "Page Size", value: `${audit.page_size || 0} KB`, color: "var(--text-bright)" },
-              { label: "Title", value: audit.has_title ? "✅ Set" : "❌ Missing", color: audit.has_title ? "var(--green)" : "var(--red)" },
-              { label: "Meta Desc.", value: audit.has_meta ? "✅ Set" : "❌ Missing", color: audit.has_meta ? "var(--green)" : "var(--red)" },
-              { label: "Headings", value: `${audit.headings_count || 0} H1`, color: "var(--text-bright)" },
-              { label: "Links", value: `${audit.links_count || 0} total`, color: "var(--text-bright)" },
-            ].map((s) => (
-              <div key={s.label} className="py-2 px-[10px] rounded-md bg-bg-deep border border-border">
-                <div className="text-[10px] text-text-dim uppercase tracking-wider">{s.label}</div>
-                <div className="text-base font-bold mt-[2px]" style={{ color: s.color }}>{s.value}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="card">
-          <h3>Issues Distribution</h3>
-          <div className="flex gap-4 mt-4">
-            {[
-              { label: "Errors", value: errors.length, color: "var(--red)", bg: "oklch(0.50 0.11 25 / 0.1)" },
-              { label: "Warnings", value: warnings.length, color: "var(--yellow)", bg: "oklch(0.60 0.10 80 / 0.1)" },
-              { label: "Notices", value: notices.length, color: "var(--accent)", bg: "oklch(0.60 0.105 70 / 0.08)" },
-            ].map((i) => (
-              <div key={i.label} className="flex-1 p-4 rounded-lg text-center" style={{ background: i.bg, border: `1px solid ${i.color}20` }}>
-                <div className="text-[28px] font-bold leading-none" style={{ color: i.color }}>{i.value}</div>
-                <div className="text-[11px] text-text-dim mt-1">{i.label}</div>
-              </div>
-            ))}
-          </div>
-          <div className="flex-between mt-3 py-[10px] border-t border-border">
-            <span className="text-xs text-text-dim">URLs with issues</span>
-            <span className="text-[14px] font-semibold" style={{ color: errors.length > 0 ? "var(--red)" : "var(--green)" }}>
-              {errors.length > 0 ? `${errors.length} with errors` : "No errors"}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Top Issues Table */}
-      <div className="card-raise mb-24">
-        <div className="flex-between mb-3">
-          <h2>Top Issues</h2>
-          <div className="flex gap-sm">
-            <span className="text-[11px] text-text-dim">{issues.length} total · {errors.length} errors · {warnings.length} warnings</span>
-          </div>
-        </div>
-        {issues.length > 0 ? (
-          <div className="table-wrap">
-            <table>
-              <thead><tr><th className="w-1/2">Issue</th><th className="w-[80px] text-center">Severity</th><th className="w-[60px] text-center">Count</th><th className="w-[80px] text-center">New</th><th className="w-[80px] text-center">Fixed</th></tr></thead>
-              <tbody>
-                {issues.map((issue, i) => {
-                  const sevColor = issue.severity === "error" ? "var(--red)" : issue.severity === "warning" ? "var(--yellow)" : "var(--accent)";
-                  const sevBg = issue.severity === "error" ? "oklch(0.50 0.11 25 / 0.12)" : issue.severity === "warning" ? "oklch(0.60 0.10 80 / 0.1)" : "oklch(0.60 0.105 70 / 0.08)";
+          <div className="grid-2 mb-24">
+            <div className="card">
+              <h3>Status Code Distribution</h3>
+              <div className="mt-3">
+                {Object.entries(overview.statusCounts).filter(([, v]) => v > 0).map(([k, v]) => {
+                  const colors: Record<string, string> = { "2xx": "var(--green)", "3xx": "var(--yellow)", "4xx": "var(--orange)", "5xx": "var(--red)" };
+                  const pct = overview.totalPages > 0 ? Math.round((v / overview.totalPages) * 100) : 0;
                   return (
-                    <tr key={i}>
-                      <td className="font-medium text-[13px]">{issue.text}</td>
-                      <td className="text-center">
-                        <span className="text-[10px] py-[2px] px-2 rounded font-semibold uppercase" style={{ background: sevBg, color: sevColor }}>{issue.severity}</span>
-                      </td>
-                      <td className="text-center font-semibold">1</td>
-                      <td className="text-center"><span className="badge badge-low">New</span></td>
-                      <td className="text-center text-text-dim">—</td>
-                    </tr>
+                    <div key={k} className="flex gap-2 items-center mb-2">
+                      <span className="text-xs text-text-dim w-[50px]">{k}</span>
+                      <div className="flex-1 h-[6px] rounded-sm bg-bg-deep overflow-hidden">
+                        <div className="h-full rounded-sm" style={{ width: `${pct}%`, background: colors[k] || "var(--text-dim)" }} />
+                      </div>
+                      <span className="text-xs font-semibold w-[40px] text-right">{v} <span className="text-text-dim">({pct}%)</span></span>
+                    </div>
                   );
                 })}
+              </div>
+            </div>
+            <div className="card">
+              <h3>Issues by Category</h3>
+              <div className="mt-3">
+                {Object.entries(overview.categoryCounts).sort((a, b) => b[1] - a[1]).map(([k, v]) => (
+                  <div key={k} className="flex gap-2 items-center mb-2">
+                    <span className="text-xs text-text-dim capitalize w-[90px]">{k}</span>
+                    <div className="flex-1 h-[6px] rounded-sm bg-bg-deep overflow-hidden">
+                      <div className="h-full rounded-sm bg-accent" style={{ width: `${Math.min(100, (v / overview.issues.total) * 100)}%` }} />
+                    </div>
+                    <span className="text-xs font-semibold w-[30px] text-right">{v}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {overview.topIssues.length > 0 && (
+            <div className="card">
+              <h3>Top Issues</h3>
+              <div className="table-wrap mt-3">
+                <table>
+                  <thead><tr><th>Issue</th><th>Severity</th><th>URL</th><th>Category</th></tr></thead>
+                  <tbody>
+                    {overview.topIssues.map((issue: any, i: number) => (
+                      <tr key={i} className="cursor-pointer" onClick={() => setTab("issues")}>
+                        <td className="font-medium text-[12px]">{issue.title}</td>
+                        <td><SeverityBadge severity={issue.severity} /></td>
+                        <td className="text-xs text-text-dim max-w-[250px] truncate">{issue.page_url}</td>
+                        <td className="text-[10px] text-text-dim capitalize">{issue.category}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ══════ TAB: ISSUES ══════ */}
+      {tab === "issues" && (
+        <div className="card">
+          <h3>All Issues ({issues.length})</h3>
+          <div className="table-wrap mt-3">
+            <table>
+              <thead><tr><th>Severity</th><th>Category</th><th>Issue</th><th>URL</th><th>Recommendation</th></tr></thead>
+              <tbody>
+                {issues.map((issue: any) => (
+                  <tr key={issue.id}>
+                    <td><SeverityBadge severity={issue.severity} /></td>
+                    <td className="text-[10px] text-text-dim capitalize">{issue.category}</td>
+                    <td className="font-medium text-[12px]">{issue.title}</td>
+                    <td className="text-xs text-text-dim max-w-[200px] truncate">{issue.page_url}</td>
+                    <td className="text-[11px] text-text-dim max-w-[250px] truncate">{issue.recommendation}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
-        ) : (
-          <div className="empty-state p-8"><div className="icon">✅</div><p>No issues found — page is well optimized</p></div>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* HTTP Status + On-Page Details */}
-      <div className="grid-2 mb-24">
+      {/* ══════ TAB: CONTENT ══════ */}
+      {tab === "content" && (
         <div className="card">
-          <h3>HTTP Status</h3>
-          <div className="flex flex-col gap-2 mt-3">
-            {[
-              { label: "Success (2xx)", value: audit.httpStatus >= 200 && audit.httpStatus < 300 ? 1 : 0, max: 1, color: "var(--green)" },
-              { label: "Redirect (3xx)", value: audit.httpStatus >= 300 && audit.httpStatus < 400 ? 1 : 0, max: 1, color: "var(--yellow)" },
-              { label: "Client Error (4xx)", value: audit.httpStatus >= 400 && audit.httpStatus < 500 ? 1 : 0, max: 1, color: "var(--orange)" },
-              { label: "Server Error (5xx)", value: audit.httpStatus >= 500 ? 1 : 0, max: 1, color: "var(--red)" },
-            ].map((s) => (
-              <div key={s.label} className="flex gap-sm items-center">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center text-base font-bold" style={{ background: s.value > 0 ? `${s.color}20` : "var(--bg-deep)", color: s.value > 0 ? s.color : "var(--text-dim)" }}>
-                  {s.value}
-                </div>
-                <div className="flex-1">
-                  <div className="h-[6px] rounded-sm bg-bg-deep overflow-hidden">
-                    <div style={{ width: `${(s.value / Math.max(1, s.max)) * 100}%`, height: "100%", background: s.color, borderRadius: 3 }} />
-                  </div>
-                </div>
-                <span className="text-xs text-text-dim w-[130px] text-right">{s.label}</span>
-              </div>
+          <h3>Content Quality ({contentData.length} pages)</h3>
+          <div className="table-wrap mt-3">
+            <table>
+              <thead><tr><th>URL</th><th>Title</th><th>Title Len</th><th>Meta Desc</th><th>Desc Len</th><th>H1</th><th>H1 Count</th><th>Words</th><th>Status</th></tr></thead>
+              <tbody>
+                {contentData.map((p: any, i: number) => (
+                  <tr key={i}>
+                    <td className="text-xs max-w-[200px] truncate">{p.url}</td>
+                    <td className="text-xs max-w-[150px] truncate">{p.title || "—"}</td>
+                    <td className="text-xs">{p.title_length}</td>
+                    <td className="text-xs max-w-[200px] truncate">{p.meta_description || "—"}</td>
+                    <td className="text-xs">{p.meta_description_length}</td>
+                    <td className="text-xs max-w-[100px] truncate">{p.h1 || "—"}</td>
+                    <td className="text-xs">{p.h1_count}</td>
+                    <td className="text-xs">{p.word_count}</td>
+                    <td className="text-xs">{p.http_status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ══════ TAB: TECHNICAL ══════ */}
+      {tab === "technical" && technicalData && (
+        <div>
+          <SectionTable title={`Noindex Pages (${technicalData.noindexPages?.length || 0})`} data={technicalData.noindexPages || []} columns={["url", "http_status"]} />
+          <SectionTable title={`Missing Canonical (${technicalData.missingCanonical?.length || 0})`} data={technicalData.missingCanonical || []} columns={["url", "http_status"]} />
+          <SectionTable title={`Missing Viewport (${technicalData.missingViewport?.length || 0})`} data={technicalData.missingViewport || []} columns={["url"]} />
+          <SectionTable title={`Missing HTML Lang (${technicalData.missingLang?.length || 0})`} data={technicalData.missingLang || []} columns={["url"]} />
+          <SectionTable title={`No Structured Data (${technicalData.noStructuredData?.length || 0})`} data={technicalData.noStructuredData || []} columns={["url"]} />
+          <SectionTable title={`Error Pages (${technicalData.errorPages?.length || 0})`} data={technicalData.errorPages || []} columns={["url", "http_status"]} />
+        </div>
+      )}
+
+      {/* ══════ TAB: LINKS ══════ */}
+      {tab === "links" && linksData && (
+        <div>
+          <div className="grid-4 mb-24">
+            <StatCard label="Total Links" value={linksData.totalLinks} />
+            <StatCard label="Internal" value={linksData.internalLinks} />
+            <StatCard label="External" value={linksData.externalLinks} />
+            <StatCard label="Broken" value={linksData.brokenLinks} color={linksData.brokenLinks > 0 ? "var(--red)" : "var(--green)"} />
+          </div>
+          <SectionTable title={`Orphan Pages (${linksData.orphanPages?.length || 0})`} data={linksData.orphanPages || []} columns={["url", "http_status"]} />
+          <SectionTable title={`Pages with Only Nofollow Incoming (${linksData.nofollowOnlyPages?.length || 0})`} data={linksData.nofollowOnlyPages || []} columns={["url"]} />
+          <SectionTable title={`Single Dofollow Incoming (${linksData.singleDofollowPages?.length || 0})`} data={linksData.singleDofollowPages || []} columns={["url", "incomingFrom"]} />
+        </div>
+      )}
+
+      {/* ══════ TAB: REDIRECTS ══════ */}
+      {tab === "redirects" && (
+        <div className="card">
+          <h3>Redirect Chains ({redirects.length})</h3>
+          {redirects.length > 0 ? (
+            <div className="table-wrap mt-3">
+              <table>
+                <thead><tr><th>Source URL</th><th>Chain Length</th><th>Final URL</th><th>Final Status</th><th>Loop</th></tr></thead>
+                <tbody>
+                  {redirects.map((r: any, i: number) => (
+                    <tr key={i}>
+                      <td className="text-xs max-w-[250px] truncate">{r.source_url}</td>
+                      <td className="text-xs">{r.chain_length}</td>
+                      <td className="text-xs max-w-[250px] truncate">{r.final_url}</td>
+                      <td className="text-xs">{r.final_status}</td>
+                      <td className="text-xs">{r.is_loop ? "⚠️ Yes" : "No"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : <div className="empty-state p-5"><p>No redirect chains found</p></div>}
+        </div>
+      )}
+
+      {/* ══════ TAB: HREFLANG ══════ */}
+      {tab === "hreflang" && hreflangData && (
+        <div>
+          <SectionTable title={`Hreflang Annotations (${hreflangData.hreflangs?.length || 0})`} data={hreflangData.hreflangs || []} columns={["page_url", "hreflang_value", "hreflang_url", "is_self_reference"]} />
+          {hreflangData.issues?.length > 0 && (
+            <SectionTable title={`Hreflang Issues (${hreflangData.issues.length})`} data={hreflangData.issues} columns={["page_url", "issue"]} />
+          )}
+        </div>
+      )}
+
+      {/* ══════ TAB: SOCIAL ══════ */}
+      {tab === "social" && socialData && (
+        <div>
+          <div className="grid-4 mb-24">
+            <StatCard label="Missing og:title" value={socialData.missingOgTitle?.length || 0} color={(socialData.missingOgTitle?.length || 0) > 0 ? "var(--yellow)" : "var(--green)"} />
+            <StatCard label="Missing og:desc" value={socialData.missingOgDesc?.length || 0} color={(socialData.missingOgDesc?.length || 0) > 0 ? "var(--yellow)" : "var(--green)"} />
+            <StatCard label="Missing og:image" value={socialData.missingOgImage?.length || 0} color={(socialData.missingOgImage?.length || 0) > 0 ? "var(--yellow)" : "var(--green)"} />
+            <StatCard label="Missing twitter:card" value={socialData.missingTwCard?.length || 0} color={(socialData.missingTwCard?.length || 0) > 0 ? "var(--yellow)" : "var(--green)"} />
+          </div>
+          <SectionTable title={`Pages Missing OG Tags (${(socialData.missingOgTitle?.length || 0) + (socialData.missingOgDesc?.length || 0)})`} data={socialData.allPages || []} columns={["url", "og_title", "og_description", "og_image", "twitter_card"]} />
+        </div>
+      )}
+
+      {/* ══════ TAB: IMAGES ══════ */}
+      {tab === "images" && imagesData && (
+        <div>
+          <div className="grid-4 mb-24">
+            <StatCard label="Total Images" value={imagesData.totalImages} />
+            <StatCard label="Missing Alt" value={imagesData.missingAlt?.length || 0} color={(imagesData.missingAlt?.length || 0) > 0 ? "var(--yellow)" : "var(--green)"} />
+            <StatCard label="Not Lazy Loaded" value={imagesData.notLazy?.length || 0} color={(imagesData.notLazy?.length || 0) > 0 ? "var(--yellow)" : "var(--green)"} />
+            <StatCard label="Broken" value={imagesData.broken?.length || 0} color={(imagesData.broken?.length || 0) > 0 ? "var(--red)" : "var(--green)"} />
+          </div>
+          {imagesData.missingAlt?.length > 0 && (
+            <SectionTable title={`Images Missing Alt Text (${imagesData.missingAlt.length})`} data={imagesData.missingAlt} columns={["page_url", "image_url"]} />
+          )}
+        </div>
+      )}
+
+      {/* ══════ TAB: PERFORMANCE ══════ */}
+      {tab === "performance" && perfData && (
+        <div>
+          <div className="grid-3 mb-24">
+            <StatCard label="Avg Response Time" value={`${perfData.avgResponseTime}ms`} color={perfData.avgResponseTime <= 1000 ? "var(--green)" : "var(--yellow)"} />
+            <StatCard label="Slow Pages (>2.5s)" value={perfData.slowPages?.length || 0} color={(perfData.slowPages?.length || 0) > 0 ? "var(--red)" : "var(--green)"} />
+            <StatCard label="PSI Cached" value={perfData.psiCache?.length || 0} />
+          </div>
+          {perfData.slowPages?.length > 0 && (
+            <SectionTable title={`Slow Pages (${perfData.slowPages.length})`} data={perfData.slowPages} columns={["url", "response_time_ms", "page_size_kb"]} />
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Helper Components ──
+
+function SeverityBadge({ severity }: { severity: string }) {
+  const cls = severity === "critical" ? "badge-urgent" : severity === "high" ? "badge-high" : severity === "medium" ? "badge-medium" : severity === "low" ? "badge-low" : "badge-low";
+  return <span className={`badge ${cls} text-[10px] uppercase font-bold py-[1px] px-[6px] rounded`}>{severity}</span>;
+}
+
+function ScoreRing({ score, size = 100 }: { score: number; size?: number }) {
+  const color = score >= 70 ? "var(--green)" : score >= 40 ? "var(--yellow)" : "var(--red)";
+  const label = score >= 70 ? "Good" : score >= 40 ? "Fair" : "Poor";
+  const radius = 45;
+  const circ = 2 * Math.PI * radius;
+  const offset = circ - (score / 100) * circ;
+  return (
+    <div className="text-center">
+      <div className="relative" style={{ width: size, height: size }}>
+        <svg width={size} height={size} viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r={radius} fill="none" stroke="var(--bg-deep)" strokeWidth="8" />
+          <circle cx="50" cy="50" r={radius} fill="none" stroke={color} strokeWidth="8" strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round" style={{ transform: "rotate(-90deg)", transformOrigin: "center" }} />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-[24px] font-bold text-text-bright">{score}</span>
+          <span className="text-[9px] text-text-dim">/100</span>
+        </div>
+      </div>
+      <div className="text-[13px] font-semibold mt-2" style={{ color }}>{label}</div>
+    </div>
+  );
+}
+
+function StatCard({ label, value, color, icon }: { label: string; value: string | number; color?: string; icon?: string }) {
+  return (
+    <div className="py-[10px] px-3 rounded-md bg-bg-deep border border-border">
+      <div className="text-[10px] text-text-dim uppercase tracking-wider">{icon} {label}</div>
+      <div className="text-lg font-bold mt-[2px]" style={{ color: color || "var(--text-bright)" }}>{value}</div>
+    </div>
+  );
+}
+
+function SectionTable({ title, data, columns }: { title: string; data: any[]; columns: string[] }) {
+  if (!data || data.length === 0) return null;
+  return (
+    <div className="card mb-16">
+      <h3 className="mb-2">{title} ({data.length})</h3>
+      <div className="table-wrap">
+        <table>
+          <thead><tr>{columns.map(c => <th key={c} className="capitalize">{c.replace(/_/g, " ")}</th>)}</tr></thead>
+          <tbody>
+            {data.slice(0, 50).map((row, i) => (
+              <tr key={i}>
+                {columns.map(c => (
+                  <td key={c} className="text-xs max-w-[25px] truncate">{String(row[c] ?? "—")}</td>
+                ))}
+              </tr>
             ))}
-          </div>
-        </div>
-
-        <div className="card">
-          <h3>On-Page Details</h3>
-          <div className="mt-3 flex flex-col gap-3">
-            <div className="py-[10px] px-3 rounded-md bg-bg-deep border border-border">
-              <div className="text-[10px] text-text-dim uppercase tracking-wider mb-1">Title</div>
-              <div className="text-[13px] text-text-bright font-medium break-all">{audit.title || "(missing)"}</div>
-            </div>
-            <div className="py-[10px] px-3 rounded-md bg-bg-deep border border-border">
-              <div className="text-[10px] text-text-dim uppercase tracking-wider mb-1">Meta Description</div>
-              <div className="text-[13px] text-text-bright break-all">{audit.meta_description || "(missing)"}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Export Section */}
-      <div className="card">
-        <div className="flex-between">
-          <h3>Export Report</h3>
-          <Button variant="outline" size="sm" onClick={() => {
-            const blob = new Blob([JSON.stringify(audit, null, 2)], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a"); a.href = url; a.download = `seo-audit-${auditId}.json`; a.click();
-            URL.revokeObjectURL(url);
-          }}>Export JSON</Button>
-        </div>
-        <div className="grid grid-cols-3 gap-2 mt-3">
-          {[
-            { label: "Internal URLs", value: "1", desc: "This page" },
-            { label: "Issues Found", value: String(issues.length), desc: `${errors.length} errors, ${warnings.length} warnings` },
-            { label: "All Checks", value: String(issues.length + 5), desc: "Including passed" },
-          ].map((e) => (
-            <div key={e.label} className="py-[10px] px-3 rounded-md bg-bg-deep border border-border">
-              <div className="text-[11px] font-semibold text-text-bright">{e.label}</div>
-              <div className="text-lg font-bold text-accent my-[2px]">{e.value}</div>
-              <div className="text-[10px] text-text-dim">{e.desc}</div>
-            </div>
-          ))}
-        </div>
+          </tbody>
+        </table>
       </div>
     </div>
   );

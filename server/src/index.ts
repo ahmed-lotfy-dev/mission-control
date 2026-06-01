@@ -11,6 +11,7 @@ import { workspaceRoutes } from "./routes/workspace";
 import { studioRoutes, serveRoutes, contentRoutes } from "./routes/studio";
 import { seoRoutes } from "./routes/seo";
 import { seoAuditRoutes } from "./routes/seo-audit";
+import { flagsRoutes } from "./routes/flags";
 import { handleWsUpgrade } from "./routes/ws";
 
 const distBase = (() => {
@@ -49,6 +50,7 @@ const app = new Elysia()
   .use(contentRoutes)    // /api/content/asset/:id/image — serves Gallery images from DB base64
   .use(seoRoutes)
   .use(seoAuditRoutes)
+  .use(flagsRoutes)
   // Serve React build
   .get("/assets/*", ({ path }) => {
     return Bun.file(`${distBase}/${path}`);

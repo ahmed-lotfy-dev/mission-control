@@ -182,3 +182,8 @@ export interface DashboardData {
 }
 
 export type ViewName = "dashboard" | "kanban" | "agents" | "vault" | "daily" | "scheduled" | "workspace" | "studio" | "seo" | "seo-report";
+
+/** Build a TanStack Query key from parts */
+export function qk(...parts: (string | number)[]): (string | number)[] {
+  return parts;
+}

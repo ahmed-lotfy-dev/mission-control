@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { path: "/studio", icon: "🎬", label: "Studio" },
   { path: "/gallery", icon: "🖼️", label: "Gallery" },
   { path: "/seo", icon: "📈", label: "SEO" },
+  { path: "/feature-flags", icon: "🚩", label: "Feature Flags" },
 ];
 
 export default function Layout() {

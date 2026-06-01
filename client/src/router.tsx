@@ -1,4 +1,4 @@
-import { createRouter, createRootRoute, createRoute, Outlet } from "@tanstack/react-router";
+import { createRouter, createRootRoute, createRoute } from "@tanstack/react-router";
 import Layout from "./Layout";
 import Dashboard from "./views/Dashboard";
 import Kanban from "./views/Kanban";
@@ -10,40 +10,16 @@ import Workspace from "./views/Workspace";
 import Studio from "./views/Studio";
 import Seo from "./views/Seo";
 import Gallery from "./views/Gallery";
+import FeatureFlags from "./views/FeatureFlags";
 import SeoReport from "./features/seo/components/SeoReport";
 import SeoContentPreview from "./features/seo/components/SeoContentPreview";
-
-// ── Route-level error fallback ──
-function RouteErrorComponent({ error }: { error: Error }) {
-  return (
-    <div className="card" style={{ padding: 32, textAlign: "center" }}>
-      <div style={{ fontSize: 40, marginBottom: 12 }}>⚠️</div>
-      <h2>Route Error</h2>
-      <p style={{ color: "var(--red)", fontSize: 13, marginTop: 8 }}>
-        {error.message || "An unexpected error occurred while rendering this view"}
-      </p>
-      <button
-        className="btn btn-primary mt-16"
-        onClick={() => window.location.reload()}
-      >
-        Reload
-      </button>
-    </div>
-  );
-}
+import ErrorPage from "./components/ErrorPage";
+import NotFoundPage from "./components/NotFoundPage";
 
 const rootRoute = createRootRoute({
   component: Layout,
-  errorComponent: RouteErrorComponent,
-  notFoundComponent: () => (
-    <div className="card" style={{ padding: 48, textAlign: "center" }}>
-      <div style={{ fontSize: 64, marginBottom: 16 }}>🛸</div>
-      <h1 style={{ margin: 0 }}>404</h1>
-      <p style={{ color: "var(--text-dim)", marginTop: 8 }}>
-        This page drifted off into deep space.
-      </p>
-    </div>
-  ),
+  errorComponent: ({ error }) => <ErrorPage error={error} />,
+  notFoundComponent: () => <NotFoundPage />,
 });
 
 const dashboardRoute = createRoute({ getParentRoute: () => rootRoute, path: "/", component: Dashboard });
@@ -56,7 +32,8 @@ const workspaceRoute = createRoute({ getParentRoute: () => rootRoute, path: "/wo
 const studioRoute = createRoute({ getParentRoute: () => rootRoute, path: "/studio", component: Studio });
 const galleryRoute = createRoute({ getParentRoute: () => rootRoute, path: "/gallery", component: Gallery });
 const seoRoute = createRoute({ getParentRoute: () => rootRoute, path: "/seo", component: Seo });
-const seoReportRoute = createRoute({ getParentRoute: () => rootRoute, path: "/seo/report/$auditId", component: SeoReport });
+const featureFlagsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/feature-flags", component: FeatureFlags });
+const seoReportRoute = createRoute({ getParentRoute: () => rootRoute, path: "/seo/report/$sessionId", component: SeoReport });
 const seoContentPreviewRoute = createRoute({ getParentRoute: () => rootRoute, path: "/seo/content/$contentId", component: SeoContentPreview });
 
 const routeTree = rootRoute.addChildren([
@@ -70,6 +47,7 @@ const routeTree = rootRoute.addChildren([
   studioRoute,
   galleryRoute,
   seoRoute,
+  featureFlagsRoute,
   seoReportRoute,
   seoContentPreviewRoute,
 ]);
