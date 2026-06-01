@@ -273,6 +273,19 @@ function ensureTables(db: Database) {
       date TEXT DEFAULT '',
       created_at TEXT NOT NULL DEFAULT ''
     )`,
+    // ── SEO Dashboard: Robots.txt ──
+    `CREATE TABLE IF NOT EXISTS seo_robots (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      session_id INTEGER NOT NULL,
+      content TEXT DEFAULT '',
+      has_sitemap_directive INTEGER DEFAULT 0,
+      sitemap_urls TEXT DEFAULT '[]',
+      disallow_rules TEXT DEFAULT '[]',
+      allow_rules TEXT DEFAULT '[]',
+      issues TEXT DEFAULT '[]',
+      created_at TEXT NOT NULL DEFAULT '',
+      FOREIGN KEY (session_id) REFERENCES seo_crawl_sessions(id) ON DELETE CASCADE
+    )`,
     // ── SEO Dashboard: Crawl Progress (for real-time updates) ──
     `CREATE TABLE IF NOT EXISTS seo_crawl_progress (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
