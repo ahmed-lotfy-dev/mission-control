@@ -61,6 +61,15 @@ const ALL_IMAGE_MODELS: ImageModel[] = [
     description: "Stable Diffusion XL via Cloudflare Workers AI. Free daily quota.",
     speed: "fast", status: "available", needsAuth: true, free: true, recommendedFor: "General purpose, free tier",
   },
+  {
+    id: "nvidia/qwen-image", name: "Qwen Image (NIM)", provider: "Nvidia",
+    text: true, recommendedFor: "Free tier via NVIDIA NIM",
+  },
+  {
+    id: "nvidia/qwen-image-edit", name: "Qwen Image Edit (NIM)", provider: "Nvidia",
+    description: "Edit existing images via Qwen Image Edit NIM. Free tier at build.nvidia.com.",
+    speed: "fast", status: "available", needsAuth: true, recommendedFor: "Image editing, free tier via NVIDIA NIM",
+  },
 ];
 
 // Filter models based on which API keys are actually configured at runtime
@@ -214,45 +223,100 @@ async function generateImageGoogle(prompt: string, model: string, count: number)
   return results;
 }
 
-// ── Image via Nvidia NIM (Qwen Image) ──
+// ── Image via NVIDIA NIM (Qwen Image / Qwen Image Edit) ──
+// Uses the proper NIM endpoint: ai.api.nvidia.com/v1/image-generation
+// Docs: https://docs.nvidia.com/nim/qwen-image/latest/
 async function generateImageNvidiaNIM(prompt: string, model: string, width: number, height: number, count: number): Promise<string[]> {
-  if (!NVIDIA_KEY) throw new Error("Missing NVIDIA_API_KEY from build.nvidia.com");
+  if (!getNvidiaKey()) throw new Error("Missing NVIDIA_API_KEY from build.nvidia.com");
   await ensureDirs();
   const results: string[] = [];
+
+  // Map model IDs to NIM model names
+  const nimModelMap: Record<string, string> = {
+    "nvidia/qwen-image": "qwen-image",
+    "nvidia/qwen-image-edit": "qwen-image-edit",
+  };
+  const nimModel = nimModelMap[model] || model.replace("nvidia/", "");
+
   for (let i = 0; i < count; i++) {
     const resp = await fetch(
-      "https://integrate.api.nvidia.com/v1/chat/completions",
+      "https://ai.api.nvidia.com/v1/image-generation",
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
-          "Authorization": "Bearer " + NVIDIA_KEY,
+          "Authorization": "Bearer " + getNvidiaKey(),
         },
         body: JSON.stringify({
-          model: model,
-          messages: [{ role: "user", content: prompt }],
-          max_tokens: 4096,
+          model: nimModel,
+          prompt: prompt,
+          ...(width && height ? { width, height } : {}),
         }),
         signal: AbortSignal.timeout(120_000),
       }
     );
+
     if (!resp.ok) {
-      const e = await resp.text().catch(() => "unknown");
-      throw new Error("Nvidia NIM API error " + resp.status + ": " + e.slice(0, 300));
+      // Fallback: try the integrate API endpoint (older NIM versions)
+      const fallbackResp = await fetch(
+        "https://integrate.api.nvidia.com/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer " + getNvidiaKey(),
+          },
+          body: JSON.stringify({
+            model: model.startsWith("nvidia/") ? model.slice(7) : model,
+            messages: [{ role: "user", content: prompt }],
+            max_tokens: 4096,
+          }),
+          signal: AbortSignal.timeout(120_000),
+        }
+      );
+
+      if (!fallbackResp.ok) {
+        const e = await fallbackResp.text().catch(() => "unknown");
+        throw new Error("NVIDIA NIM error " + fallbackResp.status + ": " + e.slice(0, 300));
+      }
+
+      const fallbackData = (await fallbackResp.json()) as any;
+      const imgUrl = fallbackData?.choices?.[0]?.message?.content;
+      if (!imgUrl) throw new Error("NVIDIA NIM returned no image URL: " + JSON.stringify(fallbackData).slice(0, 300));
+      const imgResp = await fetch(imgUrl, { signal: AbortSignal.timeout(60_000) });
+      const buffer = Buffer.from(await imgResp.arrayBuffer());
+      const promptSlug = slugifyPrompt(prompt);
+      const modelSlug = model.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
+      const filename = "img-" + promptSlug + "-" + modelSlug + "-" + (i + 1) + ".png";
+      const outputPath = join(OUTPUT_DIR, "images", filename);
+      await writeFile(outputPath, buffer);
+      results.push(outputPath);
+      continue;
     }
-    const data = (await resp.json()) as any;
-    const imgUrl = data?.choices?.[0]?.message?.content;
-    if (!imgUrl) throw new Error("Nvidia NIM returned no image URL: " + JSON.stringify(data).slice(0, 300));
-    const imgResp = await fetch(imgUrl, { signal: AbortSignal.timeout(60_000) });
-    const buf = Buffer.from(await imgResp.arrayBuffer());
+
+    // Primary endpoint returns image directly or as base64
+    const contentType = resp.headers.get("content-type") || "";
+    let buffer: Buffer;
+    if (contentType.startsWith("image/")) {
+      buffer = Buffer.from(await resp.arrayBuffer());
+    } else {
+      const data = (await resp.json()) as any;
+      // NIM may return base64 image in various formats
+      const b64 = data?.image || data?.images?.[0] || data?.data?.[0]?.b64_json || data?.result?.image;
+      if (!b64) throw new Error("NVIDIA NIM returned no image: " + JSON.stringify(data).slice(0, 300));
+      buffer = Buffer.from(b64.replace(/^data:image\/\w+;base64,/, ""), "base64");
+    }
+
     const promptSlug = slugifyPrompt(prompt);
     const modelSlug = model.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
     const filename = "img-" + promptSlug + "-" + modelSlug + "-" + (i + 1) + ".png";
     const outputPath = join(OUTPUT_DIR, "images", filename);
-    await writeFile(outputPath, buf);
+    await writeFile(outputPath, buffer);
     results.push(outputPath);
   }
+
   return results;
 }
 
