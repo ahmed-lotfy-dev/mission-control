@@ -65,12 +65,14 @@ const ALL_IMAGE_MODELS: ImageModel[] = [
 
 // Filter models based on which API keys are actually configured at runtime
 export function getAvailableImageModels(): ImageModel[] {
+  // Use getApiKey() which checks process.env at call time, not module-level constants
+  // This is critical for Docker/Dokplain where env vars are injected at container start
   return ALL_IMAGE_MODELS.filter(m => {
     if (!m.needsAuth) return true;
-    if (m.provider === "OpenRouter") return !!OPENROUTER_KEY;
-    if (m.provider === "Google") return !!GEMINI_KEY;
-    if (m.provider === "Cloudflare") return !!CF_ACCOUNT_ID && !!CF_API_TOKEN;
-    if (m.provider === "Nvidia") return !!NVIDIA_KEY;
+    if (m.provider === "OpenRouter") return !!getOpenRouterKey();
+    if (m.provider === "Google") return !!getGeminiKey();
+    if (m.provider === "Cloudflare") return !!getCloudflareAccountId() && !!getCloudflareApiToken();
+    if (m.provider === "Nvidia") return !!getNvidiaKey();
     return false;
   });
 }

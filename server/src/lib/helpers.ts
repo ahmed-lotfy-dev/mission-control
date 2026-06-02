@@ -108,10 +108,11 @@ let _envCache: Record<string, string> = {};
 function loadEnv(): Record<string, string> {
   if (_envLoaded) return _envCache;
   
-  // Try project .env first, then ~/.hermes/.env
+  // Try project root .env first (works for monorepo where cwd may be server/), then ~/.hermes/.env
   const paths = [
-    join(process.cwd(), ".env"),
-    join(homedir(), ".hermes", ".env"),
+    join(process.cwd(), "..", ".env"),  // parent dir (monorepo root when cwd is server/)
+    join(process.cwd(), ".env"),        // current dir
+    join(homedir(), ".hermes", ".env"), // hermes profile
   ];
 
   for (const envPath of paths) {
