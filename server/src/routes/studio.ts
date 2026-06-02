@@ -186,13 +186,13 @@ async function generateImageLocal(
 
 // ── Image via Google AI Studio (Imagen API) ──
 async function generateImageGoogle(prompt: string, model: string, count: number): Promise<string[]> {
-  if (!GEMINI_KEY) throw new Error("Missing GEMINI_API_TOKEN");
+  if (!getGeminiKey()) throw new Error("Missing GEMINI_API_TOKEN");
   await ensureDirs();
   const results: string[] = [];
   const modelId = model.replace("google/", "");
   for (let i = 0; i < count; i++) {
     const resp = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/" + modelId + ":predict?key=" + GEMINI_KEY,
+      "https://generativelanguage.googleapis.com/v1beta/models/" + modelId + ":predict?key=" + getGeminiKey(),
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -322,15 +322,15 @@ async function generateImageNvidiaNIM(prompt: string, model: string, width: numb
 
 // ── Image via Cloudflare Workers AI ──
 async function generateImageCloudflare(prompt: string, model: string, count: number): Promise<string[]> {
-  if (!CF_ACCOUNT_ID || !CF_API_TOKEN) throw new Error("Missing CLOUDFLARE_ACCOUNT_ID or CLOUDFLARE_API_TOKEN");
+  if (!getCloudflareAccountId() || !getCloudflareApiToken()) throw new Error("Missing CLOUDFLARE_ACCOUNT_ID or CLOUDFLARE_API_TOKEN");
   await ensureDirs();
   const results: string[] = [];
   for (let i = 0; i < count; i++) {
     const resp = await fetch(
-      "https://api.cloudflare.com/client/v4/accounts/" + CF_ACCOUNT_ID + "/ai/run/" + model,
+      `https://api.cloudflare.com/client/v4/accounts/${getCloudflareAccountId()}/ai/run/${model}`,
       {
         method: "POST",
-        headers: { Authorization: "Bearer " + CF_API_TOKEN },
+        headers: { Authorization: "Bearer " + getCloudflareApiToken() },
         body: JSON.stringify({ prompt }),
         signal: AbortSignal.timeout(120_000),
       }
@@ -369,7 +369,7 @@ async function generateImageOpenRouter(
   count: number = 1,
   negativePrompt?: string,
 ): Promise<string[]> {
-  if (!OPENROUTER_KEY) {
+  if (!getOpenRouterKey()) {
     throw new Error("OPENROUTER_API_KEY not set. Add it to .env or ~/.hermes/.env");
   }
 
@@ -382,7 +382,7 @@ async function generateImageOpenRouter(
     const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${OPENROUTER_KEY}`,
+        Authorization: `Bearer ${getOpenRouterKey()}`,
         "Content-Type": "application/json",
         "HTTP-Referer": "https://control.ahmedlotfy.site",
         "X-Title": "Mission Control Studio",
@@ -545,11 +545,11 @@ export const studioRoutes = new Elysia({ prefix: "/api/studio" })
 
       // Try NVIDIA Cosmos via NVCF — requires authorization
       let videoGenerated = false;
-      if (NVIDIA_KEY) {
+      if (getNvidiaKey()) {
         try {
           const resp = await fetch("https://api.nvcf.nvidia.com/v2/nvcf/pexec/functions/eef816a3-3940-413b-93c9-513ae29f34f9", {
             method: "POST",
-            headers: { Authorization: `Bearer ${NVIDIA_KEY}`, "Content-Type": "application/json" },
+            headers: { Authorization: `Bearer ${getNvidiaKey()}`, "Content-Type": "application/json" },
             body: JSON.stringify({ prompt: body.prompt }),
             signal: AbortSignal.timeout(60000),
           });
