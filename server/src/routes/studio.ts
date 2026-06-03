@@ -72,7 +72,6 @@ export function getAvailableImageModels(): ImageModel[] {
     if (m.provider === "OpenRouter") return !!getOpenRouterKey();
     if (m.provider === "Google") return !!getGeminiKey();
     if (m.provider === "Cloudflare") return !!getCloudflareAccountId() && !!getCloudflareApiToken();
-    if (m.provider === "Nvidia") return !!getNvidiaKey();
     return false;
   });
 }
@@ -492,9 +491,6 @@ export const studioRoutes = new Elysia({ prefix: "/api/studio" })
       } else if (model.startsWith("@cf/")) {
         outputPaths = await generateImageCloudflare(body.prompt, model, numImages);
         method = "cloudflare/" + model;
-      } else if (model.startsWith("qwen/") || model.startsWith("nvidia/")) {
-        outputPaths = await generateImageNvidiaNIM(body.prompt, model, body.width, body.height, numImages);
-        method = "nvidia/" + model;
       } else {
         outputPaths = await generateImageOpenRouter(body.prompt, model, body.width, body.height, numImages, body.negativePrompt);
         method = "openrouter/" + model;

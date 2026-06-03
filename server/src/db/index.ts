@@ -306,6 +306,18 @@ function ensureTables(db: Database) {
       console.error("[db] create table error:", e);
     }
   }
+
+  // ── Migrations: add missing columns to existing tables ──
+  // content_assets.image_data may be missing from older SQLite DBs
+  try {
+    const cols = db.query("PRAGMA table_info(content_assets)").all() as any[];
+    if (cols && !cols.some((c: any) => c.name === "image_data")) {
+      db.exec("ALTER TABLE content_assets ADD COLUMN image_data TEXT DEFAULT ''");
+      console.log("[db] Migration: added image_data column to content_assets");
+    }
+  } catch (e) {
+    console.error("[db] migration error:", e);
+  }
 }
 
 // ── Convert $N PostgreSQL-style params to SQLite ? ──
