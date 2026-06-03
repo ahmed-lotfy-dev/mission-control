@@ -524,7 +524,7 @@ export default function SeoReport() {
 
             <div className="card seo-issues-card">
               <h3 className="seo-card-title">Issue Summary</h3>
-              <div className="flex gap-2 mt-3">
+              <div className="grid grid-cols-2 gap-2 mt-3 sm:flex">
                 <IssueCard label="Critical" value={overview.issues.critical} severity="critical" />
                 <IssueCard label="High" value={overview.issues.high} severity="high" />
                 <IssueCard label="Medium" value={overview.issues.medium} severity="medium" />
