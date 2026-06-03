@@ -1,22 +1,46 @@
 import { useNavigate, useLocation } from "@tanstack/react-router";
 import { Outlet } from "@tanstack/react-router";
-import { Menu } from "lucide-react";
+import { Menu, X, Search, Bell, Settings, ChevronDown, LogOut, User, Moon, Sun } from "lucide-react";
+import { useState } from "react";
+import { Button } from "./components/ui/button";
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from "./components/ui/sheet";
 import CommandPalette from "./components/CommandPalette";
 import { Toaster } from "./components/ui/sonner";
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from "./components/ui/sheet";
 
-const NAV_ITEMS = [
-  { path: "/", icon: "📊", label: "Dashboard" },
-  { path: "/kanban", icon: "📋", label: "Kanban" },
-  { path: "/agents", icon: "🤖", label: "Agents" },
-  { path: "/vault", icon: "🧠", label: "Vault" },
-  { path: "/daily", icon: "📝", label: "Daily" },
-  { path: "/scheduled", icon: "⏰", label: "Scheduled" },
-  { path: "/workspace", icon: "📁", label: "Workspace" },
-  { path: "/studio", icon: "🎬", label: "Studio" },
-  { path: "/gallery", icon: "🖼️", label: "Gallery" },
-  { path: "/seo", icon: "📈", label: "SEO" },
+const NAV_GROUPS = [
+  {
+    label: "Overview",
+    items: [
+      { path: "/", icon: "📊", label: "Dashboard" },
+    ],
+  },
+  {
+    label: "Productivity",
+    items: [
+      { path: "/kanban", icon: "📋", label: "Kanban" },
+      { path: "/daily", icon: "📝", label: "Daily Journal" },
+      { path: "/scheduled", icon: "⏰", label: "Scheduler" },
+    ],
+  },
+  {
+    label: "Intelligence",
+    items: [
+      { path: "/agents", icon: "🤖", label: "AI Agents" },
+      { path: "/vault", icon: "🧠", label: "Knowledge Vault" },
+      { path: "/seo", icon: "📈", label: "SEO Audit" },
+    ],
+  },
+  {
+    label: "Creation",
+    items: [
+      { path: "/studio", icon: "🎬", label: "AI Studio" },
+      { path: "/gallery", icon: "🖼️", label: "Gallery" },
+      { path: "/workspace", icon: "📁", label: "Workspace" },
+    ],
+  },
 ];
+
+const FLAT_NAV = NAV_GROUPS.flatMap((g) => g.items);
 
 export default function Layout() {
   const navigate = useNavigate();
@@ -29,88 +53,124 @@ export default function Layout() {
 
   return (
     <div className="app-layout">
-      <div className="ambient-glow" />
-
       {/* ── Desktop Sidebar ── */}
-      <aside className="sidebar" role="navigation">
-        <div className="sidebar-header">
-          <div className="sidebar-logo">
-            <span className="logo-icon">🚀</span>
-            <span>Mission Control</span>
+      <aside className="sidebar" role="navigation" aria-label="Main navigation">
+        <div className="sidebar-brand">
+          <div className="sidebar-brand-icon">
+            <span>🚀</span>
+          </div>
+          <div className="sidebar-brand-text">
+            <span className="sidebar-brand-name">Mission Control</span>
+            <span className="sidebar-brand-version">v2.0</span>
           </div>
         </div>
-        <nav className="sidebar-nav">
-          {NAV_ITEMS.map((item) => (
-            <div
-              key={item.path}
-              className={`nav-item${currentPath === item.path ? " active" : ""}`}
-              onClick={() => handleNavClick(item.path)}
-              role="link"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === "Enter" && handleNavClick(item.path)}
-            >
-              <span className="nav-icon">{item.icon}</span>
-              <span>{item.label}</span>
+
+        <div className="sidebar-scroll">
+          {NAV_GROUPS.map((group) => (
+            <div key={group.label} className="nav-group">
+              <div className="nav-group-label">{group.label}</div>
+              {group.items.map((item) => {
+                const isActive = currentPath === item.path || (item.path !== "/" && currentPath.startsWith(item.path));
+                return (
+                  <button
+                    key={item.path}
+                    className={`nav-item${isActive ? " active" : ""}`}
+                    onClick={() => handleNavClick(item.path)}
+                    aria-current={isActive ? "page" : undefined}
+                  >
+                    <span className="nav-item-icon">{item.icon}</span>
+                    <span className="nav-item-label">{item.label}</span>
+                  </button>
+                );
+              })}
             </div>
           ))}
-        </nav>
+        </div>
+
         <div className="sidebar-footer">
-          <span className="status-dot online" />
-          <span>Connected</span>
+          <button className="sidebar-footer-btn">
+            <div className="sidebar-footer-avatar">A</div>
+            <div className="sidebar-footer-info">
+              <span className="sidebar-footer-name">Ahmed</span>
+              <span className="sidebar-footer-status">
+                <span className="status-dot online" />
+                Connected
+              </span>
+            </div>
+            <Settings size={14} className="sidebar-footer-settings" />
+          </button>
         </div>
       </aside>
 
-      {/* ── Mobile Header + Sheet Nav ── */}
-      <header className="mobile-header">
+      {/* ── Mobile Top Bar ── */}
+      <header className="mobile-top-bar">
         <Sheet>
           <SheetTrigger asChild>
-            <button className="mobile-menu-trigger" aria-label="Open menu">
+            <button className="mobile-menu-btn" aria-label="Open menu">
               <Menu size={20} />
             </button>
           </SheetTrigger>
-          <SheetContent side="left" className="mobile-sheet">
-            <div className="mobile-sheet-header">
-              <div className="sidebar-logo">
-                <span className="logo-icon">🚀</span>
-                <span>Mission Control</span>
+          <SheetContent side="left" className="mobile-nav-sheet">
+            <div className="mobile-nav-header">
+              <div className="sidebar-brand">
+                <div className="sidebar-brand-icon"><span>🚀</span></div>
+                <div className="sidebar-brand-text">
+                  <span className="sidebar-brand-name">Mission Control</span>
+                  <span className="sidebar-brand-version">v2.0</span>
+                </div>
               </div>
             </div>
-            <nav className="mobile-sheet-nav">
-              {NAV_ITEMS.map((item) => (
-                <SheetClose asChild key={item.path}>
-                  <div
-                    className={`nav-item${currentPath === item.path ? " active" : ""}`}
-                    onClick={() => handleNavClick(item.path)}
-                    role="link"
-                    tabIndex={0}
-                    onKeyDown={(e) => e.key === "Enter" && handleNavClick(item.path)}
-                  >
-                    <span className="nav-icon">{item.icon}</span>
-                    <span>{item.label}</span>
-                  </div>
-                </SheetClose>
+            <div className="mobile-nav-scroll">
+              {NAV_GROUPS.map((group) => (
+                <div key={group.label} className="nav-group">
+                  <div className="nav-group-label">{group.label}</div>
+                  {group.items.map((item) => {
+                    const isActive = currentPath === item.path || (item.path !== "/" && currentPath.startsWith(item.path));
+                    return (
+                      <SheetClose asChild key={item.path}>
+                        <button
+                          className={`nav-item${isActive ? " active" : ""}`}
+                          onClick={() => handleNavClick(item.path)}
+                        >
+                          <span className="nav-item-icon">{item.icon}</span>
+                          <span className="nav-item-label">{item.label}</span>
+                        </button>
+                      </SheetClose>
+                    );
+                  })}
+                </div>
               ))}
-            </nav>
-            <div className="mobile-sheet-footer">
-              <span className="status-dot online" />
-              <span>Connected</span>
+            </div>
+            <div className="mobile-nav-footer">
+              <div className="sidebar-footer-avatar">A</div>
+              <div className="sidebar-footer-info">
+                <span className="sidebar-footer-name">Ahmed Shoman</span>
+                <span className="sidebar-footer-status"><span className="status-dot online" />Connected</span>
+              </div>
             </div>
           </SheetContent>
         </Sheet>
-        <div className="mobile-header-logo">
-          <span className="logo-icon">🚀</span>
-          Mission Control
+
+        <div className="mobile-top-title">
+          {FLAT_NAV.find((n) => n.path !== "/" && currentPath.startsWith(n.path))?.label || "Dashboard"}
         </div>
-        <div className="mobile-header-spacer" />
+
+        <div className="mobile-top-actions">
+          <button className="mobile-top-action-btn" aria-label="Search (Cmd+K)">
+            <Search size={18} />
+          </button>
+        </div>
       </header>
 
       {/* ── Main Content ── */}
       <main className="main-content">
-        <Outlet />
+        <div className="main-content-inner">
+          <Outlet />
+        </div>
       </main>
 
       <CommandPalette />
-      <Toaster />
+      <Toaster position="top-right" />
     </div>
   );
 }
