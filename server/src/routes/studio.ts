@@ -35,42 +35,33 @@ export interface ImageModel {
 
 // All possible models — filtered at runtime based on which API keys are configured
 const ALL_IMAGE_MODELS: ImageModel[] = [
-  {
-    id: "imagemagick", name: "ImageMagick", provider: "Local",
-    description: "Built-in image generation via ImageMagick — no API key needed. Works offline.",
-    speed: "fast", status: "available", recommendedFor: "Always available, quick mockups",
-  },
-  {
-    id: "openrouter/openai/gpt-5-image-mini", name: "GPT-5 Image Mini", provider: "OpenRouter",
-    description: "OpenAI GPT-5 Image Mini via OpenRouter. Fast, good quality image generation.",
-    speed: "fast", status: "available", needsAuth: true, recommendedFor: "Fast, affordable image gen",
-  },
-  {
-    id: "openrouter/google/gemini-2.5-flash-image", name: "Gemini 2.5 Flash Image", provider: "OpenRouter",
-    description: "Google Gemini 2.5 Flash Image via OpenRouter. Good quality, fast generation.",
-    speed: "fast", status: "available", needsAuth: true, recommendedFor: "Balanced speed and quality",
-  },
-
-  {
-    id: "@cf/black-forest-labs/flux-1-schnell", name: "FLUX.1 Schnell", provider: "Cloudflare",
-    description: "Fast image generation via Cloudflare Workers AI. Free daily quota.",
-    speed: "fast", status: "available", needsAuth: true, free: true, recommendedFor: "Fast generation, free tier",
-  },
-  {
-    id: "@cf/stabilityai/stable-diffusion-xl-base-1.0", name: "SDXL 1.0", provider: "Cloudflare",
-    description: "Stable Diffusion XL via Cloudflare Workers AI. Free daily quota.",
-    speed: "fast", status: "available", needsAuth: true, free: true, recommendedFor: "General purpose, free tier",
-  },
-  {
-    id: "nvidia/qwen-image", name: "Qwen Image (NIM)", provider: "Nvidia",
-    text: true, recommendedFor: "Free tier via NVIDIA NIM",
-  },
-  {
-    id: "nvidia/qwen-image-edit", name: "Qwen Image Edit (NIM)", provider: "Nvidia",
-    description: "Edit existing images via Qwen Image Edit NIM. Free tier at build.nvidia.com.",
-    speed: "fast", status: "available", needsAuth: true, recommendedFor: "Image editing, free tier via NVIDIA NIM",
-  },
-];
+    {
+      id: "imagemagick", name: "ImageMagick", provider: "Local",
+      description: "Built-in image generation via ImageMagick — gradient + text overlay. No API key needed.",
+      speed: "fast", status: "available", recommendedFor: "Quick mockups, always available",
+    },
+    {
+      id: "openrouter/openai/gpt-image-1", name: "GPT-Image-1", provider: "OpenRouter",
+      description: "OpenAI GPT-Image-1 via OpenRouter. High quality text-to-image.",
+      speed: "medium", status: "available", needsAuth: true, recommendedFor: "Best quality AI images",
+    },
+    {
+      id: "openrouter/google/gemini-2.0-flash-exp-image", name: "Gemini 2.0 Flash Image", provider: "OpenRouter",
+      description: "Google Gemini 2.0 Flash image generation (experimental) via OpenRouter.",
+      speed: "fast", status: "available", needsAuth: true, recommendedFor: "Fast Google image gen",
+    },
+    // Cloudflare Workers AI — free daily quota, returns image directly
+    {
+      id: "@cf/black-forest-labs/flux-1-schnell", name: "FLUX.1 Schnell", provider: "Cloudflare",
+      description: "Fast text-to-image via Cloudflare Workers AI. Free daily quota (~12M NeuTokens).",
+      speed: "fast", status: "available", needsAuth: true, free: true, recommendedFor: "Free fast generation",
+    },
+    {
+      id: "@cf/stabilityai/stable-diffusion-xl-base-1.0", name: "SDXL 1.0", provider: "Cloudflare",
+      description: "Stable Diffusion XL via Cloudflare Workers AI. Free daily quota.",
+      speed: "medium", status: "available", needsAuth: true, free: true, recommendedFor: "Free general purpose",
+    },
+  ];
 
 // Filter models based on which API keys are actually configured at runtime
 export function getAvailableImageModels(): ImageModel[] {
