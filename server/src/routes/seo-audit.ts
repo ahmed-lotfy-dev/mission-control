@@ -145,9 +145,12 @@ export const seoAuditRoutes = new Elysia({ prefix: "/api/seo-audit" })
       const high = issues.filter((i:any)=>i.severity==="high").length;
       const medium = issues.filter((i:any)=>i.severity==="medium").length;
       const low = issues.filter((i:any)=>i.severity==="low").length;
-      const totalWeight = pages.length * 15;
-      const issueWeight = critical*10 + high*5 + medium*2 + low;
-      const score = Math.max(0, Math.min(100, Math.round(100 - (issueWeight/Math.max(1,totalWeight))*100)));
+      // Score: weighted penalty normalized per page
+      // critical=4pts, high=2pts, medium=1pt, low=0.5pt
+      // Max healthy = 0 penalty → 100 score
+      // 2+ penalty per page → approaches 0
+      const penaltyPerPage = (critical * 4 + high * 2 + medium * 1 + low * 0.5) / Math.max(1, pages.length);
+      const score = Math.max(0, Math.min(100, Math.round(100 * Math.exp(-0.5 * penaltyPerPage))));
       const avgResponseTime = pages.length > 0 ? Math.round(pages.reduce((s:number,p:any)=>s+(p.response_time_ms||0),0)/pages.length) : 0;
       const statusCounts = {"2xx":0,"3xx":0,"4xx":0,"5xx":0,other:0};
       for (const p of pages) { const s=p.http_status; if(s>=200&&s<300)statusCounts["2xx"]++; else if(s>=300&&s<400)statusCounts["3xx"]++; else if(s>=400&&s<500)statusCounts["4xx"]++; else if(s>=500)statusCounts["5xx"]++; else statusCounts.other++; }

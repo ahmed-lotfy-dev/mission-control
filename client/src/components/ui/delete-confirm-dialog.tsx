@@ -4,19 +4,12 @@ import { Button } from "./button";
 import { Trash2, AlertTriangle } from "lucide-react";
 
 interface DeleteConfirmDialogProps {
-  /** What is being deleted — shown in the dialog title */
   title: string;
-  /** Description of what will be deleted */
   description: string;
-  /** Label for the confirm button (default: "Delete") */
   confirmLabel?: string;
-  /** Whether the delete is in progress */
   loading?: boolean;
-  /** Trigger element — the button that opens the dialog */
   trigger: React.ReactNode;
-  /** Called when user confirms deletion */
   onConfirm: () => void;
-  /** Called when dialog opens/closes */
   onOpenChange?: (open: boolean) => void;
 }
 
@@ -46,13 +39,13 @@ export function DeleteConfirmDialog({
       <DialogTrigger asChild>
         {trigger}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[440px]">
+      <DialogContent className="sm:max-w-[440px] bg-bg-raise border-border">
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
-              <AlertTriangle className="w-5 h-5 text-destructive" />
+            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "rgba(239,68,68,0.1)" }}>
+              <AlertTriangle className="w-5 h-5" style={{ color: "var(--red)" }} />
             </div>
-            <DialogTitle className="text-lg">{title}</DialogTitle>
+            <DialogTitle className="text-lg text-text-bright">{title}</DialogTitle>
           </div>
           <DialogDescription className="text-sm text-text-dim leading-relaxed">
             {description}
@@ -65,7 +58,7 @@ export function DeleteConfirmDialog({
           <Button variant="destructive" onClick={handleConfirm} disabled={loading}>
             {loading ? (
               <span className="flex items-center gap-2">
-                <span className="w-3.5 h-3.5 border-2 border-destructive-foreground/30 border-t-destructive-foreground rounded-full animate-spin" />
+                <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 Deleting...
               </span>
             ) : (
