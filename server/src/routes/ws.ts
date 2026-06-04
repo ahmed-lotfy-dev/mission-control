@@ -1,4 +1,3 @@
-import { computeAgentStatus, safeJson, type AgentRow } from "../lib/helpers";
 import { dbQuery, dbGet } from "../db";
 
 // ── WebSocket Hub ──
@@ -9,6 +8,14 @@ interface WsClient {
 }
 
 const clients = new Map<string, WsClient>();
+
+export function addClient(id: string, socket: WebSocket) {
+  clients.set(id, { socket, id });
+}
+
+export function removeClient(id: string) {
+  clients.delete(id);
+}
 
 export function broadcast(event: string, payload: any) {
   const msg = JSON.stringify({ event, payload, timestamp: new Date().toISOString() });

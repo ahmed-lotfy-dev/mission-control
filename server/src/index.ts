@@ -11,7 +11,7 @@ import { workspaceRoutes } from "./routes/workspace";
 import { studioRoutes, serveRoutes, contentRoutes } from "./routes/studio";
 import { seoRoutes } from "./routes/seo";
 import { seoAuditRoutes } from "./routes/seo-audit";
-import { broadcast } from "./routes/ws";
+import { broadcast, addClient, removeClient } from "./routes/ws";
 import { computeAgentStatus, safeJson } from "./lib/helpers";
 import { dbQuery } from "./db";
 import type { AgentRow } from "./lib/helpers";
@@ -90,6 +90,9 @@ const app = new Elysia()
   .use(seoAuditRoutes)
   .ws("/ws", {
     open(ws) {
+      const id = crypto.randomUUID();
+      addClient(id, ws as any);
+      (ws as any).data = { id };
       startPolling();
       const enhanced = getEnhancedAgents();
       ws.send(JSON.stringify({ event: "initial_state", agents: enhanced, timestamp: new Date().toISOString() }));
@@ -104,6 +107,8 @@ const app = new Elysia()
       } catch {}
     },
     close(ws) {
+      const id = (ws as any).data?.id;
+      if (id) removeClient(id);
       stopPolling();
     },
   })
