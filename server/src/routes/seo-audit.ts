@@ -43,22 +43,28 @@ export const seoAuditRoutes = new Elysia({ prefix: "/api/seo-audit" })
 
           // Store all results
           for (const page of result.pages) {
+            try {
             const pid = dbInsert("INSERT INTO seo_crawl_pages (session_id,url,path,http_status,response_time_ms,page_size_kb,word_count,title,title_length,meta_description,meta_description_length,h1,h1_count,h2_count,h3_count,h4_count,h5_count,h6_count,canonical,is_self_canonical,robots_meta,has_noindex,has_nofollow,html_lang,viewport_meta,content_type,og_title,og_description,og_image,og_url,og_type,og_locale,twitter_card,twitter_title,twitter_description,twitter_image,twitter_creator,has_structured_data,structured_data_types,internal_links_count,external_links_count,nofollow_links_count,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41,$42,$43)", [sessionId,page.url,page.path,page.httpStatus,page.responseTimeMs,Math.round(page.pageSizeBytes/1024),page.wordCount,page.title,page.titleLength,page.metaDescription,page.metaDescLength,page.h1,page.h1Count,page.h2Count,page.h3Count,page.h4Count,page.h5Count,page.h6Count,page.canonical,page.isSelfCanonical?1:0,page.robotsMeta,page.hasNoindex?1:0,page.hasNofollow?1:0,page.htmlLang,page.viewportMeta?1:0,page.contentType,page.ogTitle,page.ogDescription,page.ogImage,page.ogUrl,page.ogType,page.ogLocale,page.twitterCard,page.twitterTitle,page.twitterDescription,page.twitterImage,page.twitterCreator,page.hasStructuredData?1:0,JSON.stringify(page.structuredDataTypes),page.links.filter(l=>l.isInternal).length,page.links.filter(l=>!l.isInternal).length,page.links.filter(l=>l.isNofollow).length,now]);
-            for (const link of page.links) dbInsert("INSERT INTO seo_links (session_id,source_page_id,source_url,target_url,is_internal,is_nofollow,anchor_text,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)", [sessionId,pid,page.url,link.url,link.isInternal?1:0,link.isNofollow?1:0,link.anchorText,now]);
-            for (const img of page.images) dbInsert("INSERT INTO seo_images (session_id,page_id,page_url,image_url,alt_text,has_alt,is_lazy_loaded,file_format,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)", [sessionId,pid,page.url,img.url,img.altText,img.hasAlt?1:0,img.isLazyLoaded?1:0,img.format,now]);
-            for (const hl of page.hreflangs) dbInsert("INSERT INTO seo_hreflang (session_id,page_id,page_url,hreflang_value,hreflang_url,is_self_reference,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7)", [sessionId,pid,page.url,hl.lang,hl.url,hl.url===page.url?1:0,now]);
+            for (const link of page.links) { try { dbInsert("INSERT INTO seo_links (session_id,source_page_id,source_url,target_url,is_internal,is_nofollow,anchor_text,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)", [sessionId,pid,page.url,link.url,link.isInternal?1:0,link.isNofollow?1:0,link.anchorText,now]); } catch(e:any) { console.error("[seo-audit] link insert error:", e.message); } }
+            for (const img of page.images) { try { dbInsert("INSERT INTO seo_images (session_id,page_id,page_url,image_url,alt_text,has_alt,is_lazy_loaded,file_format,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)", [sessionId,pid,page.url,img.url,img.altText,img.hasAlt?1:0,img.isLazyLoaded?1:0,img.format,now]); } catch(e:any) { console.error("[seo-audit] image insert error:", e.message); } }
+            for (const hl of page.hreflangs) { try { dbInsert("INSERT INTO seo_hreflang (session_id,page_id,page_url,hreflang_value,hreflang_url,is_self_reference,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7)", [sessionId,pid,page.url,hl.lang,hl.url,hl.url===page.url?1:0,now]); } catch(e:any) { console.error("[seo-audit] hreflang insert error:", e.message); } }
+            } catch(e:any) { console.error("[seo-audit] page insert error:", e.message); }
           }
           for (const issue of result.issues) {
+            try {
             const pg = result.pages.find(p=>p.url===issue.pageUrl);
             const pid = pg ? dbGet("SELECT id FROM seo_crawl_pages WHERE session_id=$1 AND url=$2",[sessionId,issue.pageUrl]) : null;
             dbInsert("INSERT INTO seo_issues (session_id,page_id,page_url,category,severity,title,description,recommendation,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)", [sessionId,pid?.id||0,issue.pageUrl,issue.category,issue.severity,issue.title,issue.description,issue.recommendation,now]);
+            } catch(e:any) { console.error("[seo-audit] issue insert error:", e.message); }
           }
-          for (const rd of result.redirects) dbInsert("INSERT INTO seo_redirects (session_id,source_url,chain,chain_length,final_url,final_status,is_loop,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)", [sessionId,rd.sourceUrl,JSON.stringify(rd.chain),rd.chainLength,rd.finalUrl,rd.finalStatus,rd.isLoop?1:0,now]);
+          for (const rd of result.redirects) { try { dbInsert("INSERT INTO seo_redirects (session_id,source_url,chain,chain_length,final_url,final_status,is_loop,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)", [sessionId,rd.sourceUrl,JSON.stringify(rd.chain),rd.chainLength,rd.finalUrl,rd.finalStatus,rd.isLoop?1:0,now]); } catch(e:any) { console.error("[seo-audit] redirect insert error:", e.message); } }
           if (result.robotsContent!==null) {
+            try {
             const sm = result.robotsContent.split("\n").filter(l=>l.toLowerCase().startsWith("sitemap:")).map(l=>l.trim().replace(/^sitemap:\s*/i,""));
             dbInsert("INSERT INTO seo_robots (session_id,content,has_sitemap_directive,sitemap_urls,disallow_rules,allow_rules,issues,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)", [sessionId,result.robotsContent,sm.length>0?1:0,JSON.stringify(sm),"[]","[]","[]",now]);
+            } catch(e:any) { console.error("[seo-audit] robots insert error:", e.message); }
           }
-          for (const su of result.sitemapUrls) dbInsert("INSERT INTO seo_sitemaps (session_id,url,is_crawled,created_at) VALUES ($1,$2,$3,$4)", [sessionId,su,result.pages.some(p=>p.url===su)?1:0,now]);
+          for (const su of result.sitemapUrls) { try { dbInsert("INSERT INTO seo_sitemaps (session_id,url,is_crawled,created_at) VALUES ($1,$2,$3,$4)", [sessionId,su,result.pages.some(p=>p.url===su)?1:0,now]); } catch(e:any) { console.error("[seo-audit] sitemap insert error:", e.message); } }
 
           dbRun("UPDATE seo_crawl_sessions SET status='completed',pages_crawled=$1,total_pages=$1,finished_at=$2 WHERE id=$3", [result.pages.length,now,sessionId]);
           activeCrawls.set(sessionId,{status:"completed",done:result.pages.length,total:result.pages.length,currentUrl:""});
