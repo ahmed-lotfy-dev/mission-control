@@ -53,7 +53,7 @@ Generate the content now.`;
       "X-Title": "Mission Control Content Writer",
     },
     body: JSON.stringify({
-      model: "google/gemini-2.5-flash-preview-05-20",
+      model: "google/gemini-2.5-flash",
       messages: [
         { role: "system", content: system },
         { role: "user", content: userPrompt },
