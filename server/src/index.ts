@@ -13,7 +13,7 @@ import { seoRoutes } from "./routes/seo";
 import { seoAuditRoutes } from "./routes/seo-audit";
 import { broadcast } from "./routes/ws";
 import { computeAgentStatus, safeJson } from "./lib/helpers";
-import { dbQuery, dbGet } from "./db";
+import { dbQuery } from "./db";
 import type { AgentRow } from "./lib/helpers";
 
 const distBase = (() => {
@@ -29,26 +29,35 @@ let pollTimer: ReturnType<typeof setInterval> | null = null;
 function startPolling() {
   if (pollTimer) return;
   pollTimer = setInterval(() => {
-    dbQuery("SELECT * FROM agent_snapshots ORDER BY id ASC").then(agents => {
+    try {
+      const agents = dbQuery("SELECT * FROM agent_snapshots ORDER BY id ASC");
       const enhanced = (agents as AgentRow[]).map((a) => ({
         ...a, icon: a.icon || "", metadata: safeJson(a.metadata), ...computeAgentStatus(a),
       }));
       broadcast("agents_update", enhanced);
-    });
-    dbQuery("SELECT * FROM tasks").then(allTasks => {
+    } catch {}
+    try {
+      const allTasks = dbQuery("SELECT * FROM tasks") as any[];
       broadcast("dashboard_stats", {
         total: allTasks.length,
-        backlog: (allTasks as any[]).filter((t: any) => t.status === "backlog").length,
-        todo: (allTasks as any[]).filter((t: any) => t.status === "todo").length,
-        inProgress: (allTasks as any[]).filter((t: any) => t.status === "in_progress").length,
-        done: (allTasks as any[]).filter((t: any) => t.status === "done").length,
+        backlog: allTasks.filter((t: any) => t.status === "backlog").length,
+        todo: allTasks.filter((t: any) => t.status === "todo").length,
+        inProgress: allTasks.filter((t: any) => t.status === "in_progress").length,
+        done: allTasks.filter((t: any) => t.status === "done").length,
       });
-    });
+    } catch {}
   }, 10_000);
 }
 
 function stopPolling() {
   if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
+
+function getEnhancedAgents() {
+  const agents = dbQuery("SELECT * FROM agent_snapshots ORDER BY id ASC");
+  return (agents as AgentRow[]).map((a) => ({
+    ...a, icon: a.icon || "", metadata: safeJson(a.metadata), ...computeAgentStatus(a),
+  }));
 }
 
 const app = new Elysia()
@@ -82,20 +91,15 @@ const app = new Elysia()
   .ws("/ws", {
     open(ws) {
       startPolling();
-      dbQuery("SELECT * FROM agent_snapshots ORDER BY id ASC").then(agents => {
-        const enhanced = (agents as AgentRow[]).map((a) => ({
-          ...a, icon: a.icon || "", metadata: safeJson(a.metadata), ...computeAgentStatus(a),
-        }));
-        ws.send(JSON.stringify({ event: "initial_state", agents: enhanced, timestamp: new Date().toISOString() }));
-      });
+      const enhanced = getEnhancedAgents();
+      ws.send(JSON.stringify({ event: "initial_state", agents: enhanced, timestamp: new Date().toISOString() }));
     },
     message(ws, data) {
       try {
         const msg = JSON.parse(data.toString());
         if (msg.type === "resync") {
-          dbQuery("SELECT * FROM agent_snapshots ORDER BY id ASC").then(agents => {
-            ws.send(JSON.stringify({ event: "agents_update", agents, timestamp: new Date().toISOString() }));
-          });
+          const enhanced = getEnhancedAgents();
+          ws.send(JSON.stringify({ event: "agents_update", agents: enhanced, timestamp: new Date().toISOString() }));
         }
       } catch {}
     },
