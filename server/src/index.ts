@@ -22,6 +22,12 @@ const distBase = (() => {
 })();
 
 const app = new Elysia()
+  .onError(({ code, error, set }) => {
+    const msg = error?.message || error?.toString() || "Unknown error";
+    console.error(`[server] Unhandled error (${code}):`, msg);
+    set.status = 500;
+    return { error: "Internal server error", detail: msg };
+  })
   .onRequest(({ request }) => {
     // WebSocket upgrade — intercept before Elysia routing
     const wsResp = handleWsUpgrade(request);

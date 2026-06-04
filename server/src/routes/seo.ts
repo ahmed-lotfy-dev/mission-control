@@ -1,18 +1,27 @@
 import { Elysia, t } from "elysia";
 import { dbQuery, dbGet, dbRun, dbInsert } from "../db";
 
+function handleError(operation: string, err: any): { error: string; detail: string } {
+  const msg = err?.message || err?.toString() || "Unknown error";
+  console.error(`[seo] ${operation} error:`, msg);
+  return { error: `${operation} failed`, detail: msg };
+}
+
 export const seoRoutes = new Elysia({ prefix: "/api/seo" })
   // Keywords
-  .get("/keywords", async () => {
-    return await dbQuery("SELECT * FROM seo_keywords ORDER BY created_at DESC");
+  .get("/keywords", () => {
+    try { return dbQuery("SELECT * FROM seo_keywords ORDER BY created_at DESC"); }
+    catch (err: any) { return handleError("List keywords", err); }
   })
-  .post("/keywords", async ({ body }) => {
-    const now = new Date().toISOString();
-    const id = await dbInsert(
-      "INSERT INTO seo_keywords (keyword, volume, difficulty, related, notes, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)",
-      [body.keyword, body.volume ?? 0, body.difficulty ?? 0, JSON.stringify(body.related ?? []), body.notes ?? "", now, now]
-    );
-    return { id, ...body };
+  .post("/keywords", ({ body }) => {
+    try {
+      const now = new Date().toISOString();
+      const id = await dbInsert(
+        "INSERT INTO seo_keywords (keyword, volume, difficulty, related, notes, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+        [body.keyword, body.volume ?? 0, body.difficulty ?? 0, JSON.stringify(body.related ?? []), body.notes ?? "", now, now]
+      );
+      return { id, ...body };
+    } catch (err: any) { return handleError("Create keyword", err); }
   }, {
     body: t.Object({
       keyword: t.String(),
@@ -22,40 +31,45 @@ export const seoRoutes = new Elysia({ prefix: "/api/seo" })
       notes: t.Optional(t.String()),
     }),
   })
-  .patch("/keywords/:id", async ({ params, body }) => {
-    const now = new Date().toISOString();
-    const sets: string[] = [];
-    const vals: any[] = [];
-    let i = 1;
-    if (body.keyword !== undefined) { sets.push(`keyword = $${i++}`); vals.push(body.keyword); }
-    if (body.volume !== undefined) { sets.push(`volume = $${i++}`); vals.push(body.volume); }
-    if (body.difficulty !== undefined) { sets.push(`difficulty = $${i++}`); vals.push(body.difficulty); }
-    if (body.related !== undefined) { sets.push(`related = $${i++}`); vals.push(JSON.stringify(body.related)); }
-    if (body.notes !== undefined) { sets.push(`notes = $${i++}`); vals.push(body.notes); }
-    sets.push(`updated_at = $${i++}`);
-    vals.push(now, Number(params.id));
-    await dbRun(`UPDATE seo_keywords SET ${sets.join(", ")} WHERE id = $${i}`, vals);
-    return { id: Number(params.id), updatedAt: now };
+  .patch("/keywords/:id", ({ params, body }) => {
+    try {
+      const now = new Date().toISOString();
+      const sets: string[] = [];
+      const vals: any[] = [];
+      let i = 1;
+      if (body.keyword !== undefined) { sets.push(`keyword = $${i++}`); vals.push(body.keyword); }
+      if (body.volume !== undefined) { sets.push(`volume = $${i++}`); vals.push(body.volume); }
+      if (body.difficulty !== undefined) { sets.push(`difficulty = $${i++}`); vals.push(body.difficulty); }
+      if (body.related !== undefined) { sets.push(`related = $${i++}`); vals.push(JSON.stringify(body.related)); }
+      if (body.notes !== undefined) { sets.push(`notes = $${i++}`); vals.push(body.notes); }
+      sets.push(`updated_at = $${i++}`);
+      vals.push(now, Number(params.id));
+      dbRun(`UPDATE seo_keywords SET ${sets.join(", ")} WHERE id = $${i}`, vals);
+      return { id: Number(params.id), updatedAt: now };
+    } catch (err: any) { return handleError("Update keyword", err); }
   }, {
     params: t.Object({ id: t.String() }),
   })
-  .delete("/keywords/:id", async ({ params }) => {
-    await dbRun("DELETE FROM seo_keywords WHERE id = $1", [Number(params.id)]);
-    return { deleted: true };
+  .delete("/keywords/:id", ({ params }) => {
+    try { dbRun("DELETE FROM seo_keywords WHERE id = $1", [Number(params.id)]); return { deleted: true }; }
+    catch (err: any) { return handleError("Delete keyword", err); }
   }, {
     params: t.Object({ id: t.String() }),
   })
   // Content
-  .get("/content", async () => {
-    return await dbQuery("SELECT * FROM seo_content ORDER BY created_at DESC");
+  .get("/content", () => {
+    try { return dbQuery("SELECT * FROM seo_content ORDER BY created_at DESC"); }
+    catch (err: any) { return handleError("List content", err); }
   })
-  .post("/content", async ({ body }) => {
-    const now = new Date().toISOString();
-    const id = await dbInsert(
-      "INSERT INTO seo_content (keyword, target_url, title, meta_description, headings, body, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
-      [body.keyword, body.targetUrl ?? "", body.title ?? "", body.metaDescription ?? "", JSON.stringify(body.headings ?? []), body.body ?? "", body.status ?? "generated", now, now]
-    );
-    return { id, ...body };
+  .post("/content", ({ body }) => {
+    try {
+      const now = new Date().toISOString();
+      const id = await dbInsert(
+        "INSERT INTO seo_content (keyword, target_url, title, meta_description, headings, body, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+        [body.keyword, body.targetUrl ?? "", body.title ?? "", body.metaDescription ?? "", JSON.stringify(body.headings ?? []), body.body ?? "", body.status ?? "generated", now, now]
+      );
+      return { id, ...body };
+    } catch (err: any) { return handleError("Create content", err); }
   }, {
     body: t.Object({
       keyword: t.String(),
@@ -67,23 +81,26 @@ export const seoRoutes = new Elysia({ prefix: "/api/seo" })
       status: t.Optional(t.String()),
     }),
   })
-  .delete("/content/:id", async ({ params }) => {
-    await dbRun("DELETE FROM seo_content WHERE id = $1", [Number(params.id)]);
-    return { deleted: true };
+  .delete("/content/:id", ({ params }) => {
+    try { dbRun("DELETE FROM seo_content WHERE id = $1", [Number(params.id)]); return { deleted: true }; }
+    catch (err: any) { return handleError("Delete content", err); }
   }, {
     params: t.Object({ id: t.String() }),
   })
   // Ranks
-  .get("/ranks", async () => {
-    return await dbQuery("SELECT * FROM seo_ranks ORDER BY check_date DESC");
+  .get("/ranks", () => {
+    try { return dbQuery("SELECT * FROM seo_ranks ORDER BY check_date DESC"); }
+    catch (err: any) { return handleError("List ranks", err); }
   })
-  .post("/ranks", async ({ body }) => {
-    const now = new Date().toISOString();
-    const id = await dbInsert(
-      "INSERT INTO seo_ranks (keyword, position, url, check_date, notes) VALUES ($1, $2, $3, $4, $5)",
-      [body.keyword, body.position ?? 0, body.url ?? "", body.checkDate ?? now, body.notes ?? ""]
-    );
-    return { id, ...body };
+  .post("/ranks", ({ body }) => {
+    try {
+      const now = new Date().toISOString();
+      const id = await dbInsert(
+        "INSERT INTO seo_ranks (keyword, position, url, check_date, notes) VALUES ($1, $2, $3, $4, $5)",
+        [body.keyword, body.position ?? 0, body.url ?? "", body.checkDate ?? now, body.notes ?? ""]
+      );
+      return { id, ...body };
+    } catch (err: any) { return handleError("Create rank", err); }
   }, {
     body: t.Object({
       keyword: t.String(),
@@ -93,23 +110,26 @@ export const seoRoutes = new Elysia({ prefix: "/api/seo" })
       notes: t.Optional(t.String()),
     }),
   })
-  .delete("/ranks/:id", async ({ params }) => {
-    await dbRun("DELETE FROM seo_ranks WHERE id = $1", [Number(params.id)]);
-    return { deleted: true };
+  .delete("/ranks/:id", ({ params }) => {
+    try { dbRun("DELETE FROM seo_ranks WHERE id = $1", [Number(params.id)]); return { deleted: true }; }
+    catch (err: any) { return handleError("Delete rank", err); }
   }, {
     params: t.Object({ id: t.String() }),
   })
   // Audits
-  .get("/audits", async () => {
-    return await dbQuery("SELECT * FROM seo_audits ORDER BY created_at DESC");
+  .get("/audits", () => {
+    try { return dbQuery("SELECT * FROM seo_audits ORDER BY created_at DESC"); }
+    catch (err: any) { return handleError("List audits", err); }
   })
-  .post("/audits", async ({ body }) => {
-    const now = new Date().toISOString();
-    const id = await dbInsert(
-      "INSERT INTO seo_audits (url, score, title, meta_description, headings_count, links_count, has_meta, has_title, page_size, issues, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
-      [body.url, body.score ?? 0, body.title ?? "", body.metaDescription ?? "", body.headingsCount ?? 0, body.linksCount ?? 0, body.hasMeta ? 1 : 0, body.hasTitle ? 1 : 0, body.pageSize ?? 0, JSON.stringify(body.issues ?? []), now]
-    );
-    return { id, ...body };
+  .post("/audits", ({ body }) => {
+    try {
+      const now = new Date().toISOString();
+      const id = await dbInsert(
+        "INSERT INTO seo_audits (url, score, title, meta_description, headings_count, links_count, has_meta, has_title, page_size, issues, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
+        [body.url, body.score ?? 0, body.title ?? "", body.metaDescription ?? "", body.headingsCount ?? 0, body.linksCount ?? 0, body.hasMeta ? 1 : 0, body.hasTitle ? 1 : 0, body.pageSize ?? 0, JSON.stringify(body.issues ?? []), now]
+      );
+      return { id, ...body };
+    } catch (err: any) { return handleError("Create audit", err); }
   }, {
     body: t.Object({
       url: t.String(),
@@ -124,9 +144,9 @@ export const seoRoutes = new Elysia({ prefix: "/api/seo" })
       issues: t.Optional(t.Array(t.String())),
     }),
   })
-  .delete("/audits/:id", async ({ params }) => {
-    await dbRun("DELETE FROM seo_audits WHERE id = $1", [Number(params.id)]);
-    return { deleted: true };
+  .delete("/audits/:id", ({ params }) => {
+    try { dbRun("DELETE FROM seo_audits WHERE id = $1", [Number(params.id)]); return { deleted: true }; }
+    catch (err: any) { return handleError("Delete audit", err); }
   }, {
     params: t.Object({ id: t.String() }),
   });

@@ -5,7 +5,23 @@ const WS_URL = `${location.protocol === "https:" ? "wss:" : "ws:"}//${location.h
 
 export async function api<T = any>(path: string, opts?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, { headers: { "Content-Type": "application/json" }, ...opts });
-  if (!res.ok) { const body = await res.json().catch(() => ({})); const msg = body?.error || `API error: ${res.status} ${res.statusText}`; toast.error(msg, { duration: 5000 }); throw new Error(msg); }
+  if (!res.ok) {
+    let msg = `API error: ${res.status} ${res.statusText}`;
+    try {
+      const body = await res.json();
+      if (body?.error && body?.detail) {
+        msg = `${body.error}: ${body.detail}`;
+      } else if (body?.error) {
+        msg = body.error;
+      } else if (body?.detail) {
+        msg = body.detail;
+      }
+    } catch {
+      // Response body is not JSON — use status text
+    }
+    toast.error(msg, { duration: 5000 });
+    throw new Error(msg);
+  }
   return res.json();
 }
 
