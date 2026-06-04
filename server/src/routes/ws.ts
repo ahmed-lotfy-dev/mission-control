@@ -1,7 +1,7 @@
 import { computeAgentStatus, safeJson, type AgentRow } from "../lib/helpers";
 import { dbQuery, dbGet } from "../db";
 
-// ── WebSocket Hub using Bun's native API ──
+// ── WebSocket Hub ──
 
 interface WsClient {
   socket: WebSocket;
@@ -97,7 +97,6 @@ export function notifyAgentChange(agentId: number, action: string) {
 }
 
 // ── Crawl Progress Streaming ──
-// Broadcasts real-time crawl progress to all connected WS clients
 export function broadcastCrawlProgress(data: {
   sessionId: number;
   domainSlug: string;
@@ -111,55 +110,26 @@ export function broadcastCrawlProgress(data: {
   broadcast("crawl_progress", data);
 }
 
-export function notifyAgentChange(agentId: number, action: string) {
-  dbGet("SELECT * FROM agent_snapshots WHERE id = $1", [agentId]).then(agent => {
-    if (agent) {
-      broadcast("agent_update", { action, agent });
-    }
-  });
-}
-
-export function handleWsUpgrade(req: Request): Response | null {
+// ── WebSocket upgrade handler ──
+// Returns a Response only if we handle it; returns null to let Elysia handle it
+export function handleWsUpgrade(req: Request, server: any): Response | null {
   const url = new URL(req.url);
   if (url.pathname !== "/ws") return null;
 
   const upgrade = req.headers.get("upgrade")?.toLowerCase();
   if (upgrade !== "websocket") return null;
 
-  const success = Bun.upgradeWebSocket(req, {
-    data: { id: crypto.randomUUID() },
-    open(ws) {
-      const id = (ws.data as any).id;
-      clients.set(id, { socket: ws as any, id });
+  // Use Bun's native server.upgrade() — compatible with Bun 1.3.x
+  const id = crypto.randomUUID();
+  const success = server.upgrade(req, { data: { id } });
 
-      dbQuery("SELECT * FROM agent_snapshots ORDER BY id ASC").then(agents => {
-        const enhanced = (agents as AgentRow[]).map((a) => ({
-          ...a,
-          icon: a.icon || "",
-          metadata: safeJson(a.metadata),
-          ...computeAgentStatus(a),
-        }));
-        ws.send(JSON.stringify({ event: "initial_state", agents: enhanced, timestamp: new Date().toISOString() }));
-      });
+  if (!success) {
+    return new Response("WebSocket upgrade failed", { status: 426 });
+  }
 
-      startPolling();
-    },
-    message(ws, data) {
-      try {
-        const msg = JSON.parse(data.toString());
-        if (msg.type === "resync") {
-          dbQuery("SELECT * FROM agent_snapshots ORDER BY id ASC").then(agents => {
-            ws.send(JSON.stringify({ event: "agents_update", agents, timestamp: new Date().toISOString() }));
-          });
-        }
-      } catch {}
-    },
-    close(ws) {
-      const id = (ws.data as any).id;
-      clients.delete(id);
-      if (clients.size === 0) stopPolling();
-    },
-  });
-
-  return success as any;
+  // Set up event handlers on the socket after successful upgrade
+  // Note: In Bun 1.3, server.upgrade() doesn't take callbacks.
+  // We need to handle this differently — the socket events are managed
+  // by the server's websocket handler configuration.
+  return new Response(null, { status: 101 });
 }

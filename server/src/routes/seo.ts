@@ -16,7 +16,7 @@ export const seoRoutes = new Elysia({ prefix: "/api/seo" })
   .post("/keywords", ({ body }) => {
     try {
       const now = new Date().toISOString();
-      const id = await dbInsert(
+      const id = dbInsert(
         "INSERT INTO seo_keywords (keyword, volume, difficulty, related, notes, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)",
         [body.keyword, body.volume ?? 0, body.difficulty ?? 0, JSON.stringify(body.related ?? []), body.notes ?? "", now, now]
       );
@@ -64,7 +64,7 @@ export const seoRoutes = new Elysia({ prefix: "/api/seo" })
   .post("/content", ({ body }) => {
     try {
       const now = new Date().toISOString();
-      const id = await dbInsert(
+      const id = dbInsert(
         "INSERT INTO seo_content (keyword, target_url, title, meta_description, headings, body, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
         [body.keyword, body.targetUrl ?? "", body.title ?? "", body.metaDescription ?? "", JSON.stringify(body.headings ?? []), body.body ?? "", body.status ?? "generated", now, now]
       );
@@ -95,7 +95,7 @@ export const seoRoutes = new Elysia({ prefix: "/api/seo" })
   .post("/ranks", ({ body }) => {
     try {
       const now = new Date().toISOString();
-      const id = await dbInsert(
+      const id = dbInsert(
         "INSERT INTO seo_ranks (keyword, position, url, check_date, notes) VALUES ($1, $2, $3, $4, $5)",
         [body.keyword, body.position ?? 0, body.url ?? "", body.checkDate ?? now, body.notes ?? ""]
       );
@@ -124,7 +124,7 @@ export const seoRoutes = new Elysia({ prefix: "/api/seo" })
   .post("/audits", ({ body }) => {
     try {
       const now = new Date().toISOString();
-      const id = await dbInsert(
+      const id = dbInsert(
         "INSERT INTO seo_audits (url, score, title, meta_description, headings_count, links_count, has_meta, has_title, page_size, issues, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
         [body.url, body.score ?? 0, body.title ?? "", body.metaDescription ?? "", body.headingsCount ?? 0, body.linksCount ?? 0, body.hasMeta ? 1 : 0, body.hasTitle ? 1 : 0, body.pageSize ?? 0, JSON.stringify(body.issues ?? []), now]
       );

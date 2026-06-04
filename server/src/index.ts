@@ -11,7 +11,10 @@ import { workspaceRoutes } from "./routes/workspace";
 import { studioRoutes, serveRoutes, contentRoutes } from "./routes/studio";
 import { seoRoutes } from "./routes/seo";
 import { seoAuditRoutes } from "./routes/seo-audit";
-import { handleWsUpgrade } from "./routes/ws";
+import { broadcast } from "./routes/ws";
+import { computeAgentStatus, safeJson } from "./lib/helpers";
+import { dbQuery, dbGet } from "./db";
+import type { AgentRow } from "./lib/helpers";
 
 const distBase = (() => {
   const rel = ["client/dist", "../client/dist", "../../client/dist"];
@@ -21,19 +24,41 @@ const distBase = (() => {
   return "../client/dist";
 })();
 
+let pollTimer: ReturnType<typeof setInterval> | null = null;
+
+function startPolling() {
+  if (pollTimer) return;
+  pollTimer = setInterval(() => {
+    dbQuery("SELECT * FROM agent_snapshots ORDER BY id ASC").then(agents => {
+      const enhanced = (agents as AgentRow[]).map((a) => ({
+        ...a, icon: a.icon || "", metadata: safeJson(a.metadata), ...computeAgentStatus(a),
+      }));
+      broadcast("agents_update", enhanced);
+    });
+    dbQuery("SELECT * FROM tasks").then(allTasks => {
+      broadcast("dashboard_stats", {
+        total: allTasks.length,
+        backlog: (allTasks as any[]).filter((t: any) => t.status === "backlog").length,
+        todo: (allTasks as any[]).filter((t: any) => t.status === "todo").length,
+        inProgress: (allTasks as any[]).filter((t: any) => t.status === "in_progress").length,
+        done: (allTasks as any[]).filter((t: any) => t.status === "done").length,
+      });
+    });
+  }, 10_000);
+}
+
+function stopPolling() {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
+
 const app = new Elysia()
   .onError(({ code, error, set }) => {
-    const msg = error?.message || error?.toString() || "Unknown error";
+    const msg = (error as any)?.message || error?.toString() || "Unknown error";
     console.error(`[server] Unhandled error (${code}):`, msg);
     set.status = 500;
     return { error: "Internal server error", detail: msg };
   })
   .onRequest(({ request }) => {
-    // WebSocket upgrade — intercept before Elysia routing
-    const wsResp = handleWsUpgrade(request);
-    if (wsResp) return wsResp;
-
-    // CORS headers
     const origin = request.headers.get("origin") ?? "";
     if (origin) {
       request.headers.set("access-control-allow-origin", origin);
@@ -41,7 +66,6 @@ const app = new Elysia()
       request.headers.set("access-control-allow-headers", "Content-Type");
     }
   })
-  // API routes first
   .use(tasksRoutes)
   .use(goalsRoutes)
   .use(scheduledRoutes)
@@ -52,20 +76,36 @@ const app = new Elysia()
   .use(workspaceRoutes)
   .use(studioRoutes)
   .use(serveRoutes)
-  .use(contentRoutes)    // /api/content/asset/:id/image — serves Gallery images from DB base64
+  .use(contentRoutes)
   .use(seoRoutes)
   .use(seoAuditRoutes)
-  // Serve React build
-  .get("/assets/*", ({ path }) => {
-    return Bun.file(`${distBase}/${path}`);
+  .ws("/ws", {
+    open(ws) {
+      startPolling();
+      dbQuery("SELECT * FROM agent_snapshots ORDER BY id ASC").then(agents => {
+        const enhanced = (agents as AgentRow[]).map((a) => ({
+          ...a, icon: a.icon || "", metadata: safeJson(a.metadata), ...computeAgentStatus(a),
+        }));
+        ws.send(JSON.stringify({ event: "initial_state", agents: enhanced, timestamp: new Date().toISOString() }));
+      });
+    },
+    message(ws, data) {
+      try {
+        const msg = JSON.parse(data.toString());
+        if (msg.type === "resync") {
+          dbQuery("SELECT * FROM agent_snapshots ORDER BY id ASC").then(agents => {
+            ws.send(JSON.stringify({ event: "agents_update", agents, timestamp: new Date().toISOString() }));
+          });
+        }
+      } catch {}
+    },
+    close(ws) {
+      stopPolling();
+    },
   })
-  .get("/static/*", ({ path }) => {
-    return Bun.file(`${distBase}/${path}`);
-  })
-  // SPA fallback — serve index.html for any non-API route
-  .get("/*", () => {
-    return Bun.file(`${distBase}/index.html`);
-  })
+  .get("/assets/*", ({ path }) => Bun.file(`${distBase}/${path}`))
+  .get("/static/*", ({ path }) => Bun.file(`${distBase}/${path}`))
+  .get("/*", () => Bun.file(`${distBase}/index.html`))
   .listen(8000);
 
 console.log(`🚀 Mission Control running at http://localhost:8000`);
