@@ -446,7 +446,7 @@ export default function SeoReport() {
         <div className="seo-header-left">
           <Button variant="ghost" size="sm" className="seo-back-btn" onClick={() => navigate({ to: "/seo/$domainSlug", params: { domainSlug } })}>
             <ArrowLeft size={14} />
-            <span>Back to {domainSlug}</span>
+            <span>Back to {domainSlug || "Domains"}</span>
           </Button>
           <div className="seo-header-info">
             <div className="flex items-center gap-2">

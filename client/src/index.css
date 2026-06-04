@@ -1061,3 +1061,174 @@ textarea { resize: vertical; min-height: 80px; font-family: inherit; }
     padding-bottom: 40px;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   ENHANCED SEO REPORT — Data-dense, polished dark tables
+   ═══════════════════════════════════════════════════════════ */
+
+/* Table wrapper */
+.table-wrap {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-raise);
+}
+
+.table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table-wrap thead th {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  background: var(--bg-deep);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.table-wrap tbody td {
+  padding: 10px 12px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  max-width: 350px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.table-wrap tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+.table-wrap tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Score ring enhancements */
+.score-ring-svg circle:first-child {
+  opacity: 0.15;
+}
+
+/* Enhanced card styling for SEO */
+.seo-score-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.seo-score-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--red), var(--yellow), var(--green));
+  opacity: 0.6;
+}
+
+.seo-issues-card {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Stat badge enhancements */
+.stat-card-compact {
+  transition: all 150ms ease;
+}
+
+.stat-card-compact:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-bright);
+}
+
+/* Tab enhancements */
+.seo-tab-count {
+  transition: all 150ms ease;
+}
+
+.seo-tab:hover .seo-tab-count {
+  background: var(--red);
+  color: var(--bg-deep);
+}
+
+/* Severity badges in tables */
+.table-wrap .badge-urgent,
+.table-wrap [class*="badge-red"] {
+  color: var(--red) !important;
+}
+
+/* Domain group header in crawl history */
+.seo-domain-group {
+  margin-bottom: 16px;
+}
+
+.seo-domain-group-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-deep);
+  border-radius: 6px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.seo-domain-group-header:hover {
+  background: var(--bg-hover);
+}
+
+/* Loading state */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+.empty-state p {
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+/* Progress bar animation */
+@keyframes progress-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.crawl-progress-bar {
+  animation: progress-pulse 1.5s ease-in-out infinite;
+}
