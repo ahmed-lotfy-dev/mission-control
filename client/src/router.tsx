@@ -10,6 +10,10 @@ import Workspace from "./views/Workspace";
 import Studio from "./views/Studio";
 import Seo from "./views/Seo";
 import Gallery from "./views/Gallery";
+import ContentWriter from "./views/ContentWriter";
+import Calendar from "./views/Calendar";
+import Social from "./views/Social";
+import Analytics from "./views/Analytics";
 import SeoReport from "./features/seo/components/SeoReport";
 import SeoDomain from "./features/seo/components/SeoDomain";
 import SeoContentPreview from "./features/seo/components/SeoContentPreview";
@@ -35,6 +39,10 @@ const seoRoute = createRoute({ getParentRoute: () => rootRoute, path: "/seo", co
 const seoDomainRoute = createRoute({ getParentRoute: () => rootRoute, path: "/seo/$domainSlug", component: SeoDomain });
 const seoReportRoute = createRoute({ getParentRoute: () => rootRoute, path: "/seo/$domainSlug/$reportId", component: SeoReport });
 const seoContentPreviewRoute = createRoute({ getParentRoute: () => rootRoute, path: "/seo/content/$contentId", component: SeoContentPreview });
+const contentWriterRoute = createRoute({ getParentRoute: () => rootRoute, path: "/content", component: ContentWriter });
+const calendarRoute = createRoute({ getParentRoute: () => rootRoute, path: "/calendar", component: Calendar });
+const socialRoute = createRoute({ getParentRoute: () => rootRoute, path: "/social", component: Social });
+const analyticsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/analytics", component: Analytics });
 
 const routeTree = rootRoute.addChildren([
   dashboardRoute,
@@ -50,6 +58,10 @@ const routeTree = rootRoute.addChildren([
   seoDomainRoute,
   seoReportRoute,
   seoContentPreviewRoute,
+  contentWriterRoute,
+  calendarRoute,
+  socialRoute,
+  analyticsRoute,
 ]);
 
 export const router = createRouter({ routeTree });

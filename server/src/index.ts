@@ -11,6 +11,7 @@ import { workspaceRoutes } from "./routes/workspace";
 import { studioRoutes, serveRoutes, contentRoutes } from "./routes/studio";
 import { seoRoutes } from "./routes/seo";
 import { seoAuditRoutes } from "./routes/seo-audit";
+import { contentGenRoutes } from "./routes/content-gen";
 import { broadcast, addClient, removeClient } from "./routes/ws";
 import { computeAgentStatus, safeJson } from "./lib/helpers";
 import { dbQuery } from "./db";
@@ -88,6 +89,7 @@ const app = new Elysia()
   .use(contentRoutes)
   .use(seoRoutes)
   .use(seoAuditRoutes)
+  .use(contentGenRoutes)
   .ws("/ws", {
     open(ws) {
       const id = crypto.randomUUID();

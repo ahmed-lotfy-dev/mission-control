@@ -299,6 +299,61 @@ function ensureTables(db: Database) {
       started_at TEXT DEFAULT '',
       updated_at TEXT NOT NULL DEFAULT ''
     )`,
+    // ── Content Calendar ──
+    `CREATE TABLE IF NOT EXISTS calendar_events (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      type TEXT NOT NULL DEFAULT 'post',
+      platform TEXT DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'draft',
+      scheduled_at TEXT DEFAULT '',
+      body TEXT DEFAULT '',
+      image_url TEXT DEFAULT '',
+      tags TEXT DEFAULT '[]',
+      notes TEXT DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT '',
+      updated_at TEXT NOT NULL DEFAULT ''
+    )`,
+    // ── Social Media Posts ──
+    `CREATE TABLE IF NOT EXISTS social_posts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      platform TEXT NOT NULL DEFAULT 'x',
+      content TEXT NOT NULL,
+      image_url TEXT DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'draft',
+      scheduled_at TEXT DEFAULT '',
+      posted_at TEXT DEFAULT '',
+      engagement TEXT DEFAULT '{}',
+      remote_id TEXT DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT '',
+      updated_at TEXT NOT NULL DEFAULT ''
+    )`,
+    // ── AI Generated Content ──
+    `CREATE TABLE IF NOT EXISTS ai_content (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      type TEXT NOT NULL DEFAULT 'blog',
+      title TEXT NOT NULL,
+      body TEXT NOT NULL DEFAULT '',
+      prompt TEXT DEFAULT '',
+      tone TEXT DEFAULT 'professional',
+      platform TEXT DEFAULT '',
+      keywords TEXT DEFAULT '[]',
+      status TEXT NOT NULL DEFAULT 'draft',
+      word_count INTEGER DEFAULT 0,
+      metadata TEXT DEFAULT '{}',
+      created_at TEXT NOT NULL DEFAULT '',
+      updated_at TEXT NOT NULL DEFAULT ''
+    )`,
+    // ── Analytics Snapshots ──
+    `CREATE TABLE IF NOT EXISTS analytics (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      source TEXT NOT NULL DEFAULT 'internal',
+      metric TEXT NOT NULL,
+      value REAL DEFAULT 0,
+      dimensions TEXT DEFAULT '{}',
+      recorded_at TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT ''
+    )`,
   ];
 
   for (const sql of tables) {

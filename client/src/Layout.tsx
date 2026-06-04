@@ -12,6 +12,15 @@ const NAV_GROUPS = [
     label: "Overview",
     items: [
       { path: "/", icon: "📊", label: "Dashboard" },
+      { path: "/analytics", icon: "📈", label: "Analytics" },
+    ],
+  },
+  {
+    label: "Content",
+    items: [
+      { path: "/content", icon: "✍️", label: "Content Writer" },
+      { path: "/calendar", icon: "📅", label: "Calendar" },
+      { path: "/social", icon: "📱", label: "Social Hub" },
     ],
   },
   {
@@ -27,7 +36,7 @@ const NAV_GROUPS = [
     items: [
       { path: "/agents", icon: "🤖", label: "AI Agents" },
       { path: "/vault", icon: "🧠", label: "Knowledge Vault" },
-      { path: "/seo", icon: "📈", label: "SEO Audit" },
+      { path: "/seo", icon: "🔍", label: "SEO Audit" },
     ],
   },
   {
