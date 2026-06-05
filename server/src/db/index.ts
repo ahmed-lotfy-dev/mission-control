@@ -354,6 +354,164 @@ function ensureTables(db: Database) {
       recorded_at TEXT NOT NULL DEFAULT '',
       created_at TEXT NOT NULL DEFAULT ''
     )`,
+    // ── SEO Hub: Projects (like SE Ranking, Ahrefs projects) ──
+    `CREATE TABLE IF NOT EXISTS seo_projects (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      domain TEXT NOT NULL,
+      favicon TEXT DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'active',
+      added_at TEXT NOT NULL DEFAULT '',
+      last_crawled TEXT DEFAULT '',
+      notes TEXT DEFAULT '',
+      settings TEXT DEFAULT '{}'
+    )`,
+    // ── SEO Hub: Keyword Rankings (like SERPWatcher, Ahrefs Rank Tracker) ──
+    `CREATE TABLE IF NOT EXISTS seo_rankings (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      project_id INTEGER NOT NULL,
+      keyword TEXT NOT NULL,
+      url TEXT DEFAULT '',
+      search_engine TEXT NOT NULL DEFAULT 'google',
+      location TEXT NOT NULL DEFAULT 'US',
+      device TEXT NOT NULL DEFAULT 'desktop',
+      position INTEGER DEFAULT 0,
+      prev_position INTEGER DEFAULT 0,
+      position_change INTEGER DEFAULT 0,
+      serp_features TEXT DEFAULT '[]',
+      tags TEXT DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT ''
+    )`,
+    // ── SEO Hub: Ranking History (daily snapshots) ──
+    `CREATE TABLE IF NOT EXISTS seo_ranking_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ranking_id INTEGER NOT NULL,
+      position INTEGER DEFAULT 0,
+      serp_features TEXT DEFAULT '[]',
+      recorded_at TEXT NOT NULL DEFAULT ''
+    )`,
+    // ── SEO Hub: Keywords Database (like KWFinder, Keyword Magic Tool) ──
+    `CREATE TABLE IF NOT EXISTS seo_keywords (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      keyword TEXT NOT NULL UNIQUE,
+      volume INTEGER DEFAULT 0,
+      difficulty REAL DEFAULT 0,
+      cpc REAL DEFAULT 0,
+      competition REAL DEFAULT 0,
+      trend TEXT DEFAULT '[]',
+      type TEXT DEFAULT 'exact',
+      related TEXT DEFAULT '[]',
+      questions TEXT DEFAULT '[]',
+      last_updated TEXT DEFAULT ''
+    )`,
+    // ── SEO Hub: Backlinks (like Ahrefs, LinkMiner, Majestic) ──
+    `CREATE TABLE IF NOT EXISTS seo_backlinks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      project_id INTEGER NOT NULL,
+      source_url TEXT NOT NULL,
+      target_url TEXT DEFAULT '',
+      source_domain TEXT NOT NULL,
+      target_domain TEXT DEFAULT '',
+      domain_rating REAL DEFAULT 0,
+      url_rating REAL DEFAULT 0,
+      link_type TEXT NOT NULL DEFAULT 'dofollow',
+      link_location TEXT DEFAULT 'content',
+      anchor_text TEXT DEFAULT '',
+      first_seen TEXT DEFAULT '',
+      last_checked TEXT DEFAULT '',
+      is_lost INTEGER DEFAULT 0,
+      is_new INTEGER DEFAULT 0,
+      spam_score REAL DEFAULT 0,
+      traffic REAL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT ''
+    )`,
+    // ── SEO Hub: Backlink Stats (aggregated per domain) ──
+    `CREATE TABLE IF NOT EXISTS seo_domain_stats (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      project_id INTEGER NOT NULL,
+      domain TEXT NOT NULL,
+      domain_rating REAL DEFAULT 0,
+      ref_domains INTEGER DEFAULT 0,
+      backlinks INTEGER DEFAULT 0,
+      ref_ips INTEGER DEFAULT 0,
+      dofollow INTEGER DEFAULT 0,
+      nofollow INTEGER DEFAULT 0,
+      edu_gov INTEGER DEFAULT 0,
+      high_pr INTEGER DEFAULT 0,
+      image_links INTEGER DEFAULT 0,
+      nofollow_images INTEGER DEFAULT 0,
+      linked_domains INTEGER DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT '',
+      updated_at TEXT NOT NULL DEFAULT ''
+    )`,
+    // ── SEO Hub: Site Audit Issues ──
+    `CREATE TABLE IF NOT EXISTS seo_audit_issues (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      project_id INTEGER NOT NULL,
+      session_id INTEGER DEFAULT 0,
+      type TEXT NOT NULL,
+      severity TEXT NOT NULL DEFAULT 'warning',
+      title TEXT NOT NULL,
+      description TEXT DEFAULT '',
+      url TEXT DEFAULT '',
+      recommendation TEXT DEFAULT '',
+      affected_count INTEGER DEFAULT 1,
+      is_resolved INTEGER DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT ''
+    )`,
+    // ── SEO Hub: Competitors (like SpyFu, Similarweb) ──
+    `CREATE TABLE IF NOT EXISTS seo_competitors (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      project_id INTEGER NOT NULL,
+      competitor_domain TEXT NOT NULL,
+      traffic_estimate INTEGER DEFAULT 0,
+      keywords_count INTEGER DEFAULT 0,
+      common_keywords INTEGER DEFAULT 0,
+      overlap_score REAL DEFAULT 0,
+      discovered_at TEXT NOT NULL DEFAULT ''
+    )`,
+    // ── SEO Hub: Content Analysis (like Surfer SEO, Frase) ──
+    `CREATE TABLE IF NOT EXISTS seo_content (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      project_id INTEGER NOT NULL,
+      url TEXT NOT NULL,
+      title TEXT DEFAULT '',
+      meta_description TEXT DEFAULT '',
+      content_score REAL DEFAULT 0,
+      word_count INTEGER DEFAULT 0,
+      readability_score REAL DEFAULT 0,
+      heading_structure TEXT DEFAULT '[]',
+      keywords_found TEXT DEFAULT '[]',
+      keywords_missing TEXT DEFAULT '[]',
+      recommendations TEXT DEFAULT '[]',
+      last_analyzed TEXT DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT ''
+    )`,
+    // ── SEO Hub: Reports (white-label like SE Ranking) ──
+    `CREATE TABLE IF NOT EXISTS seo_reports (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      project_id INTEGER NOT NULL,
+      name TEXT NOT NULL,
+      type TEXT NOT NULL DEFAULT 'full',
+      format TEXT NOT NULL DEFAULT 'pdf',
+      include_sections TEXT DEFAULT '[]',
+      branding TEXT DEFAULT '{}',
+      scheduled INTEGER DEFAULT 0,
+      schedule_cron TEXT DEFAULT '',
+      last_sent TEXT DEFAULT '',
+      recipients TEXT DEFAULT '[]',
+      created_at TEXT NOT NULL DEFAULT ''
+    )`,
+    // ── SEO Hub: Alerts ──
+    `CREATE TABLE IF NOT EXISTS seo_alerts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      project_id INTEGER NOT NULL,
+      type TEXT NOT NULL,
+      message TEXT NOT NULL,
+      severity TEXT NOT NULL DEFAULT 'info',
+      is_read INTEGER DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT ''
+    )`,
   ];
 
   for (const sql of tables) {

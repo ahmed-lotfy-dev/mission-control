@@ -36,6 +36,7 @@ const NAV_GROUPS = [
     items: [
       { path: "/agents", icon: "🤖", label: "AI Agents" },
       { path: "/vault", icon: "🧠", label: "Knowledge Vault" },
+      { path: "/seo-hub", icon: "🎯", label: "SEO Hub" },
       { path: "/seo", icon: "🔍", label: "SEO Audit" },
     ],
   },

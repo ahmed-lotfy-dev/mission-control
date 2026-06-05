@@ -14,6 +14,7 @@ import ContentWriter from "./views/ContentWriter";
 import Calendar from "./views/Calendar";
 import Social from "./views/Social";
 import Analytics from "./views/Analytics";
+import SeoHub from "./views/SeoHub";
 import SeoReport from "./features/seo/components/SeoReport";
 import SeoDomain from "./features/seo/components/SeoDomain";
 import SeoContentPreview from "./features/seo/components/SeoContentPreview";
@@ -43,6 +44,7 @@ const contentWriterRoute = createRoute({ getParentRoute: () => rootRoute, path: 
 const calendarRoute = createRoute({ getParentRoute: () => rootRoute, path: "/calendar", component: Calendar });
 const socialRoute = createRoute({ getParentRoute: () => rootRoute, path: "/social", component: Social });
 const analyticsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/analytics", component: Analytics });
+const seoHubRoute = createRoute({ getParentRoute: () => rootRoute, path: "/seo-hub", component: SeoHub });
 
 const routeTree = rootRoute.addChildren([
   dashboardRoute,
@@ -62,6 +64,7 @@ const routeTree = rootRoute.addChildren([
   calendarRoute,
   socialRoute,
   analyticsRoute,
+  seoHubRoute,
 ]);
 
 export const router = createRouter({ routeTree });
