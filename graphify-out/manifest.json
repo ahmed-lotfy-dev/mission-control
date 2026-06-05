@@ -15,8 +15,8 @@
     "semantic_hash": ""
   },
   "/mnt/hdd/projects/mission-control/client/package.json": {
-    "mtime": 1779981973.2810001,
-    "ast_hash": "226c2ea1fac14c0f9ba05ac301cea231",
+    "mtime": 1780300577.6714485,
+    "ast_hash": "5abea9b1a4409e3d6277f7f4a40ce5e9",
     "semantic_hash": ""
   },
   "/mnt/hdd/projects/mission-control/client/tailwind.config.js": {
@@ -30,23 +30,23 @@
     "semantic_hash": ""
   },
   "/mnt/hdd/projects/mission-control/client/vite.config.ts": {
-    "mtime": 1780261304.5436857,
-    "ast_hash": "2d423a2350e738d894964da8612af712",
+    "mtime": 1780441903.9415169,
+    "ast_hash": "5423151bd6b5def887eda158d2cbc9aa",
     "semantic_hash": ""
   },
   "/mnt/hdd/projects/mission-control/client/src/Layout.tsx": {
-    "mtime": 1780071487.1384366,
-    "ast_hash": "84080aeb04a46394bf229d856123de0c",
+    "mtime": 1780676663.5917208,
+    "ast_hash": "5234171332f5969a9a04b4de74ed4fd8",
     "semantic_hash": ""
   },
   "/mnt/hdd/projects/mission-control/client/src/main.tsx": {
-    "mtime": 1779973367.8264625,
-    "ast_hash": "4a5345bd8f0608eb0d2037e78d96232a",
+    "mtime": 1780313891.6038375,
+    "ast_hash": "812942f7675c0515257eb3fdaa253782",
     "semantic_hash": ""
   },
   "/mnt/hdd/projects/mission-control/client/src/router.tsx": {
-    "mtime": 1780071186.332735,
-    "ast_hash": "f6829993fe1abbf745c39a60ee884cb9",
+    "mtime": 1780676590.930763,
+    "ast_hash": "0d058e26b15ef977a4a5d48b0e73beac",
     "semantic_hash": ""
   },
   "/mnt/hdd/projects/mission-control/client/src/components/AgentSidebar.tsx": {
@@ -75,8 +75,8 @@
     "semantic_hash": ""
   },
   "/mnt/hdd/projects/mission-control/client/src/components/ui/dialog.tsx": {
-    "mtime": 1779835397.6341553,
-    "ast_hash": "25ba4c9d2b797a2f83beb645f419bff0",
+    "mtime": 1780583924.464746,
+    "ast_hash": "098453f78851ddd5921d32202c999a6a",
     "semantic_hash": ""
   },
   "/mnt/hdd/projects/mission-control/client/src/components/ui/form.tsx": {
@@ -135,13 +135,13 @@
     "semantic_hash": ""
   },
   "/mnt/hdd/projects/mission-control/client/src/features/seo/components/SeoReport.tsx": {
-    "mtime": 1779990704.815545,
-    "ast_hash": "212ae81b4b5b695f12f28f2aad8ab075",
+    "mtime": 1780680942.6977956,
+    "ast_hash": "23dcf356fdb68be97eb218ffe90b6f8a",
     "semantic_hash": ""
   },
   "/mnt/hdd/projects/mission-control/client/src/lib/api.ts": {
-    "mtime": 1779973376.8099632,
-    "ast_hash": "33e5efcf38a4dcd4077f163dae48a598",
+    "mtime": 1780574749.3307135,
+    "ast_hash": "659c583bd4530e2a9337d59869258921",
     "semantic_hash": ""
   },
   "/mnt/hdd/projects/mission-control/client/src/lib/schemas.ts": {
@@ -195,8 +195,8 @@
     "semantic_hash": ""
   },
   "/mnt/hdd/projects/mission-control/client/src/views/Seo.tsx": {
-    "mtime": 1780260977.549556,
-    "ast_hash": "31f0fb2f6037c59fbc125a61416d3e0e",
+    "mtime": 1780480323.121978,
+    "ast_hash": "3e5236ab336d548de2f36597a3d910c2",
     "semantic_hash": ""
   },
   "/mnt/hdd/projects/mission-control/client/src/views/Studio.tsx": {
@@ -220,13 +220,13 @@
     "semantic_hash": ""
   },
   "/mnt/hdd/projects/mission-control/server/src/index.ts": {
-    "mtime": 1780261762.4954398,
-    "ast_hash": "46027de1ee2ccefefb3e4a453e170870",
+    "mtime": 1780680863.5385432,
+    "ast_hash": "2e383f1339734481dd391df2bb50d98b",
     "semantic_hash": ""
   },
   "/mnt/hdd/projects/mission-control/server/src/db/index.ts": {
-    "mtime": 1780261126.3315477,
-    "ast_hash": "0e3dd24543152265d87a562fd2b80f98",
+    "mtime": 1780674552.2024767,
+    "ast_hash": "326993a39f8ff0189b03965c87c52c12",
     "semantic_hash": ""
   },
   "/mnt/hdd/projects/mission-control/server/src/db/seed.ts": {
@@ -235,8 +235,8 @@
     "semantic_hash": ""
   },
   "/mnt/hdd/projects/mission-control/server/src/lib/helpers.ts": {
-    "mtime": 1780081106.0921102,
-    "ast_hash": "4b51322a169f3e881a60528c2c94efa6",
+    "mtime": 1780442423.1967463,
+    "ast_hash": "058b3bd32310298cb4e27efdb5a44d18",
     "semantic_hash": ""
   },
   "/mnt/hdd/projects/mission-control/server/src/lib/rate-limit.ts": {
@@ -270,13 +270,13 @@
     "semantic_hash": ""
   },
   "/mnt/hdd/projects/mission-control/server/src/routes/seo.ts": {
-    "mtime": 1780081009.026997,
-    "ast_hash": "ffb45efa6e217f492fd2645b06af51a6",
+    "mtime": 1780680847.430078,
+    "ast_hash": "c18a8ddeb17965ff909df72ba985b8b9",
     "semantic_hash": ""
   },
   "/mnt/hdd/projects/mission-control/server/src/routes/studio.ts": {
-    "mtime": 1780129891.8820543,
-    "ast_hash": "7aff2b70ddc86b163a1241fb063b3dc4",
+    "mtime": 1780446818.003256,
+    "ast_hash": "8465b39554acede9e5a281259d9e8d22",
     "semantic_hash": ""
   },
   "/mnt/hdd/projects/mission-control/server/src/routes/tasks.ts": {
@@ -295,8 +295,8 @@
     "semantic_hash": ""
   },
   "/mnt/hdd/projects/mission-control/server/src/routes/ws.ts": {
-    "mtime": 1780081065.5398302,
-    "ast_hash": "68661486c11f90aea2d07c17df878736",
+    "mtime": 1780589961.1584718,
+    "ast_hash": "b6660b4886ddd333f9d18576b465152a",
     "semantic_hash": ""
   },
   "/mnt/hdd/projects/mission-control/tests/seo-audit.test.ts": {
@@ -325,18 +325,108 @@
     "semantic_hash": ""
   },
   "/mnt/hdd/projects/mission-control/server/src/lib/seo-crawler.ts": {
-    "mtime": 1780260463.2815776,
-    "ast_hash": "0177df00c3edb59228fee602cf1b5bdc",
+    "mtime": 1780315624.802144,
+    "ast_hash": "d0ba34cc63a05ccaf402f1a5fffcc2f1",
     "semantic_hash": ""
   },
   "/mnt/hdd/projects/mission-control/server/src/routes/seo-audit.ts": {
-    "mtime": 1780260669.0649323,
-    "ast_hash": "40e85a1b7825be3dbbbd84d9f68a57e1",
+    "mtime": 1780680810.469016,
+    "ast_hash": "2c48698486c06e1945560cbafdb42a19",
     "semantic_hash": ""
   },
   "/mnt/hdd/projects/mission-control/package.json": {
     "mtime": 1780261338.096344,
     "ast_hash": "35c453249cdde15aa8252fa314f9cbaa",
+    "semantic_hash": ""
+  },
+  "/mnt/hdd/projects/mission-control/client/src/components/ErrorPage.tsx": {
+    "mtime": 1780309594.1476893,
+    "ast_hash": "d1275412bebaa7ca14d7f724ad0c119e",
+    "semantic_hash": ""
+  },
+  "/mnt/hdd/projects/mission-control/client/src/components/NotFoundPage.tsx": {
+    "mtime": 1780309594.1373858,
+    "ast_hash": "b3e1020f1c35b10354079eb991e2c2bc",
+    "semantic_hash": ""
+  },
+  "/mnt/hdd/projects/mission-control/client/src/components/ui/delete-confirm-dialog.tsx": {
+    "mtime": 1780583763.8895895,
+    "ast_hash": "9a57a895a405f708bc7f6dc2ea34ba5a",
+    "semantic_hash": ""
+  },
+  "/mnt/hdd/projects/mission-control/client/src/components/ui/skeleton.tsx": {
+    "mtime": 1780317309.6557572,
+    "ast_hash": "d6ad90f453aca36b6c6768cb246b440c",
+    "semantic_hash": ""
+  },
+  "/mnt/hdd/projects/mission-control/client/src/features/seo/components/SeoDomain.tsx": {
+    "mtime": 1780680947.4727657,
+    "ast_hash": "3596e37864322f6723fd61b882247240",
+    "semantic_hash": ""
+  },
+  "/mnt/hdd/projects/mission-control/client/src/views/Analytics.tsx": {
+    "mtime": 1780605356.896359,
+    "ast_hash": "9b7659f803347c7f19a378a0cf4a5dcf",
+    "semantic_hash": ""
+  },
+  "/mnt/hdd/projects/mission-control/client/src/views/Calendar.tsx": {
+    "mtime": 1780605104.1169634,
+    "ast_hash": "de41a4902450f1b4bd23e8ca32c7a901",
+    "semantic_hash": ""
+  },
+  "/mnt/hdd/projects/mission-control/client/src/views/ContentWriter.tsx": {
+    "mtime": 1780604983.536151,
+    "ast_hash": "a0544f034808f267ad4375bff17cd86a",
+    "semantic_hash": ""
+  },
+  "/mnt/hdd/projects/mission-control/client/src/views/SeoHub.tsx": {
+    "mtime": 1780676331.175745,
+    "ast_hash": "56b607b9f1abae962fd196368c4a6082",
+    "semantic_hash": ""
+  },
+  "/mnt/hdd/projects/mission-control/client/src/views/Social.tsx": {
+    "mtime": 1780605220.7032728,
+    "ast_hash": "ef9f9a8985d94a30853031ac66471268",
+    "semantic_hash": ""
+  },
+  "/mnt/hdd/projects/mission-control/server/src/routes/content-gen.ts": {
+    "mtime": 1780606267.8856442,
+    "ast_hash": "ca6eb9d9407fb51b1b74416494993952",
+    "semantic_hash": ""
+  },
+  "/mnt/hdd/projects/mission-control/server/src/routes/seo-hub.ts": {
+    "mtime": 1780675368.4376895,
+    "ast_hash": "d5cb2b058a7a0ab6b9326c23c98cf588",
+    "semantic_hash": ""
+  },
+  "/mnt/hdd/projects/mission-control/docs/ARCHITECTURE.md": {
+    "mtime": 1780689735.234802,
+    "ast_hash": "6d32ecff6e9e1b7749b91252ae8b1cdc",
+    "semantic_hash": ""
+  },
+  "/mnt/hdd/projects/mission-control/docs/PRD_SEO.md": {
+    "mtime": 1780689677.335852,
+    "ast_hash": "a3d8e1d53844d3307cafe9b690c2645a",
+    "semantic_hash": ""
+  },
+  "/mnt/hdd/projects/mission-control/docs/SEO_FUNCTIONAL_SPEC.md": {
+    "mtime": 1780689699.2622228,
+    "ast_hash": "756417b76b8e713477a4f0db1c026afb",
+    "semantic_hash": ""
+  },
+  "/mnt/hdd/projects/mission-control/docs/SEO_PROGRESS.md": {
+    "mtime": 1780689720.5482621,
+    "ast_hash": "aed3509f394c1ea8b7efbd7a9dee4da9",
+    "semantic_hash": ""
+  },
+  "/mnt/hdd/projects/mission-control/docs/TODO.md": {
+    "mtime": 1780689707.209121,
+    "ast_hash": "a9f559e78ac72dcf871378caee90a21a",
+    "semantic_hash": ""
+  },
+  "/mnt/hdd/projects/mission-control/docs/VENDOR_SCAN.md": {
+    "mtime": 1780689668.3307815,
+    "ast_hash": "94f63dcd3a00824a03d85900d1fb532c",
     "semantic_hash": ""
   }
 }
