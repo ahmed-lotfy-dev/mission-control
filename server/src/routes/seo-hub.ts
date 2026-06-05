@@ -25,10 +25,14 @@ function generateKeywordData(keyword: string): any {
 }
 
 async function getSerpData(keyword: string, location = "US"): Promise<any> {
+  const url = `https://www.google.com/search?q=${encodeURIComponent(keyword)}&num=10&hl=${encodeURIComponent(location)}`;
+  const res = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" }, signal: AbortSignal.timeout(15000) });
+  if (!res.ok) throw new Error(`SERP fetch failed: ${res.status}`);
+  const html = await res.text();
   return {
     keyword,
     position: Math.floor(Math.random() * 100) + 1,
-    url: `https://example.com/${keyword.replace(/\s+/g, "-").slice(0, 30)}`,
+    url,
     serp_features: ["featured_snippet", "people_also_ask", "local_pack"].filter(() => Math.random() > 0.6),
     timestamp: new Date().toISOString(),
   };
