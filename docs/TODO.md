@@ -21,7 +21,7 @@
 [x] Docs: PRD, functional spec, architecture, vendor scan, progress
 
 # Next
-[ ] Wire real SEO data providers (free rank check, GSC OAuth, free backlink sources, SERP API)
+[/] Wire real SEO data providers (free rank check, GSC OAuth, free backlink sources, SERP API)
 [ ] Real PDF export for reports
 [ ] Scheduled automated reports
 [ ] White-label branding persistence
