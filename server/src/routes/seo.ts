@@ -1,19 +1,20 @@
 import { Elysia, t } from "elysia";
 import { dbQuery, dbGet, dbRun, dbInsert } from "../db";
 
-function handleError(operation: string, err: any): { error: string; detail: string } {
+function handleError(set: any, operation: string, err: any): { error: string; detail: string } {
   const msg = err?.message || err?.toString() || "Unknown error";
   console.error(`[seo] ${operation} error:`, msg);
+  set.status = 500;
   return { error: `${operation} failed`, detail: msg };
 }
 
 export const seoRoutes = new Elysia({ prefix: "/api/seo" })
   // Keywords
-  .get("/keywords", () => {
+  .get("/keywords", ({ set }) => {
     try { return dbQuery("SELECT * FROM seo_keywords ORDER BY created_at DESC"); }
-    catch (err: any) { return handleError("List keywords", err); }
+    catch (err: any) { return handleError(set, "List keywords", err); }
   })
-  .post("/keywords", ({ body }) => {
+  .post("/keywords", ({ body, set }) => {
     try {
       const now = new Date().toISOString();
       const id = dbInsert(
@@ -21,7 +22,7 @@ export const seoRoutes = new Elysia({ prefix: "/api/seo" })
         [body.keyword, body.volume ?? 0, body.difficulty ?? 0, JSON.stringify(body.related ?? []), body.notes ?? "", now, now]
       );
       return { id, ...body };
-    } catch (err: any) { return handleError("Create keyword", err); }
+    } catch (err: any) { return handleError(set, "Create keyword", err); }
   }, {
     body: t.Object({
       keyword: t.String(),
@@ -31,7 +32,7 @@ export const seoRoutes = new Elysia({ prefix: "/api/seo" })
       notes: t.Optional(t.String()),
     }),
   })
-  .patch("/keywords/:id", ({ params, body }) => {
+  .patch("/keywords/:id", ({ params, body, set }) => {
     try {
       const now = new Date().toISOString();
       const sets: string[] = [];
@@ -46,22 +47,22 @@ export const seoRoutes = new Elysia({ prefix: "/api/seo" })
       vals.push(now, Number(params.id));
       dbRun(`UPDATE seo_keywords SET ${sets.join(", ")} WHERE id = $${i}`, vals);
       return { id: Number(params.id), updatedAt: now };
-    } catch (err: any) { return handleError("Update keyword", err); }
+    } catch (err: any) { return handleError(set, "Update keyword", err); }
   }, {
     params: t.Object({ id: t.String() }),
   })
-  .delete("/keywords/:id", ({ params }) => {
+  .delete("/keywords/:id", ({ params, set }) => {
     try { dbRun("DELETE FROM seo_keywords WHERE id = $1", [Number(params.id)]); return { deleted: true }; }
-    catch (err: any) { return handleError("Delete keyword", err); }
+    catch (err: any) { return handleError(set, "Delete keyword", err); }
   }, {
     params: t.Object({ id: t.String() }),
   })
   // Content
-  .get("/content", () => {
+  .get("/content", ({ set }) => {
     try { return dbQuery("SELECT * FROM seo_content ORDER BY created_at DESC"); }
-    catch (err: any) { return handleError("List content", err); }
+    catch (err: any) { return handleError(set, "List content", err); }
   })
-  .post("/content", ({ body }) => {
+  .post("/content", ({ body, set }) => {
     try {
       const now = new Date().toISOString();
       const id = dbInsert(
@@ -69,7 +70,7 @@ export const seoRoutes = new Elysia({ prefix: "/api/seo" })
         [body.keyword, body.targetUrl ?? "", body.title ?? "", body.metaDescription ?? "", JSON.stringify(body.headings ?? []), body.body ?? "", body.status ?? "generated", now, now]
       );
       return { id, ...body };
-    } catch (err: any) { return handleError("Create content", err); }
+    } catch (err: any) { return handleError(set, "Create content", err); }
   }, {
     body: t.Object({
       keyword: t.String(),
@@ -81,18 +82,18 @@ export const seoRoutes = new Elysia({ prefix: "/api/seo" })
       status: t.Optional(t.String()),
     }),
   })
-  .delete("/content/:id", ({ params }) => {
+  .delete("/content/:id", ({ params, set }) => {
     try { dbRun("DELETE FROM seo_content WHERE id = $1", [Number(params.id)]); return { deleted: true }; }
-    catch (err: any) { return handleError("Delete content", err); }
+    catch (err: any) { return handleError(set, "Delete content", err); }
   }, {
     params: t.Object({ id: t.String() }),
   })
   // Ranks
-  .get("/ranks", () => {
+  .get("/ranks", ({ set }) => {
     try { return dbQuery("SELECT * FROM seo_ranks ORDER BY check_date DESC"); }
-    catch (err: any) { return handleError("List ranks", err); }
+    catch (err: any) { return handleError(set, "List ranks", err); }
   })
-  .post("/ranks", ({ body }) => {
+  .post("/ranks", ({ body, set }) => {
     try {
       const now = new Date().toISOString();
       const id = dbInsert(
@@ -100,7 +101,7 @@ export const seoRoutes = new Elysia({ prefix: "/api/seo" })
         [body.keyword, body.position ?? 0, body.url ?? "", body.checkDate ?? now, body.notes ?? ""]
       );
       return { id, ...body };
-    } catch (err: any) { return handleError("Create rank", err); }
+    } catch (err: any) { return handleError(set, "Create rank", err); }
   }, {
     body: t.Object({
       keyword: t.String(),
@@ -110,18 +111,18 @@ export const seoRoutes = new Elysia({ prefix: "/api/seo" })
       notes: t.Optional(t.String()),
     }),
   })
-  .delete("/ranks/:id", ({ params }) => {
+  .delete("/ranks/:id", ({ params, set }) => {
     try { dbRun("DELETE FROM seo_ranks WHERE id = $1", [Number(params.id)]); return { deleted: true }; }
-    catch (err: any) { return handleError("Delete rank", err); }
+    catch (err: any) { return handleError(set, "Delete rank", err); }
   }, {
     params: t.Object({ id: t.String() }),
   })
   // Audits
-  .get("/audits", () => {
+  .get("/audits", ({ set }) => {
     try { return dbQuery("SELECT * FROM seo_audits ORDER BY created_at DESC"); }
-    catch (err: any) { return handleError("List audits", err); }
+    catch (err: any) { return handleError(set, "List audits", err); }
   })
-  .post("/audits", ({ body }) => {
+  .post("/audits", ({ body, set }) => {
     try {
       const now = new Date().toISOString();
       const id = dbInsert(
@@ -129,7 +130,7 @@ export const seoRoutes = new Elysia({ prefix: "/api/seo" })
         [body.url, body.score ?? 0, body.title ?? "", body.metaDescription ?? "", body.headingsCount ?? 0, body.linksCount ?? 0, body.hasMeta ? 1 : 0, body.hasTitle ? 1 : 0, body.pageSize ?? 0, JSON.stringify(body.issues ?? []), now]
       );
       return { id, ...body };
-    } catch (err: any) { return handleError("Create audit", err); }
+    } catch (err: any) { return handleError(set, "Create audit", err); }
   }, {
     body: t.Object({
       url: t.String(),
@@ -144,9 +145,9 @@ export const seoRoutes = new Elysia({ prefix: "/api/seo" })
       issues: t.Optional(t.Array(t.String())),
     }),
   })
-  .delete("/audits/:id", ({ params }) => {
+  .delete("/audits/:id", ({ params, set }) => {
     try { dbRun("DELETE FROM seo_audits WHERE id = $1", [Number(params.id)]); return { deleted: true }; }
-    catch (err: any) { return handleError("Delete audit", err); }
+    catch (err: any) { return handleError(set, "Delete audit", err); }
   }, {
     params: t.Object({ id: t.String() }),
   });

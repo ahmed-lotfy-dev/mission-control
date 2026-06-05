@@ -47,7 +47,7 @@ export default function SeoDomain() {
 
   const handleDelete = async (reportId: number) => {
     try { await api(`/seo-audit/sessions/${reportId}`, { method: "DELETE" }); toast.success(`Report #${reportId} deleted`); refetch(); }
-    catch (err: any) { toast.error("Failed to delete", { description: err?.message }); }
+    catch (err: any) { toast.error("Failed to delete", { description: err?.message || "Unknown error" }); }
   };
 
   if (isLoading) return (

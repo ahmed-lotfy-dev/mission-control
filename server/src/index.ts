@@ -65,9 +65,15 @@ function getEnhancedAgents() {
 const app = new Elysia()
   .onError(({ code, error, set }) => {
     const msg = (error as any)?.message || error?.toString() || "Unknown error";
-    console.error(`[server] Unhandled error (${code}):`, msg);
+    console.error(`[server] Unhandled error (${code}):`, msg.substring(0, 200));
+    if (code === 'VALIDATION') {
+      set.status = 400;
+      const valErr = (error as any);
+      const first = valErr?.all?.[0]?.message || valErr?.message || msg;
+      return { error: "Validation failed", detail: first };
+    }
     set.status = 500;
-    return { error: "Internal server error", detail: msg };
+    return { error: "Internal server error", detail: msg.substring(0, 500) };
   })
   .onRequest(({ request }) => {
     const origin = request.headers.get("origin") ?? "";

@@ -393,12 +393,14 @@ export default function SeoReport() {
 
   // ── Error state ──
   if (error || !overview) {
+    const errMsg = error instanceof Error ? error.message : String(error || "");
+    const is404 = errMsg.includes("Session not found") || errMsg.includes("Not found");
     return (
       <div className="card p-10 text-center max-w-lg mx-auto mt-10">
         <XCircle size={40} className="text-red mx-auto mb-3" />
-        <h2 className="text-red font-bold text-lg">Report Not Found</h2>
+        <h2 className="text-red font-bold text-lg">{is404 ? "Report Not Found" : "Error Loading Report"}</h2>
         <p className="subtitle mt-2 text-sm">
-          {String(error) || `No data found for session #${sid}. The crawl may still be running or the data was deleted.`}
+          {errMsg || `No data found for session #${sid}. The crawl may still be running or the data was deleted.`}
         </p>
         <div className="flex gap-sm justify-center mt-6">
           <Button variant="outline" onClick={() => navigate({ to: "/seo" })}>

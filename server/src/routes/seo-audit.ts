@@ -6,17 +6,18 @@ import { broadcastCrawlProgress } from "../routes/ws";
 
 const activeCrawls = new Map<number, { status: string; done: number; total: number; currentUrl: string }>();
 
-/** Wrap handler errors into a consistent JSON response instead of generic 503 */
-function handleError(operation: string, err: any): { error: string; detail: string } {
+/** Wrap handler errors into a consistent JSON response with proper HTTP status */
+function handleError(set: any, operation: string, err: any): { error: string; detail: string } {
   const msg = err?.message || err?.toString() || "Unknown error";
   console.error(`[seo-audit] ${operation} error:`, msg);
+  set.status = 500;
   return { error: `${operation} failed`, detail: msg };
 }
 
 export const seoAuditRoutes = new Elysia({ prefix: "/api/seo-audit" })
 
   // ── Start Crawl ──
-  .post("/crawl", ({ body }) => {
+  .post("/crawl", ({ body, set }) => {
     try {
       const siteUrl = (body as any).siteUrl;
       if (!siteUrl) return { error: "siteUrl is required", detail: "The siteUrl field is missing from the request body" };
@@ -29,7 +30,7 @@ export const seoAuditRoutes = new Elysia({ prefix: "/api/seo-audit" })
           [siteUrl, domainSlug, "running", now, now]
         );
       } catch (err: any) {
-        return handleError("Create crawl session", err);
+        return handleError(set, "Create crawl session", err);
       }
 
       // Background crawl with real-time progress
@@ -80,12 +81,12 @@ export const seoAuditRoutes = new Elysia({ prefix: "/api/seo-audit" })
 
       return { sessionId, domainSlug, message: "Crawl started" };
     } catch (err: any) {
-      return handleError("Start crawl", err);
+      return handleError(set, "Start crawl", err);
     }
   }, { body: t.Object({ siteUrl: t.String() }) })
 
   // ── Crawl Progress (polling fallback) ──
-  .get("/crawl/:sessionId/progress", ({ params }) => {
+  .get("/crawl/:sessionId/progress", ({ params, set }) => {
     try {
       const sid = Number(params.sessionId);
       if (isNaN(sid) || sid <= 0) return { error: "Invalid session ID", detail: `Session ID must be a positive number, got: ${params.sessionId}` };
@@ -95,32 +96,32 @@ export const seoAuditRoutes = new Elysia({ prefix: "/api/seo-audit" })
       if (!session) return { error: "Session not found", detail: `No crawl session found with ID ${sid}` };
       return { status: session.status, done: session.pages_crawled, total: session.total_pages, currentUrl: "" };
     } catch (err: any) {
-      return handleError("Get crawl progress", err);
+      return handleError(set, "Get crawl progress", err);
     }
   }, { params: t.Object({ sessionId: t.String() }) })
 
   // ── Sessions List ──
-  .get("/sessions", () => {
+  .get("/sessions", ({ set }) => {
     try {
       return dbQuery("SELECT * FROM seo_crawl_sessions ORDER BY created_at DESC LIMIT 50");
     } catch (err: any) {
-      return handleError("List sessions", err);
+      return handleError(set, "List sessions", err);
     }
   })
 
   // ── Domain Reports ──
-  .get("/domain/:domainSlug", ({ params }) => {
+  .get("/domain/:domainSlug", ({ params, set }) => {
     try {
       const sessions = dbQuery("SELECT id,site_url,domain_slug,status,pages_crawled,total_pages,started_at,finished_at,created_at FROM seo_crawl_sessions WHERE domain_slug=$1 ORDER BY created_at DESC",[params.domainSlug]);
       if (!sessions.length) return { domain: params.domainSlug, site_url: "", reports: [] };
       return { domain: params.domainSlug, site_url: sessions[0].site_url, report_count: sessions.length, reports: sessions };
     } catch (err: any) {
-      return handleError("Get domain reports", err);
+      return handleError(set, "Get domain reports", err);
     }
   })
 
   // ── Delete Session ──
-  .delete("/sessions/:sessionId", ({ params }) => {
+  .delete("/sessions/:sessionId", ({ params, set }) => {
     try {
       const sid = Number(params.sessionId);
       if (isNaN(sid) || sid <= 0) return { error: "Invalid session ID", detail: `Session ID must be a positive number, got: ${params.sessionId}` };
@@ -136,15 +137,17 @@ export const seoAuditRoutes = new Elysia({ prefix: "/api/seo-audit" })
       activeCrawls.delete(sid);
       return { deleted: true };
     } catch (err: any) {
-      return handleError("Delete session", err);
+      return handleError(set, "Delete session", err);
     }
   }, { params: t.Object({ sessionId: t.String() }) })
 
   // ── Overview ──
-  .get("/overview/:sessionId", ({ params }) => {
+  .get("/overview/:sessionId", ({ params, set }) => {
     try {
       const sid = Number(params.sessionId);
-      if (isNaN(sid) || sid <= 0) return { error: "Invalid session ID", detail: `Session ID must be a positive number, got: ${params.sessionId}` };
+      if (isNaN(sid) || sid <= 0) { set.status = 400; return { error: "Invalid session ID", detail: `Session ID must be a positive number, got: ${params.sessionId}` }; }
+      const session = dbGet("SELECT id FROM seo_crawl_sessions WHERE id=$1",[sid]);
+      if (!session) { set.status = 404; return { error: "Session not found", detail: `No crawl session found with ID ${sid}. It may have been deleted or the ID is incorrect.` }; }
       const pages = dbQuery("SELECT * FROM seo_crawl_pages WHERE session_id=$1",[sid]);
       const issues = dbQuery("SELECT * FROM seo_issues WHERE session_id=$1",[sid]);
       const critical = issues.filter((i:any)=>i.severity==="critical").length;
@@ -164,12 +167,12 @@ export const seoAuditRoutes = new Elysia({ prefix: "/api/seo-audit" })
       for (const i of issues) categoryCounts[i.category] = (categoryCounts[i.category]||0)+1;
       return { score, totalPages: pages.length, avgResponseTime, issues: {critical,high,medium,low,notices:0,passed:Math.max(0,pages.length*15-issues.length),total:issues.length}, statusCounts, categoryCounts, topIssues: issues.slice(0,10) };
     } catch (err: any) {
-      return handleError("Get overview", err);
+      return handleError(set, "Get overview", err);
     }
   }, { params: t.Object({ sessionId: t.String() }) })
 
   // ── Issues ──
-  .get("/issues/:sessionId", ({ params, query }) => {
+  .get("/issues/:sessionId", ({ params, query, set }) => {
     try {
       const sid = Number(params.sessionId);
       if (isNaN(sid) || sid <= 0) return { error: "Invalid session ID", detail: `Session ID must be a positive number, got: ${params.sessionId}` };
@@ -180,12 +183,12 @@ export const seoAuditRoutes = new Elysia({ prefix: "/api/seo-audit" })
       sql+=" ORDER BY CASE severity WHEN 'critical' THEN 1 WHEN 'high' THEN 2 WHEN 'medium' THEN 3 WHEN 'low' THEN 4 ELSE 5 END, created_at DESC";
       return dbQuery(sql,p);
     } catch (err: any) {
-      return handleError("Get issues", err);
+      return handleError(set, "Get issues", err);
     }
   }, { params: t.Object({ sessionId: t.String() }) })
 
   // ── Content ──
-  .get("/content/:sessionId", ({ params, query }) => {
+  .get("/content/:sessionId", ({ params, query, set }) => {
     try {
       const sid = Number(params.sessionId);
       if (isNaN(sid) || sid <= 0) return { error: "Invalid session ID", detail: `Session ID must be a positive number, got: ${params.sessionId}` };
@@ -197,12 +200,12 @@ export const seoAuditRoutes = new Elysia({ prefix: "/api/seo-audit" })
       sql+=" ORDER BY url";
       return dbQuery(sql,[sid]);
     } catch (err: any) {
-      return handleError("Get content data", err);
+      return handleError(set, "Get content data", err);
     }
   }, { params: t.Object({ sessionId: t.String() }) })
 
   // ── Technical ──
-  .get("/technical/:sessionId", ({ params }) => {
+  .get("/technical/:sessionId", ({ params, set }) => {
     try {
       const sid = Number(params.sessionId);
       if (isNaN(sid) || sid <= 0) return { error: "Invalid session ID", detail: `Session ID must be a positive number, got: ${params.sessionId}` };
@@ -219,12 +222,12 @@ export const seoAuditRoutes = new Elysia({ prefix: "/api/seo-audit" })
         totalPages: pages.length,
       };
     } catch (err: any) {
-      return handleError("Get technical data", err);
+      return handleError(set, "Get technical data", err);
     }
   }, { params: t.Object({ sessionId: t.String() }) })
 
   // ── Links ──
-  .get("/links/:sessionId", ({ params }) => {
+  .get("/links/:sessionId", ({ params, set }) => {
     try {
       const sid = Number(params.sessionId);
       if (isNaN(sid) || sid <= 0) return { error: "Invalid session ID", detail: `Session ID must be a positive number, got: ${params.sessionId}` };
@@ -240,12 +243,12 @@ export const seoAuditRoutes = new Elysia({ prefix: "/api/seo-audit" })
         return df.length===1 ? {...p,incomingFrom:df[0].source_url} : null;
       }).filter(Boolean), topLinkedPages: [...incoming.entries()].sort((a,b)=>b[1]-a[1]).slice(0,20).map(([url,count])=>({url,incomingLinks:count})) };
     } catch (err: any) {
-      return handleError("Get links data", err);
+      return handleError(set, "Get links data", err);
     }
   }, { params: t.Object({ sessionId: t.String() }) })
 
   // ── Redirects ──
-  .get("/redirects/:sessionId", ({ params, query }) => {
+  .get("/redirects/:sessionId", ({ params, query, set }) => {
     try {
       const sid = Number(params.sessionId);
       if (isNaN(sid) || sid <= 0) return { error: "Invalid session ID", detail: `Session ID must be a positive number, got: ${params.sessionId}` };
@@ -255,12 +258,12 @@ export const seoAuditRoutes = new Elysia({ prefix: "/api/seo-audit" })
       sql+=" ORDER BY chain_length DESC";
       return dbQuery(sql,[sid]);
     } catch (err: any) {
-      return handleError("Get redirects", err);
+      return handleError(set, "Get redirects", err);
     }
   }, { params: t.Object({ sessionId: t.String() }) })
 
   // ── Hreflang ──
-  .get("/hreflang/:sessionId", ({ params }) => {
+  .get("/hreflang/:sessionId", ({ params, set }) => {
     try {
       const sid = Number(params.sessionId);
       if (isNaN(sid) || sid <= 0) return { error: "Invalid session ID", detail: `Session ID must be a positive number, got: ${params.sessionId}` };
@@ -274,36 +277,36 @@ export const seoAuditRoutes = new Elysia({ prefix: "/api/seo-audit" })
       for (const p of pagesList) if(!selfRef.has(p)) issues.push({page_url:p,issue:"Missing self-referencing hreflang"});
       return { hreflangs, matrix, pages:pagesList, langs:[...new Set(hreflangs.map((h:any)=>h.hreflang_value))], issues };
     } catch (err: any) {
-      return handleError("Get hreflang data", err);
+      return handleError(set, "Get hreflang data", err);
     }
   }, { params: t.Object({ sessionId: t.String() }) })
 
   // ── Social ──
-  .get("/social/:sessionId", ({ params }) => {
+  .get("/social/:sessionId", ({ params, set }) => {
     try {
       const sid = Number(params.sessionId);
       if (isNaN(sid) || sid <= 0) return { error: "Invalid session ID", detail: `Session ID must be a positive number, got: ${params.sessionId}` };
       const pages = dbQuery("SELECT id,url,og_title,og_description,og_image,og_url,og_type,og_locale,twitter_card,twitter_title,twitter_description,twitter_image,twitter_creator FROM seo_crawl_pages WHERE session_id=$1 AND http_status=200",[sid]);
       return { totalPages:pages.length, missingOgTitle:pages.filter((p:any)=>!p.og_title), missingOgDesc:pages.filter((p:any)=>!p.og_description), missingOgImage:pages.filter((p:any)=>!p.og_image), missingTwCard:pages.filter((p:any)=>!p.twitter_card), allPages:pages };
     } catch (err: any) {
-      return handleError("Get social data", err);
+      return handleError(set, "Get social data", err);
     }
   }, { params: t.Object({ sessionId: t.String() }) })
 
   // ── Images ──
-  .get("/images/:sessionId", ({ params }) => {
+  .get("/images/:sessionId", ({ params, set }) => {
     try {
       const sid = Number(params.sessionId);
       if (isNaN(sid) || sid <= 0) return { error: "Invalid session ID", detail: `Session ID must be a positive number, got: ${params.sessionId}` };
       const images = dbQuery("SELECT * FROM seo_images WHERE session_id=$1",[sid]);
       return { totalImages:images.length, missingAlt:images.filter((i:any)=>!i.has_alt), notLazy:images.filter((i:any)=>!i.is_lazy_loaded), broken:images.filter((i:any)=>i.is_broken===1) };
     } catch (err: any) {
-      return handleError("Get images data", err);
+      return handleError(set, "Get images data", err);
     }
   }, { params: t.Object({ sessionId: t.String() }) })
 
   // ── Performance ──
-  .get("/performance/:sessionId", ({ params }) => {
+  .get("/performance/:sessionId", ({ params, set }) => {
     try {
       const sid = Number(params.sessionId);
       if (isNaN(sid) || sid <= 0) return { error: "Invalid session ID", detail: `Session ID must be a positive number, got: ${params.sessionId}` };
@@ -311,6 +314,6 @@ export const seoAuditRoutes = new Elysia({ prefix: "/api/seo-audit" })
       const avgRt = pages.length>0 ? Math.round(pages.reduce((s:number,p:any)=>s+(p.response_time_ms||0),0)/pages.length) : 0;
       return { avgResponseTime:avgRt, slowPages:pages.filter((p:any)=>p.response_time_ms>2500), totalPages:pages.length };
     } catch (err: any) {
-      return handleError("Get performance data", err);
+      return handleError(set, "Get performance data", err);
     }
   }, { params: t.Object({ sessionId: t.String() }) });
