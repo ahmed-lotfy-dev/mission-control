@@ -31,7 +31,7 @@ WORKDIR /app
 COPY --from=build-client /app/client/dist ./client/dist
 
 # Copy server node_modules from stage 2 (dereferenced, no isolated .bun store)
-COPY --from=build-server /app/deps/node_modules ./node_modules
+COPY --from=build-server /app/deps ./node_modules
 
 # Copy server source and package.json
 COPY server/src ./src
