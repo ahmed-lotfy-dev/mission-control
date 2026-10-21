@@ -20,7 +20,7 @@ WORKDIR /app
 COPY package.json bun.lock ./
 COPY client/package.json ./client/
 COPY server/package.json ./server/
-RUN cd server && bun install --frozen-lockfile --production
+RUN bun install --frozen-lockfile --production
 
 # ── Stage 3: Runtime ───────────────────────────────────────────
 FROM oven/bun:1.3
@@ -30,8 +30,8 @@ WORKDIR /app
 # Copy built client assets from stage 1
 COPY --from=build-client /app/client/dist ./client/dist
 
-# Copy server node_modules from stage 2
-COPY --from=build-server /app/server/node_modules ./node_modules
+# Copy server node_modules from stage 2 (workspace-root hoisted)
+COPY --from=build-server /app/node_modules ./node_modules
 
 # Copy server source and package.json
 COPY server/src ./src
