@@ -50,7 +50,7 @@ export default function ContentStudio() {
   if (loading) return <div className="loading-state"><div className="loading-spinner" />Loading...</div>;
 
   return (
-    <div>
+    <div className="page-enter">
       <div className="page-header">
         <div>
           <h1>Content Studio</h1>

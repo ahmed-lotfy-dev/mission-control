@@ -94,7 +94,7 @@ export default function Calendar() {
   };
 
   return (
-    <div>
+    <div className="page-enter">
       <div className="page-header">
         <div>
           <h1>📅 Content Calendar</h1>
@@ -109,7 +109,7 @@ export default function Calendar() {
       </div>
 
       {/* Stats */}
-      <div className="grid-3 mb-24">
+      <div className="grid-3 mb-24 stagger">
         <div className="stat-card accent-gold">
           <span className="value">{events.length}</span>
           <div className="label">Total Events</div>

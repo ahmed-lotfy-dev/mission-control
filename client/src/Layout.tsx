@@ -19,8 +19,8 @@ const NAV_GROUPS = [
     label: "Content",
     items: [
       { path: "/content", icon: "✍️", label: "Content Writer" },
-      { path: "/calendar", icon: "📅", label: "Calendar" },
       { path: "/social", icon: "📱", label: "Social Hub" },
+      { path: "/calendar", icon: "📅", label: "Calendar" },
     ],
   },
   {
@@ -63,6 +63,9 @@ export default function Layout() {
 
   return (
     <div className="app-layout">
+      {/* ── Ambient Glow ── */}
+      <div className="ambient-glow" aria-hidden="true" />
+
       {/* ── Desktop Sidebar ── */}
       <aside className="sidebar" role="navigation" aria-label="Main navigation">
         <div className="sidebar-brand">
@@ -71,7 +74,6 @@ export default function Layout() {
           </div>
           <div className="sidebar-brand-text">
             <span className="sidebar-brand-name">Mission Control</span>
-            <span className="sidebar-brand-version">v2.0</span>
           </div>
         </div>
 

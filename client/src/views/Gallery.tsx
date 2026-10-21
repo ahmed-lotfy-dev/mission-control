@@ -79,7 +79,7 @@ export default function Gallery() {
   };
 
   return (
-    <div>
+    <div className="page-enter">
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
         <div>
           <h2 style={{ margin: 0 }}>🖼️ Generated Images</h2>
@@ -123,15 +123,13 @@ export default function Gallery() {
           </p>
         </div>
       ) : (
-        <div className="gallery-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12 }}>
+        <div className="gallery-grid">
           {filteredFiles.map((asset) => (
             <div
               key={asset.id}
-              className="card overflow-hidden cursor-pointer"
-              style={{ padding: 0, transition: "transform 0.15s, box-shadow 0.15s" }}
+              className="card overflow-hidden cursor-pointer card-hover"
+              style={{ padding: 0 }}
               onClick={() => setLightbox(asset)}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(1.02)"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(1)"; }}
             >
               <div style={{ aspectRatio: "1", background: "var(--bg-deep)", overflow: "hidden" }}>
                 <img

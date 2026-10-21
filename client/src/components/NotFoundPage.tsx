@@ -12,7 +12,7 @@
  */
 export default function NotFoundPage() {
   return (
-    <div className="notfound-page">
+    <div className="notfound-page page-enter">
       {/* Deep space background */}
       <div className="notfound-ambient">
         <div className="notfound-orb notfound-orb-1" />

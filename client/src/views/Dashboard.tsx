@@ -74,7 +74,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div>
+    <div className="page-enter">
       {/* Header */}
       <div className="page-header">
         <div>

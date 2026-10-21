@@ -66,7 +66,7 @@ export default function Analytics() {
   const o = data.overview;
 
   return (
-    <div>
+    <div className="page-enter">
       <div className="page-header">
         <div>
           <h1>📊 Analytics</h1>
@@ -75,7 +75,7 @@ export default function Analytics() {
       </div>
 
       {/* Overview Stats */}
-      <div className="grid-4 mb-24">
+      <div className="grid-4 mb-24 stagger">
         <div className="stat-card accent-gold">
           <span className="value">{o.contentItems}</span>
           <div className="label">Content Items</div>
@@ -96,11 +96,11 @@ export default function Analytics() {
 
       {/* Charts Row */}
       <div className="grid-2 mb-24">
-        <div className="card">
+        <div className="card card-hover">
           <div className="section-label">Content & Posts (30 days)</div>
           <canvas ref={chartRef} style={{ width: "100%", height: 200 }} />
         </div>
-        <div className="card">
+        <div className="card card-hover">
           <div className="section-label">Engagement & Reach (30 days)</div>
           <canvas ref={engagementRef} style={{ width: "100%", height: 200 }} />
         </div>

@@ -512,6 +512,170 @@ function ensureTables(db: Database) {
       is_read INTEGER DEFAULT 0,
       created_at TEXT NOT NULL DEFAULT ''
     )`,
+    // ═══════════════════════════════════════════════════════════
+    // SOCIAL MEDIA — Full platform integration
+    // ═══════════════════════════════════════════════════════════
+    // ── Social Accounts (OAuth connections) ──
+    `CREATE TABLE IF NOT EXISTS social_accounts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      platform TEXT NOT NULL,
+      platform_account_id TEXT NOT NULL DEFAULT '',
+      display_name TEXT NOT NULL DEFAULT '',
+      username TEXT DEFAULT '',
+      avatar_url TEXT DEFAULT '',
+      access_token_encrypted TEXT DEFAULT '',
+      refresh_token_encrypted TEXT DEFAULT '',
+      token_expires_at TEXT DEFAULT '',
+      account_type TEXT NOT NULL DEFAULT 'business',
+      status TEXT NOT NULL DEFAULT 'active',
+      followers INTEGER DEFAULT 0,
+      following INTEGER DEFAULT 0,
+      media_count INTEGER DEFAULT 0,
+      last_synced_at TEXT DEFAULT '',
+      last_health_check_at TEXT DEFAULT '',
+      webhook_status TEXT NOT NULL DEFAULT 'pending',
+      metadata TEXT DEFAULT '{}',
+      created_at TEXT NOT NULL DEFAULT '',
+      updated_at TEXT NOT NULL DEFAULT '',
+      UNIQUE(platform, platform_account_id)
+    )`,
+    // ── Social Posts (draft, scheduled, published) ──
+    `CREATE TABLE IF NOT EXISTS social_posts_v2 (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      account_id INTEGER NOT NULL,
+      platform TEXT NOT NULL,
+      content_type TEXT NOT NULL DEFAULT 'post',
+      title TEXT DEFAULT '',
+      caption TEXT NOT NULL DEFAULT '',
+      hashtags TEXT DEFAULT '[]',
+      media_urls TEXT DEFAULT '[]',
+      publish_mode TEXT NOT NULL DEFAULT 'direct',
+      scheduled_at TEXT DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'draft',
+      retry_count INTEGER DEFAULT 0,
+      next_retry_at TEXT DEFAULT '',
+      external_post_id TEXT DEFAULT '',
+      engagement TEXT DEFAULT '{}',
+      metadata TEXT DEFAULT '{}',
+      created_at TEXT NOT NULL DEFAULT '',
+      updated_at TEXT NOT NULL DEFAULT '',
+      FOREIGN KEY (account_id) REFERENCES social_accounts(id) ON DELETE CASCADE
+    )`,
+    // ── Social Media Assets (images, video, audio for posts) ──
+    `CREATE TABLE IF NOT EXISTS social_media_assets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      storage_key TEXT NOT NULL,
+      media_type TEXT NOT NULL,
+      mime_type TEXT NOT NULL DEFAULT '',
+      file_size INTEGER DEFAULT 0,
+      title TEXT DEFAULT '',
+      duration_seconds INTEGER DEFAULT 0,
+      width INTEGER DEFAULT 0,
+      height INTEGER DEFAULT 0,
+      thumbnail_key TEXT DEFAULT '',
+      metadata TEXT DEFAULT '{}',
+      created_at TEXT NOT NULL DEFAULT ''
+    )`,
+    `CREATE TABLE IF NOT EXISTS social_post_assets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      post_id INTEGER NOT NULL,
+      asset_id INTEGER NOT NULL,
+      position INTEGER DEFAULT 0,
+      role TEXT NOT NULL DEFAULT 'main',
+      FOREIGN KEY (post_id) REFERENCES social_posts_v2(id) ON DELETE CASCADE,
+      FOREIGN KEY (asset_id) REFERENCES social_media_assets(id) ON DELETE CASCADE
+    )`,
+    // ── Social Automation Rules ──
+    `CREATE TABLE IF NOT EXISTS social_automation_rules (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      account_id INTEGER NOT NULL,
+      name TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'draft',
+      platform TEXT NOT NULL,
+      trigger_type TEXT NOT NULL,
+      trigger_config TEXT DEFAULT '{}',
+      scope_type TEXT NOT NULL DEFAULT 'all',
+      scope_config TEXT DEFAULT '{}',
+      priority INTEGER DEFAULT 100,
+      cooldown_seconds INTEGER DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT '',
+      updated_at TEXT NOT NULL DEFAULT '',
+      FOREIGN KEY (account_id) REFERENCES social_accounts(id) ON DELETE CASCADE
+    )`,
+    `CREATE TABLE IF NOT EXISTS social_automation_conditions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      rule_id INTEGER NOT NULL,
+      condition_type TEXT NOT NULL,
+      operator TEXT NOT NULL,
+      value TEXT DEFAULT '{}',
+      sort_order INTEGER DEFAULT 0,
+      FOREIGN KEY (rule_id) REFERENCES social_automation_rules(id) ON DELETE CASCADE
+    )`,
+    `CREATE TABLE IF NOT EXISTS social_automation_actions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      rule_id INTEGER NOT NULL,
+      action_type TEXT NOT NULL,
+      action_config TEXT DEFAULT '{}',
+      sort_order INTEGER DEFAULT 0,
+      FOREIGN KEY (rule_id) REFERENCES social_automation_rules(id) ON DELETE CASCADE
+    )`,
+    // ── Social Action Jobs (auto-reply queue) ──
+    `CREATE TABLE IF NOT EXISTS social_action_jobs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      rule_id INTEGER NOT NULL,
+      job_type TEXT NOT NULL,
+      payload TEXT DEFAULT '{}',
+      status TEXT NOT NULL DEFAULT 'queued',
+      attempt_count INTEGER DEFAULT 0,
+      run_after TEXT DEFAULT '',
+      last_error TEXT DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT '',
+      updated_at TEXT NOT NULL DEFAULT '',
+      FOREIGN KEY (rule_id) REFERENCES social_automation_rules(id) ON DELETE CASCADE
+    )`,
+    `CREATE TABLE IF NOT EXISTS social_action_executions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      job_id INTEGER NOT NULL,
+      platform TEXT NOT NULL,
+      action_type TEXT NOT NULL,
+      request_payload TEXT DEFAULT '{}',
+      response_payload TEXT DEFAULT '{}',
+      status TEXT NOT NULL DEFAULT 'pending',
+      external_action_id TEXT DEFAULT '',
+      executed_at TEXT NOT NULL DEFAULT '',
+      FOREIGN KEY (job_id) REFERENCES social_action_jobs(id) ON DELETE CASCADE
+    )`,
+    // ── Social Analytics (engagement tracking) ──
+    `CREATE TABLE IF NOT EXISTS social_analytics (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      post_id INTEGER NOT NULL,
+      platform TEXT NOT NULL,
+      impressions INTEGER DEFAULT 0,
+      reach INTEGER DEFAULT 0,
+      likes INTEGER DEFAULT 0,
+      comments INTEGER DEFAULT 0,
+      shares INTEGER DEFAULT 0,
+      saves INTEGER DEFAULT 0,
+      views INTEGER DEFAULT 0,
+      clicks INTEGER DEFAULT 0,
+      engagement_rate REAL DEFAULT 0,
+      captured_at TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT '',
+      FOREIGN KEY (post_id) REFERENCES social_posts_v2(id) ON DELETE CASCADE
+    )`,
+    // ── Social Publish Queue (for worker processing) ──
+    `CREATE TABLE IF NOT EXISTS social_publish_queue (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      post_id INTEGER NOT NULL,
+      job_type TEXT NOT NULL DEFAULT 'publish',
+      status TEXT NOT NULL DEFAULT 'queued',
+      attempt_count INTEGER DEFAULT 0,
+      run_after TEXT DEFAULT '',
+      last_error TEXT DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT '',
+      updated_at TEXT NOT NULL DEFAULT '',
+      FOREIGN KEY (post_id) REFERENCES social_posts_v2(id) ON DELETE CASCADE
+    )`,
   ];
 
   for (const sql of tables) {

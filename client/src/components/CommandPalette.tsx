@@ -120,7 +120,7 @@ export default function CommandPalette() {
 
   return (
     <div
-      className="command-overlay"
+      className="command-overlay page-enter-fast"
       onClick={() => setOpen(false)}
       onKeyDown={handleKey}
     >
@@ -141,7 +141,7 @@ export default function CommandPalette() {
           />
           <span className="command-esc-hint">ESC</span>
         </div>
-        <div className="command-results">
+        <div className="command-results stagger">
           {filtered.length === 0 ? (
             <div className="command-empty">No results for "{query}"</div>
           ) : (
@@ -149,6 +149,7 @@ export default function CommandPalette() {
               <div
                 key={cmd.id}
                 className={`command-item ${idx === selectedIdx ? "selected" : ""}`}
+                style={{ animationDelay: `${idx * 40}ms` }}
                 onClick={() => execute(cmd)}
                 onMouseEnter={() => setSelectedIdx(idx)}
               >

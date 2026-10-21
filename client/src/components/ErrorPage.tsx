@@ -12,7 +12,7 @@ export default function ErrorPage({ error }: { error?: Error }) {
   const message = error?.message || "An unexpected error occurred";
 
   return (
-    <div className="error-page">
+    <div className="error-page page-enter">
       {/* Ambient orbs */}
       <div className="error-ambient">
         <div className="error-orb error-orb-1" />
@@ -26,7 +26,7 @@ export default function ErrorPage({ error }: { error?: Error }) {
           <div className="error-code-divider" />
           <span className="error-code-digit">0</span>
           <div className="error-code-divider" />
-          <span className="error-code-digit">0</span>
+          <span className="error-code-digit" style={{animation: "scaleIn 0.5s cubic-bezier(0.4,0,0.2,1) 0.25s backwards"}}>0</span>
         </div>
 
         {/* Icon */}

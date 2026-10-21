@@ -129,7 +129,7 @@ export default function SeoHub() {
   const serpIcon = (f: string) => ({ featured_snippet: "⭐", people_also_ask: "❓", local_pack: "📍", video: "🎬", news: "📰", images: "🖼️", shopping: "🛒", reviews: "⭐" }[f] || "📌");
 
   return (
-    <div>
+    <div className="page-enter">
       <div className="page-header">
         <div>
           <h1>🎯 SEO Hub</h1>
@@ -172,7 +172,7 @@ export default function SeoHub() {
 
       {/* ═══ OVERVIEW TAB ═══ */}
       {tab === "overview" && selectedProject && (
-        <div className="grid-4 mb-24">
+        <div className="grid-4 mb-24 stagger">
           {rankingOverview && (
             <>
               <div className="stat-card accent-purple">
@@ -224,12 +224,12 @@ export default function SeoHub() {
           <div className="card">
             <div className="section-label">Quick Actions</div>
             <div className="grid-2 gap-3 mt-3">
-              <button className="btn btn-ghost card-raise" onClick={() => setTab("rankings")}>🏆 Add Keywords</button>
-              <button className="btn btn-ghost card-raise" onClick={refreshBacklinks} disabled={refreshingBacklinks}>🔗 Refresh Backlinks</button>
-              <button className="btn btn-ghost card-raise" onClick={() => setTab("keywords")}>🔑 Keyword Research</button>
-              <button className="btn btn-ghost card-raise" onClick={runAudit} disabled={auditRunning}>🔍 Run Site Audit</button>
-              <button className="btn btn-ghost card-raise" onClick={refreshRankings} disabled={refreshing}>📈 Refresh Rankings</button>
-              <button className="btn btn-ghost card-raise" onClick={() => setTab("competitors")}>🎯 Add Competitor</button>
+              <button className="btn btn-ghost card-hover p-3" onClick={() => setTab("rankings")}>🏆 Add Keywords</button>
+              <button className="btn btn-ghost card-hover p-3" onClick={refreshBacklinks} disabled={refreshingBacklinks}>🔗 Refresh Backlinks</button>
+              <button className="btn btn-ghost card-hover p-3" onClick={() => setTab("keywords")}>🔑 Keyword Research</button>
+              <button className="btn btn-ghost card-hover p-3" onClick={runAudit} disabled={auditRunning}>🔍 Run Site Audit</button>
+              <button className="btn btn-ghost card-hover p-3" onClick={refreshRankings} disabled={refreshing}>📈 Refresh Rankings</button>
+              <button className="btn btn-ghost card-hover p-3" onClick={() => setTab("competitors")}>🎯 Add Competitor</button>
             </div>
           </div>
         </div>

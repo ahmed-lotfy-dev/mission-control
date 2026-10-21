@@ -31,7 +31,7 @@ export class ErrorBoundary extends Component<Props, State> {
       if (this.props.fallback) return this.props.fallback;
 
       return (
-        <div className="error-boundary-fallback">
+        <div className="error-boundary-fallback page-enter" style={{ background: "var(--bg)" }}>
           <div className="error-boundary-content">
             <div className="error-boundary-icon">⚠️</div>
             <h2>Something went wrong</h2>

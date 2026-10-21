@@ -54,7 +54,7 @@ export default function Kanban() {
   if (loading) return <div className="loading-state"><div className="loading-spinner" /><span>Loading board...</span></div>;
 
   return (
-    <div>
+    <div className="page-enter">
       <div className="page-header">
         <div>
           <h1>Kanban Board</h1>
@@ -64,7 +64,7 @@ export default function Kanban() {
       </div>
 
       {/* Board */}
-      <div className="kanban-board">
+      <div className="kanban-board stagger">
         {cols.map((col) => {
           const tasks = board?.tasks.filter(t => t.status === col) ?? [];
           return (
@@ -84,7 +84,7 @@ export default function Kanban() {
                 {tasks.map((t) => (
                   <div
                     key={t.id}
-                    className="kanban-task"
+                    className="kanban-task card-hoverable"
                     draggable
                     onDragStart={() => { setDragging(t.id); }}
                     onDragEnd={() => { setDragging(null); setDragOver(null); }}
@@ -120,7 +120,7 @@ export default function Kanban() {
 
       {/* Modal */}
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+        <div className="modal-overlay page-enter" onClick={() => setShowModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h2>{editId ? "Edit Task" : "New Task"}</h2>
             <div className="form-group">

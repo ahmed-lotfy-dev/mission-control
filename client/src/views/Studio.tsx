@@ -121,7 +121,7 @@ export default function Studio() {
   const selectedModel = imageModels.find((m) => m.id === imgModel);
 
   return (
-    <div>
+    <div className="page-enter">
       <div className="page-header">
         <div>
           <h1>🎬 Studio</h1>

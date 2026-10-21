@@ -13,6 +13,7 @@ import { seoRoutes } from "./routes/seo";
 import { seoAuditRoutes } from "./routes/seo-audit";
 import { contentGenRoutes } from "./routes/content-gen";
 import { seoHubRoutes } from "./routes/seo-hub";
+import { socialRoutes } from "./routes/social";
 import { broadcast, addClient, removeClient } from "./routes/ws";
 import { computeAgentStatus, safeJson } from "./lib/helpers";
 import { dbQuery } from "./db";
@@ -98,6 +99,7 @@ const app = new Elysia()
   .use(seoAuditRoutes)
   .use(contentGenRoutes)
   .use(seoHubRoutes)
+  .use(socialRoutes)
   .ws("/ws", {
     open(ws) {
       const id = crypto.randomUUID();

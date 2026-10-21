@@ -60,14 +60,14 @@ export default function AgentSidebar({ onMobileOpen }: Props) {
   }
 
   return (
-    <aside className="agent-panel">
+    <aside className="agent-panel page-enter-fast">
       <div className="agent-panel-header">
         <h3>🤖 Agents</h3>
-        <button className="agent-panel-toggle" onClick={() => setCollapsed(true)}>◀</button>
+        <button className="agent-panel-toggle" style={{ transition: "transform 150ms ease" }} onClick={() => setCollapsed(true)}>◀</button>
       </div>
-      <div className="agent-panel-list">
+      <div className="agent-panel-list stagger">
         {agents.length === 0 ? (
-          <div className="loading">No agents</div>
+          <div className="empty-state"><div className="icon text-2xl">🤖</div><p className="text-xs mt-2">No agents running</p></div>
         ) : (
           agents.map((a) => {
             const icon = a.icon || getAgentDefaultIcon(a.name);
@@ -80,7 +80,7 @@ export default function AgentSidebar({ onMobileOpen }: Props) {
                 key={a.id}
                 className={`agent-s-card status-${a.status}${isExpanded ? " expanded" : ""}`}
               >
-                <div className="agent-s-header" onClick={() => toggleExpand(a.id)}>
+                <div className="agent-s-header" style={{ transition: "background 150ms ease" }} onClick={() => toggleExpand(a.id)}>
                   <div className="agent-s-avatar">{icon}</div>
                   <div className="agent-s-info">
                     <div className="agent-s-name">{a.name}</div>

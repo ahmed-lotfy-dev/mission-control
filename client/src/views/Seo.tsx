@@ -72,7 +72,7 @@ export default function Seo() {
   });
 
   return (
-    <div>
+    <div className="page-enter">
       {/* Header */}
       <div className="page-header">
         <div>
@@ -124,7 +124,7 @@ export default function Seo() {
             <div key={group.domain_slug} className="mb-5">
               {/* Domain group header */}
               <div
-                className="flex items-center gap-3 py-3 px-3 mb-2 rounded-lg bg-bg-deep/50 cursor-pointer hover:bg-bg-deep transition-colors"
+                className="flex items-center gap-3 py-3 px-3 mb-2 rounded-lg bg-bg-deep/50 cursor-pointer card-hover"
                 onClick={() => navigate({ to: "/seo/$domainSlug", params: { domainSlug: group.domain_slug } })}
               >
                 <Globe size={16} className="text-accent flex-shrink-0" />

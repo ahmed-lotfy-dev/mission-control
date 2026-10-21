@@ -101,7 +101,7 @@ export default function ContentWriter() {
   const typeIcon = (t: string) => CONTENT_TYPES.find(c => c.key === t)?.icon || "📄";
 
   return (
-    <div>
+    <div className="page-enter">
       <div className="page-header">
         <div>
           <h1>✍️ Content Writer</h1>
@@ -111,7 +111,7 @@ export default function ContentWriter() {
       </div>
 
       {/* Content Type Cards */}
-      <div className="grid-5 mb-24">
+      <div className="grid-5 mb-24 stagger">
         {CONTENT_TYPES.map((ct) => {
           const count = items.filter(i => i.type === ct.key).length;
           return (
