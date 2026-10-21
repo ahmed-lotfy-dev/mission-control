@@ -1,21 +1,26 @@
 # ── Stage 1: Build client ──────────────────────────────────────
 FROM oven/bun:1.3 AS build-client
 
-WORKDIR /app/client
+WORKDIR /app
 
-COPY client/package.json client/bun.lock ./
+# Bun workspace lockfile lives at the monorepo root; copy manifests first for caching
+COPY package.json bun.lock ./
+COPY client/package.json ./client/
+COPY server/package.json ./server/
 RUN bun install --frozen-lockfile
 
-COPY client/ ./
-RUN bun run build
+COPY client/ ./client/
+RUN cd client && bun run build
 
 # ── Stage 2: Install server dependencies ──────────────────────
 FROM oven/bun:1.3 AS build-server
 
 WORKDIR /app
 
-COPY server/package.json server/bun.lock ./
-RUN bun install --frozen-lockfile --production
+COPY package.json bun.lock ./
+COPY client/package.json ./client/
+COPY server/package.json ./server/
+RUN cd server && bun install --frozen-lockfile --production
 
 # ── Stage 3: Runtime ───────────────────────────────────────────
 FROM oven/bun:1.3
@@ -26,7 +31,7 @@ WORKDIR /app
 COPY --from=build-client /app/client/dist ./client/dist
 
 # Copy server node_modules from stage 2
-COPY --from=build-server /app/node_modules ./node_modules
+COPY --from=build-server /app/server/node_modules ./node_modules
 
 # Copy server source and package.json
 COPY server/src ./src
