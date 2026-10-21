@@ -2,7 +2,7 @@ FROM oven/bun:1
 
 WORKDIR /app
 
-COPY package.json bun.lock ./
+COPY package.json bun.lock bunfig.toml ./
 COPY client/package.json ./client/
 COPY server/package.json ./server/
 RUN bun install --frozen-lockfile

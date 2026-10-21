@@ -4,7 +4,7 @@ FROM oven/bun:1.3 AS build-client
 WORKDIR /app
 
 # Bun workspace lockfile lives at the monorepo root; copy manifests first for caching
-COPY package.json bun.lock ./
+COPY package.json bun.lock bunfig.toml ./
 COPY client/package.json ./client/
 COPY server/package.json ./server/
 RUN bun install --frozen-lockfile
@@ -17,7 +17,7 @@ FROM oven/bun:1.3 AS build-server
 
 WORKDIR /app
 
-COPY package.json bun.lock ./
+COPY package.json bun.lock bunfig.toml ./
 COPY client/package.json ./client/
 COPY server/package.json ./server/
 RUN bun install --frozen-lockfile && cp -rL /app/node_modules /app/deps && rm -rf /app/node_modules /app/.bun /app/server/node_modules /app/client/node_modules
